@@ -707,6 +707,85 @@ body.theme-bright .btn-demo-fill {
   color: #334155;
 }
 
+/* Settings Modal & Profile in Bright Mode */
+body.theme-bright .modal-bezel-frame,
+body.theme-bright .dialog-window {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+body.theme-bright .modal-bezel-header,
+body.theme-bright .dialog-header {
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom-color: #cbd5e1;
+}
+body.theme-bright .modal-bezel-title,
+body.theme-bright .dialog-title {
+  color: #0f172a;
+}
+body.theme-bright .modal-bezel-sub,
+body.theme-bright .dialog-sub {
+  color: #475569;
+}
+body.theme-bright .modal-close-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #64748b;
+}
+body.theme-bright .modal-close-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #f87171;
+}
+body.theme-bright .audit-sec-header h4 {
+  color: #0284c7;
+}
+body.theme-bright .theme-card-option {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+body.theme-bright .theme-card-option:hover {
+  border-color: #94a3b8;
+  background: #ffffff;
+}
+body.theme-bright .theme-card-option.active {
+  border-color: #059669;
+  background: #ffffff;
+  box-shadow: 0 0 12px rgba(5, 150, 105, 0.2);
+}
+body.theme-bright .theme-name {
+  color: #0f172a;
+}
+body.theme-bright .theme-card-info div {
+  color: #475569;
+}
+body.theme-bright .theme-radio-dot {
+  border-color: #94a3b8;
+}
+body.theme-bright .theme-card-option.active .theme-radio-dot {
+  border-color: #059669;
+}
+body.theme-bright .audit-card {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+body.theme-bright .profile-field-row {
+  border-bottom-color: #e2e8f0;
+}
+body.theme-bright .profile-field-lbl {
+  color: #475569;
+  font-weight: 700;
+}
+body.theme-bright .profile-field-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+body.theme-bright .modal-footer-bezel,
+body.theme-bright .dialog-footer {
+  background: #f1f5f9;
+  border-top-color: #cbd5e1;
+}
+
 body.theme-bright .chassis-footer {
   background: #e2e8f0;
   border-top-color: #cbd5e1;
