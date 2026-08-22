@@ -262,9 +262,49 @@ function extractEntitiesAndTickers(text, region = 'global') {
   return matchedTickers;
 }
 
+/**
+ * Dynamically discovers tickers with active catalysts from news stream at runtime
+ */
+function discoverActiveTickersFromNews(processedArticles, region = 'india') {
+  const tickerMap = new Map();
+
+  // 1. First gather all tickers matched via NLP entity mapping
+  processedArticles.forEach(art => {
+    (art.matchedTickers || []).forEach(t => {
+      if (region && t.region && t.region !== region) return;
+      
+      const key = t.ticker;
+      if (!tickerMap.has(key)) {
+        tickerMap.set(key, {
+          ticker: key,
+          name: t.name,
+          sector: t.sector,
+          subsector: t.subsector,
+          region: t.region,
+          mentionCount: 0,
+          totalSentiment: 0,
+          articles: []
+        });
+      }
+
+      const entry = tickerMap.get(key);
+      entry.mentionCount++;
+      entry.totalSentiment += (art.sentimentScore || 0);
+      entry.articles.push(art);
+    });
+  });
+
+  // Convert to array sorted by mention count and catalyst strength
+  const discovered = Array.from(tickerMap.values());
+  discovered.sort((a, b) => (b.mentionCount * 10 + Math.abs(b.totalSentiment)) - (a.mentionCount * 10 + Math.abs(a.totalSentiment)));
+
+  return discovered;
+}
+
 module.exports = {
   analyzeTextSentiment,
   extractEntitiesAndTickers,
+  discoverActiveTickersFromNews,
   GEOPOLITICAL_THEMES_GLOBAL,
   GEOPOLITICAL_THEMES_INDIA,
   KNOWN_TICKERS

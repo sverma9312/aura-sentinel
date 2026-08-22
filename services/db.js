@@ -326,6 +326,50 @@ async function saveUserWatchlist(email, watchlistArray) {
   return true;
 }
 
+/**
+ * Save Market Snapshot to MongoDB for instant warm-start and historical auditing
+ */
+async function saveMarketSnapshot(region, snapshotData) {
+  if (isConnected && db) {
+    try {
+      await db.collection('market_snapshots').updateOne(
+        { region },
+        { 
+          $set: {
+            region,
+            macroOverview: snapshotData.macroOverview,
+            stockOpportunities: snapshotData.stockOpportunities,
+            incidentWire: snapshotData.incidentWire,
+            lastUpdated: snapshotData.lastUpdated || new Date().toISOString(),
+            nextRefresh: snapshotData.nextRefresh || new Date(Date.now() + 3600000).toISOString(),
+            savedAt: new Date().toISOString()
+          }
+        },
+        { upsert: true }
+      );
+      return true;
+    } catch (e) {
+      console.error(`[DB] Failed to save market snapshot for ${region}:`, e.message);
+    }
+  }
+  return false;
+}
+
+/**
+ * Retrieve latest Market Snapshot from MongoDB on server startup
+ */
+async function getLatestMarketSnapshot(region) {
+  if (isConnected && db) {
+    try {
+      const doc = await db.collection('market_snapshots').findOne({ region });
+      return doc || null;
+    } catch (e) {
+      console.error(`[DB] Failed to get market snapshot for ${region}:`, e.message);
+    }
+  }
+  return null;
+}
+
 module.exports = {
   initDb,
   findUserByEmail,
@@ -336,5 +380,7 @@ module.exports = {
   authenticateUser,
   getUserWatchlist,
   saveUserWatchlist,
+  saveMarketSnapshot,
+  getLatestMarketSnapshot,
   isMongoConnected: () => isConnected
 };

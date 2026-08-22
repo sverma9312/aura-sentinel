@@ -5,9 +5,10 @@
  */
 
 const { fetchAllGlobalNews, fetchTargetedStockNews } = require('./rssFetcher');
-const { analyzeTextSentiment, extractEntitiesAndTickers, GEOPOLITICAL_THEMES_GLOBAL, GEOPOLITICAL_THEMES_INDIA, KNOWN_TICKERS } = require('./sentimentNlp');
+const { analyzeTextSentiment, extractEntitiesAndTickers, discoverActiveTickersFromNews, GEOPOLITICAL_THEMES_GLOBAL, GEOPOLITICAL_THEMES_INDIA, KNOWN_TICKERS } = require('./sentimentNlp');
 const { getStockQuoteAndChart, searchTickers } = require('./financeApi');
 const { generateMacroNarrative, generateStockBrief } = require('./geminiClient');
+const dbService = require('./db');
 
 // Sector Definitions - Global
 const SECTORS_GLOBAL = [
@@ -134,6 +135,24 @@ class MacroEngine {
     const reg = region === 'global' ? 'global' : 'india';
     const cache = this.caches[reg];
     const now = Date.now();
+
+    // Check MongoDB cloud snapshot if memory cache is empty on warm-boot
+    if (!cache.macroOverview && !forceRefresh) {
+      try {
+        const snapshot = await dbService.getLatestMarketSnapshot(reg);
+        if (snapshot && snapshot.macroOverview) {
+          cache.macroOverview = snapshot.macroOverview;
+          cache.stockOpportunities = snapshot.stockOpportunities;
+          cache.incidentWire = snapshot.incidentWire;
+          cache.lastUpdated = snapshot.lastUpdated;
+          cache.nextRefresh = snapshot.nextRefresh;
+          console.log(`[MacroEngine] 🍃 Loaded warm-start market snapshot for ${reg.toUpperCase()} from MongoDB Atlas.`);
+        }
+      } catch (e) {
+        console.warn(`[MacroEngine] Could not load snapshot from MongoDB:`, e.message);
+      }
+    }
+
     const isExpired = !cache.lastUpdated || (now - new Date(cache.lastUpdated).getTime() > this.refreshDurationMs);
 
     if (forceRefresh || isExpired || !cache.macroOverview) {
@@ -250,9 +269,12 @@ class MacroEngine {
       let globalScore = 0;
       processedArticles.forEach(a => globalScore += a.sentimentScore);
       const overallSentimentScore = processedArticles.length > 0 ? Math.round(globalScore / processedArticles.length) : (reg === 'india' ? 22 : 12);
+      // 4. Dynamic Discovery: Scan live news to extract active catalyst tickers
+      const dynamicDiscovered = discoverActiveTickersFromNews(processedArticles, reg);
+      const dynamicTickers = dynamicDiscovered.map(d => d.ticker);
 
-      // 4. Target Tickers based on region (Top 20 Equities per Theater)
-      const targetTickers = reg === 'india' 
+      // Core universe base candidates
+      const baseUniverse = reg === 'india' 
         ? [
             'HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS', 'LT.NS',
             'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS',
@@ -266,10 +288,14 @@ class MacroEngine {
             'XOM', 'NVO', 'LLY', 'BA', 'CAT'
           ];
 
+      // Merge dynamic news-discovered stocks first, followed by base universe (deduplicated)
+      const candidateTickers = [...new Set([...dynamicTickers, ...baseUniverse])].slice(0, 30);
+      console.log(`[MacroEngine] Evaluating ${candidateTickers.length} dynamic candidate equities (${dynamicTickers.length} discovered from live news)...`);
+
       const stockOpportunities = [];
 
-      for (const ticker of targetTickers) {
-        const meta = KNOWN_TICKERS[ticker] || { name: ticker, sector: 'general', subsector: 'General', region: reg };
+      for (const ticker of candidateTickers) {
+        const meta = KNOWN_TICKERS[ticker] || { name: ticker, sector: reg === 'india' ? 'industrials_india' : 'technology', subsector: 'Active Catalyst Mover', region: reg };
         
         // Find matching news articles
         const tickerNews = processedArticles.filter(art =>
@@ -323,8 +349,9 @@ class MacroEngine {
         });
       }
 
-      // Strictly rank from highest catalyst score down to lowest
+      // Strictly rank from highest catalyst score down to lowest and slice Top 20
       stockOpportunities.sort((a, b) => (b.catalystScore || 0) - (a.catalystScore || 0));
+      const top20Opportunities = stockOpportunities.slice(0, 20);
 
       // 5. Generate AI-Powered Macro Narrative via Gemini
       console.log(`[MacroEngine] Requesting Gemini AI narrative for ${reg.toUpperCase()}...`);
@@ -349,22 +376,25 @@ class MacroEngine {
           aiNarrative,
           sectors: sectorAnalysis
         },
-        stockOpportunities,
-        incidentWire: processedArticles.slice(0, 40).map(a => ({
-          id: a.id,
+        stockOpportunities: top20Opportunities,
+        incidentWire: processedArticles.slice(0, 50).map(a => ({
           title: a.title,
-          description: a.description,
           source: a.source,
           link: a.link,
           pubDate: a.pubDate,
           sentiment: a.sentimentLabel,
           sentimentScore: a.sentimentScore,
           themes: a.themes.map(t => t.name),
-          tickers: a.matchedTickers.map(t => t.ticker)
+          matchedTickers: a.matchedTickers.map(t => t.ticker),
+          description: a.rawText.substring(0, 200) + '...'
         })),
         lastUpdated: now.toISOString(),
         nextRefresh: next.toISOString()
       };
+
+      // 7. Persist Snapshot to MongoDB Atlas Cloud Database
+      await dbService.saveMarketSnapshot(reg, this.caches[reg]);
+      console.log(`[MacroEngine] 🍃 Market intelligence snapshot persisted to MongoDB Atlas for ${reg.toUpperCase()}.`);
 
       console.log(`[MacroEngine] Refresh cycle completed for ${reg.toUpperCase()}. Analyzed ${processedArticles.length} articles across ${stockOpportunities.length} opportunities.`);
     } catch (err) {
