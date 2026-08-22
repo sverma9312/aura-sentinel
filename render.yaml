@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: aura-sentinel
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: GEMINI_API_KEY
+        sync: false
