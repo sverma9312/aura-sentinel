@@ -405,12 +405,29 @@
       avatarEl.textContent = initials || (user.role === 'ADMIN' ? '👑' : 'SA');
     }
 
+    const profRole = document.getElementById('profile-role');
+    const settingsAdminBlock = document.getElementById('settings-admin-block');
+
     if (profName) profName.textContent = user.name;
     if (profEmail) profEmail.textContent = user.email;
     if (profOrg) profOrg.textContent = user.org || 'Aura Capital Markets';
 
-    // Show/Hide Admin Console tab based on Role
+    // Show/Hide Admin Console tab and settings block based on Role
     const isAdmin = user.role === 'ADMIN';
+    if (profRole) {
+      if (isAdmin) {
+        profRole.textContent = '👑 MASTER ROOT ADMINISTRATOR';
+        profRole.style.color = '#fcd34d';
+      } else {
+        profRole.textContent = '⚡ TIER-1 MACRO ANALYST';
+        profRole.style.color = 'var(--phosphor-green)';
+      }
+    }
+
+    if (settingsAdminBlock) {
+      settingsAdminBlock.classList.toggle('hidden', !isAdmin);
+    }
+
     if (tabAdmin) {
       tabAdmin.classList.toggle('hidden', !isAdmin);
       if (isAdmin) {
@@ -1918,6 +1935,17 @@
           (u.org || '').toLowerCase().includes(q)
         );
         renderAdminTable(filtered);
+      });
+    }
+
+    // Direct button in Settings modal to open Admin Console
+    const btnSettingsOpenAdmin = document.getElementById('btn-settings-open-admin');
+    if (btnSettingsOpenAdmin) {
+      btnSettingsOpenAdmin.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+        const settingsModal = document.getElementById('settings-modal');
+        if (settingsModal) settingsModal.classList.add('hidden');
+        switchActiveTab('tab-admin');
       });
     }
 

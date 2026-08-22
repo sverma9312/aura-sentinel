@@ -742,8 +742,25 @@
               </div>
               <div class="profile-field-row">
                 <span class="profile-field-lbl">ACCESS LEVEL:</span>
-                <span class="profile-field-val" style="color: var(--phosphor-green);">TIER-1 MACRO STRATEGIST</span>
+                <span class="profile-field-val" id="profile-role" style="color: var(--phosphor-green);">TIER-1 MACRO STRATEGIST</span>
               </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Master Admin Access & User Governance (Visible only to Admin) -->
+          <div class="audit-section-block hidden" id="settings-admin-block">
+            <div class="audit-sec-header">
+              <span class="sec-icon">👑</span>
+              <h4>3. INSTITUTIONAL USER & ACCESS GOVERNANCE</h4>
+            </div>
+            <div class="audit-card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <div style="font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: #fcd34d;">MASTER USER MANAGEMENT DIRECTORY</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Provision new analysts, promote roles, and revoke MongoDB cloud access.</div>
+              </div>
+              <button type="button" id="btn-settings-open-admin" class="btn-admin-primary" style="margin: 0;">
+                <span>👑 OPEN ADMIN CONSOLE</span>
+              </button>
             </div>
           </div>
 
