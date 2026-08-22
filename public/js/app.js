@@ -272,7 +272,33 @@
     const settingsModal = document.getElementById('settings-modal');
     if (settingsModal) settingsModal.classList.add('hidden');
 
-    // Show Auth Gate
+    // Reset both form fields
+    const formLogin = document.getElementById('form-login');
+    const formSignup = document.getElementById('form-signup');
+    if (formLogin) formLogin.reset();
+    if (formSignup) formSignup.reset();
+
+    // Clear all text inputs explicitly
+    ['login-email', 'login-password', 'signup-name', 'signup-org', 'signup-email', 'signup-password'].forEach(id => {
+      const input = document.getElementById(id);
+      if (input) input.value = '';
+    });
+
+    // Hide any auth error toast
+    const authToast = document.getElementById('auth-toast');
+    if (authToast) authToast.classList.add('hidden');
+
+    // Reset auth tabs: switch back to LOG IN tab
+    const tabAuthLogin = document.getElementById('tab-auth-login');
+    const tabAuthSignup = document.getElementById('tab-auth-signup');
+    if (tabAuthLogin && tabAuthSignup) {
+      tabAuthLogin.classList.add('active');
+      tabAuthSignup.classList.remove('active');
+    }
+    if (formLogin) formLogin.classList.remove('hidden');
+    if (formSignup) formSignup.classList.add('hidden');
+
+    // Show Auth Gate Modal
     const authModal = document.getElementById('auth-modal');
     if (authModal) authModal.classList.remove('hidden');
 
