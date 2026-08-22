@@ -73,9 +73,9 @@ function callGeminiApi(prompt) {
       reject(new Error(`Gemini network error: ${err.message}`));
     });
 
-    req.setTimeout(15000, () => {
+    req.setTimeout(30000, () => {
       req.destroy();
-      reject(new Error('Gemini request timed out (15s)'));
+      reject(new Error('Gemini request timed out (30s)'));
     });
 
     req.write(body);
