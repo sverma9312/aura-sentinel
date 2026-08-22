@@ -313,7 +313,8 @@ class MacroEngine {
         });
       }
 
-      stockOpportunities.sort((a, b) => (b.catalystScore * 0.7 + b.newsVolume * 5) - (a.catalystScore * 0.7 + a.newsVolume * 5));
+      // Strictly rank from highest catalyst score down to lowest
+      stockOpportunities.sort((a, b) => (b.catalystScore || 0) - (a.catalystScore || 0));
 
       // 5. Generate AI-Powered Macro Narrative via Gemini
       console.log(`[MacroEngine] Requesting Gemini AI narrative for ${reg.toUpperCase()}...`);

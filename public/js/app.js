@@ -1098,7 +1098,10 @@
   function renderStockOpportunities() {
     el.stockCardsContainer.innerHTML = '';
 
-    const filtered = state.stockOpportunities.filter(stock => {
+    // Strictly rank from highest catalyst score down to lowest
+    const sorted = [...state.stockOpportunities].sort((a, b) => (b.catalystScore || 0) - (a.catalystScore || 0));
+
+    const filtered = sorted.filter(stock => {
       if (state.currentStockFilter === 'all') return true;
       return stock.sector.toLowerCase() === state.currentStockFilter.toLowerCase();
     });
