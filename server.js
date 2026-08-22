@@ -12,6 +12,7 @@ const path = require('path');
 const fs = require('fs');
 const macroEngine = require('./services/macroEngine');
 const { searchTickers } = require('./services/financeApi');
+const dbService = require('./services/db');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
