@@ -305,10 +305,17 @@
     if (formLogin) formLogin.reset();
     if (formSignup) formSignup.reset();
 
-    // Clear all text inputs explicitly
+    // Clear all text inputs explicitly and reset password type
     ['login-email', 'login-password', 'signup-name', 'signup-org', 'signup-email', 'signup-password'].forEach(id => {
       const input = document.getElementById(id);
-      if (input) input.value = '';
+      if (input) {
+        input.value = '';
+        if (id.includes('password')) input.type = 'password';
+      }
+    });
+
+    document.querySelectorAll('.btn-toggle-password .eye-icon').forEach(icon => {
+      icon.textContent = '👁️';
     });
 
     // Hide any auth error toast
@@ -1648,6 +1655,27 @@
         registerUser(name, org, email, pass);
       });
     }
+
+    // Password Visibility Toggles (Eye Icons)
+    const setupPassToggle = (btnId, inputId) => {
+      const btn = document.getElementById(btnId);
+      const input = document.getElementById(inputId);
+      if (btn && input) {
+        btn.addEventListener('click', () => {
+          const isPassword = input.type === 'password';
+          input.type = isPassword ? 'text' : 'password';
+          const icon = btn.querySelector('.eye-icon');
+          if (icon) {
+            icon.textContent = isPassword ? '🙈' : '👁️';
+          }
+          btn.title = isPassword ? 'Hide Passcode' : 'Show Passcode';
+          if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        });
+      }
+    };
+
+    setupPassToggle('btn-toggle-login-pass', 'login-password');
+    setupPassToggle('btn-toggle-signup-pass', 'signup-password');
 
     if (btnDemoLogin) {
       btnDemoLogin.addEventListener('click', () => {
