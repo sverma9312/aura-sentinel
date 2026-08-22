@@ -315,7 +315,7 @@
     });
 
     document.querySelectorAll('.btn-toggle-password .eye-icon').forEach(icon => {
-      icon.textContent = '👁️';
+      icon.textContent = '🙈';
     });
 
     // Hide any auth error toast
@@ -1656,19 +1656,20 @@
       });
     }
 
-    // Password Visibility Toggles (Eye Icons)
+    // Password Visibility Toggles (Monkey Icons)
     const setupPassToggle = (btnId, inputId) => {
       const btn = document.getElementById(btnId);
       const input = document.getElementById(inputId);
       if (btn && input) {
         btn.addEventListener('click', () => {
-          const isPassword = input.type === 'password';
-          input.type = isPassword ? 'text' : 'password';
+          const isCurrentlyPassword = input.type === 'password';
+          input.type = isCurrentlyPassword ? 'text' : 'password';
           const icon = btn.querySelector('.eye-icon');
           if (icon) {
-            icon.textContent = isPassword ? '🙈' : '👁️';
+            // 🐵 = Open eyes (revealed), 🙈 = Covering eyes (masked/hidden)
+            icon.textContent = isCurrentlyPassword ? '🐵' : '🙈';
           }
-          btn.title = isPassword ? 'Hide Passcode' : 'Show Passcode';
+          btn.title = isCurrentlyPassword ? 'Hide Passcode' : 'Show Passcode';
           if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
         });
       }
