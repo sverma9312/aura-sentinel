@@ -67,17 +67,20 @@ const NEWS_FEEDS_INDIA = [
  */
 function cleanXmlText(str) {
   if (!str) return '';
-  return str
-    .replace(/<!\[CDATA\[(.*?)\]\]>/gs, '$1')
-    .replace(/<[^>]+>/g, ' ')
+  let text = str.replace(/<!\[CDATA\[(.*?)\]\]>/gs, '$1');
+  // First unescape all standard HTML entities
+  text = text
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+  // Thoroughly strip all remaining HTML tags
+  text = text.replace(/<[^>]+>/g, ' ');
+  // Collapse whitespace
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 /**

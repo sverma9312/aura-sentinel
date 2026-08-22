@@ -2266,9 +2266,12 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   padding: 14px 18px;
   box-shadow: var(--shadow-bevel-out);
   display: flex;
-  gap: 16px;
+  gap: 14px;
   align-items: flex-start;
   transition: border-color 0.15s;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .wire-incident-card:hover {
   border-color: #4a576c;
@@ -2287,15 +2290,21 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
 
 .wire-body {
   flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .wire-title-link {
   color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13.5px;
+  font-weight: 600;
   text-decoration: none;
-  line-height: 1.4;
+  line-height: 1.45;
   display: block;
+  width: 100%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
   transition: color 0.15s;
 }
 .wire-title-link:hover {
@@ -2305,16 +2314,19 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
 .wire-desc {
   font-size: 12px;
   color: var(--text-muted);
-  margin-top: 4px;
-  line-height: 1.4;
+  margin-top: 5px;
+  line-height: 1.45;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .wire-tags-tray {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-top: 8px;
   align-items: center;
   flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .wire-theme-tag {
@@ -2325,12 +2337,14 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   color: var(--phosphor-cyan);
   padding: 2px 6px;
   border-radius: 3px;
+  word-break: break-word;
 }
 
 .wire-source-tag {
   font-family: var(--font-mono);
   font-size: 9px;
   color: var(--text-dim);
+  white-space: nowrap;
 }
 
 /* ==========================================================================

@@ -1074,13 +1074,19 @@
         <span class="wire-theme-tag">${escapeHtml(t)}</span>
       `).join('');
 
+      // Clean description: strip any residual tags and hide if duplicate of title
+      let cleanDesc = (item.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (cleanDesc.toLowerCase() === item.title.toLowerCase() || cleanDesc.length < 15) {
+        cleanDesc = '';
+      }
+
       card.innerHTML = `
         <div class="wire-signal-beacon ${beaconClass}" title="Sentiment: ${item.sentiment}"></div>
         <div class="wire-body">
           <a href="${item.link}" target="_blank" rel="noopener" class="wire-title-link">
             ${escapeHtml(item.title)}
           </a>
-          ${item.description ? `<p class="wire-desc">${escapeHtml(item.description)}</p>` : ''}
+          ${cleanDesc ? `<p class="wire-desc">${escapeHtml(cleanDesc)}</p>` : ''}
           <div class="wire-tags-tray">
             <span class="wire-source-tag">${escapeHtml(item.source)} &bull; ${formatTimeAgo(item.pubDate)}</span>
             ${themesHtml}
