@@ -17,7 +17,7 @@ const DEFAULT_DEMO_USER = {
   org: 'Aura Capital Markets',
   role: 'ANALYST',
   theme: 'dark',
-  watchlist: ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS'],
+  watchlist: [],
   createdAt: new Date().toISOString()
 };
 
@@ -29,7 +29,7 @@ const DEFAULT_ADMIN_USER = {
   org: 'Aura Capital Global',
   role: 'ADMIN',
   theme: 'dark',
-  watchlist: ['HAL.NS', 'BEL.NS', 'NVDA', 'TSM', 'LMT'],
+  watchlist: [],
   createdAt: new Date().toISOString()
 };
 
@@ -151,7 +151,7 @@ async function registerUser(userData, allowOverwrite = false) {
     password: cleanPass,
     role,
     theme: userData.theme || 'dark',
-    watchlist: userData.watchlist || ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS'],
+    watchlist: userData.watchlist || [],
     updatedAt: new Date().toISOString(),
     createdAt: (existingUser && existingUser.createdAt) ? existingUser.createdAt : new Date().toISOString()
   };

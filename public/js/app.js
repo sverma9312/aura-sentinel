@@ -16,7 +16,7 @@
       org: 'Aura Capital Global',
       role: 'ADMIN',
       theme: 'dark',
-      watchlist: ['HAL.NS', 'BEL.NS', 'NVDA', 'TSM', 'LMT']
+      watchlist: []
     },
     {
       email: 'analyst@aura.capital',
@@ -25,7 +25,7 @@
       org: 'Aura Capital Markets',
       role: 'ANALYST',
       theme: 'dark',
-      watchlist: ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS']
+      watchlist: []
     }
   ];
 
@@ -44,7 +44,7 @@
     currentStockFilter: 'all',
     wireFilterQuery: '',
     selectedStock: null,
-    watchlist: JSON.parse(localStorage.getItem('aura_sentinel_watchlist') || '["HAL.NS", "BEL.NS", "RELIANCE.NS", "TATAPOWER.NS"]'),
+    watchlist: JSON.parse(localStorage.getItem('aura_sentinel_watchlist') || '[]'),
     countdownInterval: null,
     isRefreshing: false
   };
@@ -274,7 +274,7 @@
           email: 'admin@aura.capital',
           role: 'ADMIN',
           theme: 'dark',
-          watchlist: ['HAL.NS', 'BEL.NS', 'NVDA', 'TSM', 'LMT']
+          watchlist: []
         };
       } else if (cleanEmail === 'analyst@aura.capital' && cleanPass === 'sentinel2026') {
         loggedInUser = {
@@ -283,7 +283,7 @@
           email: 'analyst@aura.capital',
           role: 'ANALYST',
           theme: 'dark',
-          watchlist: ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS']
+          watchlist: []
         };
       }
     }
@@ -291,11 +291,10 @@
     if (loggedInUser) {
       state.currentUser = loggedInUser;
       localStorage.setItem('aura_sentinel_session', JSON.stringify(loggedInUser));
-      if (loggedInUser.watchlist && loggedInUser.watchlist.length > 0) {
-        state.watchlist = loggedInUser.watchlist;
-        localStorage.setItem('aura_sentinel_watchlist', JSON.stringify(loggedInUser.watchlist));
-        updateWatchlistBadge();
-      }
+      state.watchlist = Array.isArray(loggedInUser.watchlist) ? loggedInUser.watchlist : [];
+      localStorage.setItem('aura_sentinel_watchlist', JSON.stringify(state.watchlist));
+      updateWatchlistBadge();
+      renderWatchlist();
       applyTheme(loggedInUser.theme || 'dark');
       updateHeaderUserUI(loggedInUser);
 
@@ -1661,6 +1660,15 @@
       `;
       if (isPinned) el.ddWatchlistBtn.classList.add('pinned');
       else el.ddWatchlistBtn.classList.remove('pinned');
+    }
+
+    // Sync to MongoDB server if user is logged in
+    if (state.currentUser && state.currentUser.email) {
+      fetch('/api/auth/watchlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: state.currentUser.email, watchlist: state.watchlist })
+      }).catch(e => console.warn('[Watchlist] Server sync notice:', e));
     }
   }
 
