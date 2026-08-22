@@ -2389,12 +2389,10 @@
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         const rect = targetEl.getBoundingClientRect();
-        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
         const pad = 6;
 
-        const top = rect.top + scrollY - pad;
-        const left = rect.left + scrollX - pad;
+        const top = rect.top - pad;
+        const left = rect.left - pad;
         const width = rect.width + pad * 2;
         const height = rect.height + pad * 2;
 
@@ -2403,9 +2401,9 @@
         spotlight.style.width = `${width}px`;
         spotlight.style.height = `${height}px`;
 
-        // Position Popover card
+        // Position Popover card (Fixed Viewport)
         const popWidth = Math.min(360, window.innerWidth - 32);
-        let popLeft = (rect.left + scrollX) + (rect.width / 2) - (popWidth / 2);
+        let popLeft = rect.left + (rect.width / 2) - (popWidth / 2);
         popLeft = Math.max(16, Math.min(window.innerWidth - popWidth - 16, popLeft));
 
         // Place below if there's space, or above if target is near bottom

@@ -4991,14 +4991,10 @@ body.theme-bright .ai-narrative-text {
    INTERACTIVE ONBOARDING TUTORIAL TOUR STYLES
    ========================================================================== */
 .tutorial-tour-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  min-height: 100%;
+  position: fixed;
+  inset: 0;
   z-index: 999999;
-  pointer-events: auto;
-  overflow: visible;
+  pointer-events: none;
   transition: opacity 0.3s ease;
 }
 .tutorial-tour-overlay.hidden {
@@ -5006,10 +5002,10 @@ body.theme-bright .ai-narrative-text {
 }
 
 .tour-spotlight-box {
-  position: absolute;
+  position: fixed;
   border-radius: 8px;
   border: 2px solid var(--phosphor-cyan);
-  box-shadow: 0 0 0 9999px rgba(5, 8, 14, 0.82), 0 0 25px var(--phosphor-cyan);
+  box-shadow: 0 0 0 9999px rgba(5, 8, 14, 0.84), 0 0 25px var(--phosphor-cyan);
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 1000000;
@@ -5019,16 +5015,17 @@ body.theme-bright .ai-narrative-text {
 @keyframes pulseSpotlight {
   0%, 100% {
     border-color: var(--phosphor-cyan);
-    box-shadow: 0 0 0 9999px rgba(5, 8, 14, 0.82), 0 0 20px rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 0 9999px rgba(5, 8, 14, 0.84), 0 0 20px rgba(0, 240, 255, 0.4);
   }
   50% {
     border-color: var(--phosphor-green);
-    box-shadow: 0 0 0 9999px rgba(5, 8, 14, 0.82), 0 0 32px rgba(0, 255, 136, 0.6);
+    box-shadow: 0 0 0 9999px rgba(5, 8, 14, 0.84), 0 0 32px rgba(0, 255, 136, 0.6);
   }
 }
 
 .tour-popover-card {
-  position: absolute;
+  position: fixed;
+  pointer-events: auto;
   width: 360px;
   max-width: calc(100vw - 32px);
   background: var(--metal-base, #1e2430);
