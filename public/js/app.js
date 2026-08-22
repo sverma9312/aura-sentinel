@@ -46,7 +46,8 @@
     selectedStock: null,
     watchlist: JSON.parse(localStorage.getItem('aura_sentinel_watchlist') || '[]'),
     countdownInterval: null,
-    isRefreshing: false
+    isRefreshing: false,
+    currentTourStep: 0
   };
 
   // Quick Catalyst Sets
@@ -225,7 +226,7 @@
     return false;
   }
 
-  async function loginUser(email, password) {
+  async function loginUser(email, password, isNewUser = false) {
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanPass = String(password || '').trim();
 
@@ -236,23 +237,22 @@
 
     let loggedInUser = null;
 
+    // 1. Try Server Login (MongoDB Central Database)
     try {
-      // 1. Try Server-Side Verification (MongoDB / Central DB)
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password: cleanPass })
       });
       const data = await res.json();
-
       if (data.success && data.user) {
         loggedInUser = data.user;
       }
     } catch (netErr) {
-      console.warn('[Auth] Server login fetch notice, checking local vault fallback:', netErr);
+      console.warn('[Auth] Server login failed, falling back to local store:', netErr);
     }
 
-    // 2. Fallback to LocalStorage user registry
+    // 2. Fallback to Local Storage Database
     if (!loggedInUser) {
       const users = getUsers();
       const localUser = users.find(u => {
@@ -298,8 +298,8 @@
       applyTheme(loggedInUser.theme || 'dark');
       updateHeaderUserUI(loggedInUser);
 
-      showAuthToast('ACCESS GRANTED. DECRYPTING TERMINAL...', 'success');
-      if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+      showAuthToast('ACCESS GRANTED. INITIALIZING SECURITY CLEARANCE...', 'success');
+      if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
 
       setTimeout(() => {
         const authModal = document.getElementById('auth-modal');
@@ -309,6 +309,12 @@
         }
         fetchAllIntelligence();
         startCountdownEngine();
+
+        // Launch Onboarding Tour ONLY for brand new user accounts that haven't seen it yet
+        const tourKey = 'aura_tour_completed_' + loggedInUser.email.toLowerCase();
+        if (isNewUser && !localStorage.getItem(tourKey)) {
+          setTimeout(() => startTutorialTour(), 700);
+        }
       }, 300);
 
       return true;
@@ -357,7 +363,7 @@
           localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
         }
 
-        return loginUser(cleanEmail, cleanPass);
+        return loginUser(cleanEmail, cleanPass, true);
       } else if (data.error) {
         showAuthToast(data.error.toUpperCase(), 'error');
         if (window.tactileAudio) window.tactileAudio.playRelaySnap();
@@ -375,7 +381,7 @@
 
     users.push(payload);
     localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
-    return loginUser(cleanEmail, cleanPass);
+    return loginUser(cleanEmail, cleanPass, true);
   }
 
   function logoutUser() {
@@ -2167,9 +2173,36 @@
       });
     }
 
+    // Restart Tutorial Tour from Settings Modal
+    const btnRestartTour = document.getElementById('btn-settings-restart-tour');
+    if (btnRestartTour) {
+      btnRestartTour.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+        if (settingsModal) settingsModal.classList.add('hidden');
+        setTimeout(() => startTutorialTour(), 300);
+      });
+    }
+
+    // Tutorial Tour Controls
+    const tourOverlay = document.getElementById('tutorial-tour-overlay');
+    const btnTourNext = document.getElementById('tour-btn-next');
+    const btnTourPrev = document.getElementById('tour-btn-prev');
+    const btnTourSkip = document.getElementById('tour-btn-skip');
+
+    if (btnTourNext) btnTourNext.addEventListener('click', nextTourStep);
+    if (btnTourPrev) btnTourPrev.addEventListener('click', prevTourStep);
+    if (btnTourSkip) btnTourSkip.addEventListener('click', endTutorialTour);
+
+    window.addEventListener('resize', () => {
+      if (tourOverlay && !tourOverlay.classList.contains('hidden')) {
+        renderTourStep();
+      }
+    });
+
     // Close modals on Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        if (tourOverlay && !tourOverlay.classList.contains('hidden')) endTutorialTour();
         if (settingsModal && !settingsModal.classList.contains('hidden')) settingsModal.classList.add('hidden');
         if (sourceModal && !sourceModal.classList.contains('hidden')) sourceModal.classList.add('hidden');
       }
@@ -2241,6 +2274,174 @@
 
     if (tabId === 'tab-admin') {
       fetchAdminUsers();
+    }
+  }
+
+  // =========================================================================
+  // INTERACTIVE ONBOARDING TUTORIAL TOUR
+  // =========================================================================
+  const TOUR_STEPS = [
+    {
+      targetId: 'region-controls',
+      title: '1. Dual Market Theaters',
+      desc: 'Seamlessly toggle between the India (NSE/BSE) and Global (US/World) macroeconomic intelligence models.',
+      icon: '🌐',
+      tab: 'tab-macro'
+    },
+    {
+      targetId: 'macro-gauge-title',
+      title: '2. Real-Time Macro Bias Gauge',
+      desc: 'Visualizes live multi-source news sentiment from -100 (Strong Headwind) to +100 (Strong Tailwind).',
+      icon: '🧭',
+      tab: 'tab-macro'
+    },
+    {
+      targetId: 'flip-clock',
+      title: '3. Hourly Auto-Sync Engine',
+      desc: 'Countdown timer to the next hourly news ingestion. Click "FORCE REFRESH" anytime to re-run on demand.',
+      icon: '⏱️',
+      tab: 'tab-macro'
+    },
+    {
+      targetId: 'search-input',
+      title: '4. Universal Stock Deep Dive',
+      desc: 'Search any NSE or US equity (e.g. HAL, RELIANCE, NVDA, AAPL) for instant catalyst evaluation and technical trajectories.',
+      icon: '🔍',
+      tab: 'tab-macro'
+    },
+    {
+      targetId: 'rocker-tabs',
+      title: '5. Navigation Rocker Switch Rack',
+      desc: 'Switch between Market Pulse, Top Stock Picks, Stock Analyzer, Breaking News Wire, and your Watchlist Vault.',
+      icon: '🎛️',
+      tab: 'tab-macro'
+    },
+    {
+      targetId: 'tab-btn-picks',
+      title: '6. Top Stock Picks & Catalyst Cards',
+      desc: 'Displays the Top 21 catalyst-driven stocks ranked by score with news-driven investment theses and risk matrices.',
+      icon: '⚡',
+      tab: 'tab-picks'
+    },
+    {
+      targetId: 'tab-btn-watchlist',
+      title: '7. Watchlist Vault & Cloud Sync',
+      desc: 'Pin your favorite stocks to your MongoDB Atlas Cloud Vault, synchronized permanently across all your devices.',
+      icon: '★',
+      tab: 'tab-picks'
+    }
+  ];
+
+  function startTutorialTour() {
+    state.currentTourStep = 0;
+    const tourOverlay = document.getElementById('tutorial-tour-overlay');
+    if (tourOverlay) {
+      tourOverlay.classList.remove('hidden');
+      renderTourStep();
+      if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+    }
+  }
+
+  function renderTourStep() {
+    const step = TOUR_STEPS[state.currentTourStep];
+    if (!step) return;
+
+    // Ensure corresponding tab is active
+    if (step.tab && state.currentTab !== step.tab) {
+      switchActiveTab(step.tab);
+    }
+
+    const badge = document.getElementById('tour-step-badge');
+    const icon = document.getElementById('tour-icon');
+    const title = document.getElementById('tour-title');
+    const desc = document.getElementById('tour-desc');
+    const dotsContainer = document.getElementById('tour-dots');
+    const btnPrev = document.getElementById('tour-btn-prev');
+    const btnNext = document.getElementById('tour-btn-next');
+    const spotlight = document.getElementById('tour-spotlight-box');
+    const popover = document.getElementById('tour-popover-card');
+
+    if (badge) badge.textContent = `STEP ${state.currentTourStep + 1} OF ${TOUR_STEPS.length}`;
+    if (icon) icon.textContent = step.icon;
+    if (title) title.textContent = step.title;
+    if (desc) desc.textContent = step.desc;
+
+    if (dotsContainer) {
+      dotsContainer.innerHTML = TOUR_STEPS.map((_, idx) => `
+        <div class="tour-dot ${idx === state.currentTourStep ? 'active' : ''}"></div>
+      `).join('');
+    }
+
+    if (btnPrev) {
+      btnPrev.classList.toggle('hidden', state.currentTourStep === 0);
+    }
+
+    if (btnNext) {
+      btnNext.textContent = state.currentTourStep === TOUR_STEPS.length - 1 ? 'FINISH 🏁' : 'NEXT ➔';
+    }
+
+    // Position spotlight & popover
+    setTimeout(() => {
+      let targetEl = document.getElementById(step.targetId);
+      if (!targetEl) targetEl = document.querySelector('.' + step.targetId);
+      if (!targetEl) targetEl = document.querySelector(`[data-tab="${step.tab}"]`);
+
+      if (targetEl && spotlight && popover) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const rect = targetEl.getBoundingClientRect();
+        const pad = 8;
+
+        const top = Math.max(0, rect.top + window.scrollY - pad);
+        const left = Math.max(0, rect.left + window.scrollX - pad);
+        const width = rect.width + pad * 2;
+        const height = rect.height + pad * 2;
+
+        spotlight.style.top = `${top}px`;
+        spotlight.style.left = `${left}px`;
+        spotlight.style.width = `${width}px`;
+        spotlight.style.height = `${height}px`;
+
+        // Position Popover card
+        const popWidth = Math.min(360, window.innerWidth - 32);
+        let popLeft = rect.left + (rect.width / 2) - (popWidth / 2);
+        popLeft = Math.max(16, Math.min(window.innerWidth - popWidth - 16, popLeft));
+
+        let popTop = top + height + 14;
+        if (popTop + 240 > window.innerHeight + window.scrollY) {
+          popTop = Math.max(16, top - 240);
+        }
+
+        popover.style.top = `${popTop}px`;
+        popover.style.left = `${popLeft}px`;
+      }
+    }, 120);
+  }
+
+  function nextTourStep() {
+    if (window.tactileAudio) window.tactileAudio.playDialTick();
+    if (state.currentTourStep < TOUR_STEPS.length - 1) {
+      state.currentTourStep++;
+      renderTourStep();
+    } else {
+      endTutorialTour();
+    }
+  }
+
+  function prevTourStep() {
+    if (window.tactileAudio) window.tactileAudio.playDialTick();
+    if (state.currentTourStep > 0) {
+      state.currentTourStep--;
+      renderTourStep();
+    }
+  }
+
+  function endTutorialTour() {
+    if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+    const tourOverlay = document.getElementById('tutorial-tour-overlay');
+    if (tourOverlay) tourOverlay.classList.add('hidden');
+
+    if (state.currentUser && state.currentUser.email) {
+      localStorage.setItem('aura_tour_completed_' + state.currentUser.email.toLowerCase(), 'true');
     }
   }
 

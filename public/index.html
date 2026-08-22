@@ -764,6 +764,23 @@
             </div>
           </div>
 
+          <!-- Section 4: Interactive Guided Tutorial -->
+          <div class="audit-section-block">
+            <div class="audit-sec-header">
+              <span class="sec-icon">🎓</span>
+              <h4>INTERACTIVE TERMINAL WALKTHROUGH</h4>
+            </div>
+            <div class="audit-card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <div style="font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--phosphor-cyan);">RESTART ONBOARDING TUTORIAL</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Take the step-by-step interactive spotlight tour of all terminal gauges and controls.</div>
+              </div>
+              <button type="button" id="btn-settings-restart-tour" class="btn-action-small" style="color: var(--phosphor-cyan); border-color: var(--phosphor-cyan); padding: 8px 14px;">
+                <span>🎓 START TOUR</span>
+              </button>
+            </div>
+          </div>
+
         </div>
 
         <div class="modal-footer-bezel">
@@ -936,6 +953,40 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- INTERACTIVE ONBOARDING TUTORIAL TOUR (First-Time Users Only)              -->
+    <!-- ========================================================================= -->
+    <div id="tutorial-tour-overlay" class="tutorial-tour-overlay hidden">
+      <!-- Dynamic SVG Cutout Mask / Spotlight Box -->
+      <div id="tour-spotlight-box" class="tour-spotlight-box"></div>
+
+      <!-- Popover Tooltip Card -->
+      <div id="tour-popover-card" class="tour-popover-card">
+        <div class="tour-header">
+          <div class="tour-step-badge" id="tour-step-badge">STEP 1 OF 7</div>
+          <button type="button" class="tour-btn-skip" id="tour-btn-skip" title="Exit tutorial">✕ SKIP TOUR</button>
+        </div>
+        
+        <div class="tour-body">
+          <div class="tour-icon-bezel" id="tour-icon">🌐</div>
+          <div class="tour-text-content">
+            <h4 class="tour-title" id="tour-title">Market Theater Selector</h4>
+            <p class="tour-desc" id="tour-desc">Toggle between the India (NSE/BSE) and Global (US/World) macroeconomic intelligence models.</p>
+          </div>
+        </div>
+
+        <div class="tour-footer">
+          <div class="tour-dots" id="tour-dots">
+            <!-- Dynamic dots -->
+          </div>
+          <div class="tour-nav-buttons">
+            <button type="button" class="tour-btn-nav secondary hidden" id="tour-btn-prev">⬅ PREV</button>
+            <button type="button" class="tour-btn-nav primary" id="tour-btn-next">NEXT ➔</button>
+          </div>
+        </div>
       </div>
     </div>
 
