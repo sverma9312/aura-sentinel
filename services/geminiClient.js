@@ -31,7 +31,7 @@ function callGeminiApi(prompt) {
       ],
       generationConfig: {
         temperature: 0.4,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048,
         topP: 0.9
       }
     });
