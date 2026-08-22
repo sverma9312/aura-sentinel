@@ -273,23 +273,23 @@ class MacroEngine {
       const dynamicDiscovered = discoverActiveTickersFromNews(processedArticles, reg);
       const dynamicTickers = dynamicDiscovered.map(d => d.ticker);
 
-      // Core universe base candidates
+      // Core universe base candidates (21 Tickers per Theater)
       const baseUniverse = reg === 'india' 
         ? [
-            'HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS', 'LT.NS',
-            'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS',
-            'TATAMOTORS.NS', 'IREDA.NS', 'NTPC.NS', 'BHARTIARTL.NS', 'ITC.NS',
-            'SUNPHARMA.NS', 'ADANIPORTS.NS', 'BAJFINANCE.NS', 'ONGC.NS', 'KOTAKBANK.NS'
+            'HAL.NS', 'BEL.NS', 'MAZDOCK.NS', 'RELIANCE.NS', 'TATAPOWER.NS',
+            'LT.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS',
+            'SBIN.NS', 'TATAMOTORS.NS', 'IREDA.NS', 'NTPC.NS', 'BHARTIARTL.NS',
+            'ITC.NS', 'SUNPHARMA.NS', 'ADANIPORTS.NS', 'BAJFINANCE.NS', 'ONGC.NS', 'KOTAKBANK.NS'
           ]
         : [
             'NVDA', 'TSM', 'ASML', 'LMT', 'RTX',
             'PLTR', 'MSFT', 'AAPL', 'GOOGL', 'AMZN',
-            'META', 'AMD', 'QCOM', 'CCJ', 'CEG',
-            'XOM', 'NVO', 'LLY', 'BA', 'CAT'
+            'META', 'AMD', 'QCOM', 'ARM', 'CCJ',
+            'CEG', 'XOM', 'NVO', 'LLY', 'BA', 'CAT'
           ];
 
       // Merge dynamic news-discovered stocks first, followed by base universe (deduplicated)
-      const candidateTickers = [...new Set([...dynamicTickers, ...baseUniverse])].slice(0, 30);
+      const candidateTickers = [...new Set([...dynamicTickers, ...baseUniverse])].slice(0, 32);
       console.log(`[MacroEngine] Evaluating ${candidateTickers.length} dynamic candidate equities (${dynamicTickers.length} discovered from live news)...`);
 
       const stockOpportunities = [];
@@ -349,9 +349,9 @@ class MacroEngine {
         });
       }
 
-      // Strictly rank from highest catalyst score down to lowest and slice Top 20
+      // Strictly rank from highest catalyst score down to lowest and slice Top 21 (7 rows x 3 columns)
       stockOpportunities.sort((a, b) => (b.catalystScore || 0) - (a.catalystScore || 0));
-      const top20Opportunities = stockOpportunities.slice(0, 20);
+      const top21Opportunities = stockOpportunities.slice(0, 21);
 
       // 5. Generate AI-Powered Macro Narrative via Gemini
       console.log(`[MacroEngine] Requesting Gemini AI narrative for ${reg.toUpperCase()}...`);
@@ -376,7 +376,7 @@ class MacroEngine {
           aiNarrative,
           sectors: sectorAnalysis
         },
-        stockOpportunities: top20Opportunities,
+        stockOpportunities: top21Opportunities,
         incidentWire: processedArticles.slice(0, 50).map(a => ({
           title: a.title,
           source: a.source,

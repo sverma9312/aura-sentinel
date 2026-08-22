@@ -136,10 +136,12 @@ const KNOWN_TICKERS = {
   'LLY': { name: 'Eli Lilly and Company', sector: 'healthcare', subsector: 'Metabolic & Therapeutics', region: 'global', keywords: ['eli lilly', 'lly', 'mounjaro', 'zepbound', 'glp-1 pipeline'] },
   'BA': { name: 'Boeing Company', sector: 'industrials', subsector: 'Commercial & Defense Aviation', region: 'global', keywords: ['boeing', 'ba', '737 max', 'faa', 'starliner'] },
   'CAT': { name: 'Caterpillar Inc.', sector: 'industrials', subsector: 'Global Heavy Machinery & Infra', region: 'global', keywords: ['caterpillar', 'cat', 'construction machinery', 'mining equipment', 'infrastructure capex'] },
+  'ARM': { name: 'Arm Holdings plc', sector: 'technology', subsector: 'Semiconductor IP & AI Architecture', region: 'global', keywords: ['arm holdings', 'arm architecture', 'rene haas', 'v9 architecture', 'edge compute'] },
 
-  // India Tickers (Top 20 NSE)
+  // India Tickers (Top 21 NSE)
   'HAL.NS': { name: 'Hindustan Aeronautics Ltd', sector: 'defense_india', subsector: 'Defense Aerospace & Fighter Jets', region: 'india', keywords: ['hindustan aeronautics', 'hal', 'tejas mk1a', 'lch prachand', 'su-30mki', 'ge f404 engine'] },
   'BEL.NS': { name: 'Bharat Electronics Ltd', sector: 'defense_india', subsector: 'Defense Radar & Avionics', region: 'india', keywords: ['bharat electronics', 'bel', 'radar', 'electronic warfare', 'defense avionics', 'qrsam'] },
+  'MAZDOCK.NS': { name: 'Mazagon Dock Shipbuilders', sector: 'defense_india', subsector: 'Defense Warships & Submarines', region: 'india', keywords: ['mazagon dock', 'mazdock', 'scorpene submarine', 'destroyer warship', 'defense shipbuilding'] },
   'RELIANCE.NS': { name: 'Reliance Industries Ltd', sector: 'energy_india', subsector: 'Energy, Retail & Telecom', region: 'india', keywords: ['reliance', 'mukesh ambani', 'jio', 'reliance retail', 'jamnagar refinery', 'green energy gigafactory'] },
   'TATAPOWER.NS': { name: 'Tata Power Co Ltd', sector: 'energy_india', subsector: 'Renewables & Power Distribution', region: 'india', keywords: ['tata power', 'solar rooftop', 'ev charging network', 'renewable capacity', 'transmission line'] },
   'LT.NS': { name: 'Larsen & Toubro Ltd', sector: 'industrials_india', subsector: 'Mega EPC & Defense Infra', region: 'india', keywords: ['larsen & toubro', 'l&t', 'subramanian sarma', 'high speed rail', 'middle east epc', 'defense submarine'] },
