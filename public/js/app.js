@@ -347,11 +347,11 @@
     el.btnRegGlobal.classList.toggle('active', !isIndia);
     el.ledRegGlobal.classList.toggle('active', !isIndia);
 
-    el.macroGaugeTitle.textContent = isIndia ? 'INDIA MACRO BIAS' : 'GLOBAL MACRO BIAS';
-    el.macroRadarHeading.textContent = isIndia ? 'INDIA BROAD-LEVEL MARKET RADAR' : 'GLOBAL BROAD-LEVEL MARKET RADAR';
+    el.macroGaugeTitle.textContent = isIndia ? 'INDIA MARKET MOOD' : 'GLOBAL MARKET MOOD';
+    el.macroRadarHeading.textContent = isIndia ? 'INDIA MARKET PULSE & SECTOR OUTLOOK' : 'GLOBAL MARKET PULSE & SECTOR OUTLOOK';
     el.macroRadarSubtext.textContent = isIndia 
-      ? 'Automated synthesis of daily Indian macroeconomic affairs, RBI monetary decisions, Union Budget outlays, PLI schemes, and sector capex flows.'
-      : 'Automated synthesis of daily worldwide affairs, geopolitical incidents, central bank policies, and international trade flows.';
+      ? 'Live macroeconomic overview, RBI policy updates, budget outlays, and sector momentum flows synthesized into clear investment themes.'
+      : 'Live global macroeconomic overview, central bank policy updates, international trade flows, and sector momentum.';
 
     el.searchInput.placeholder = isIndia
       ? 'SEARCH INDIAN EQUITIES (e.g. HAL, RELIANCE, TCS, TATAPOWER, LT, HDFCBANK)...'
@@ -556,11 +556,11 @@
     el.macroNeedle.style.transform = `rotate(${angle}deg)`;
 
     const sign = score > 0 ? '+' : '';
-    let label = 'NEUTRAL';
-    if (score >= 18) label = 'STRONG TAILWIND';
-    else if (score >= 6) label = 'TAILWIND';
-    else if (score <= -18) label = 'STRONG HEADWIND';
-    else if (score <= -6) label = 'HEADWIND';
+    let label = 'BALANCED';
+    if (score >= 18) label = 'STRONG BULLISH';
+    else if (score >= 6) label = 'POSITIVE MOOD';
+    else if (score <= -18) label = 'DEFENSIVE MOOD';
+    else if (score <= -6) label = 'CAUTIOUS';
 
     el.globalScoreLcd.textContent = `${sign}${score} ${label}`;
     if (score >= 0) {
@@ -575,7 +575,14 @@
     }
 
     el.statArticles.textContent = state.macroOverview.totalArticlesAnalyzed || '--';
-    el.statStance.textContent = state.macroOverview.globalStance || '--';
+    
+    let stanceFriendly = state.macroOverview.globalStance || '--';
+    if (stanceFriendly === 'HIGH EXPANSION') stanceFriendly = 'STRONG BULLISH (EXPANSION)';
+    else if (stanceFriendly === 'MODERATE EXPANSION') stanceFriendly = 'MODERATE GROWTH (BULLISH)';
+    else if (stanceFriendly === 'DEFENSIVE') stanceFriendly = 'CAUTIOUS (DEFENSIVE)';
+    else if (stanceFriendly === 'NEUTRAL') stanceFriendly = 'BALANCED (NEUTRAL)';
+    
+    el.statStance.textContent = stanceFriendly;
     if (state.lastUpdated) {
       const dt = new Date(state.lastUpdated);
       el.statUpdated.textContent = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

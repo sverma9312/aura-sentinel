@@ -147,26 +147,26 @@
 
       <!-- PHYSICAL ROCKER NAVIGATION SELECTOR -->
       <nav class="rocker-selector-bar">
-        <button class="rocker-tab active" data-tab="tab-macro">
+        <button class="rocker-tab active tab-pulse" data-tab="tab-macro">
           <span class="tab-icon">🧭</span>
-          <span class="tab-title">MACRO RADAR & SECTORS</span>
+          <span class="tab-title">MARKET PULSE & SECTORS</span>
         </button>
-        <button class="rocker-tab" data-tab="tab-stocks">
+        <button class="rocker-tab tab-stocks" data-tab="tab-stocks">
           <span class="tab-icon">⚡</span>
-          <span class="tab-title">STOCK OPPORTUNITIES</span>
+          <span class="tab-title">TOP STOCK PICKS</span>
         </button>
-        <button class="rocker-tab" data-tab="tab-deepdive">
+        <button class="rocker-tab tab-analyzer" data-tab="tab-deepdive">
           <span class="tab-icon">🔬</span>
-          <span class="tab-title">STOCK DEEP DIVE</span>
+          <span class="tab-title">STOCK ANALYZER</span>
         </button>
-        <button class="rocker-tab" data-tab="tab-wire">
+        <button class="rocker-tab tab-wire" data-tab="tab-wire">
           <span class="tab-icon">📡</span>
-          <span class="tab-title">LIVE INCIDENT WIRE</span>
+          <span class="tab-title">LIVE NEWS FEED</span>
           <span class="tab-counter" id="wire-counter">0</span>
         </button>
-        <button class="rocker-tab" data-tab="tab-watchlist">
+        <button class="rocker-tab tab-watchlist" data-tab="tab-watchlist">
           <span class="tab-icon">⭐</span>
-          <span class="tab-title">WATCHLIST VAULT</span>
+          <span class="tab-title">MY WATCHLIST</span>
           <span class="tab-counter" id="watchlist-counter">0</span>
         </button>
       </nav>
@@ -175,17 +175,17 @@
     <!-- MAIN CHASSIS VIEWPORTS -->
     <main class="instrument-deck">
       
-      <!-- TAB 1: MACRO RADAR & SECTORS -->
+      <!-- TAB 1: MARKET PULSE & SECTORS -->
       <section id="tab-macro" class="tab-content active">
         <div class="section-banner">
           <div class="banner-title-group">
-            <h1 class="section-heading" id="macro-radar-heading">INDIA BROAD-LEVEL MARKET RADAR</h1>
-            <p class="section-subtext" id="macro-radar-subtext">Automated synthesis of daily Indian macroeconomic affairs, RBI monetary decisions, Union Budget outlays, PLI schemes, and sector capex flows.</p>
+            <h1 class="section-heading" id="macro-radar-heading">INDIA MARKET PULSE & SECTOR OUTLOOK</h1>
+            <p class="section-subtext" id="macro-radar-subtext">Live macroeconomic overview, RBI policy updates, budget outlays, and sector momentum flows synthesized into clear investment themes.</p>
           </div>
           <div class="banner-stats-tray">
-            <div class="stat-pill"><span class="pill-label">ARTICLES ANALYZED:</span> <span class="pill-val" id="stat-articles">--</span></div>
-            <div class="stat-pill"><span class="pill-label">MACRO STANCE:</span> <span class="pill-val highlight" id="stat-stance">--</span></div>
-            <div class="stat-pill"><span class="pill-label">LAST INGEST:</span> <span class="pill-val" id="stat-updated">--</span></div>
+            <div class="stat-pill"><span class="pill-label">NEWS STORIES SCANNED:</span> <span class="pill-val" id="stat-articles">--</span></div>
+            <div class="stat-pill"><span class="pill-label">MARKET OUTLOOK:</span> <span class="pill-val highlight" id="stat-stance">--</span></div>
+            <div class="stat-pill"><span class="pill-label">LAST UPDATED:</span> <span class="pill-val" id="stat-updated">--</span></div>
           </div>
         </div>
 
@@ -202,10 +202,11 @@
         <div class="sectors-grid" id="sectors-container">
           <div class="loading-plate">
             <div class="spinner"></div>
-            <span>ANALYZING MACRO FEEDS...</span>
+            <span>ANALYZING SECTOR FEEDS...</span>
           </div>
         </div>
       </section>
+
 
 
       <!-- TAB 2: SPECIFIC STOCK OPPORTUNITIES -->

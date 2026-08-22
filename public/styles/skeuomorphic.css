@@ -876,11 +876,11 @@ body {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 8px;
-  background: #0f1216;
+  background: #0b0d11;
   padding: 6px;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: var(--shadow-bevel-in);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .rocker-tab {
@@ -889,51 +889,202 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(180deg, #262c36 0%, #191c22 100%);
-  border: 1px solid #333a46;
-  border-radius: 5px;
-  padding: 10px 12px;
-  color: var(--text-muted);
+  background: linear-gradient(180deg, #20252e 0%, #15181e 100%);
+  border: 1px solid #2d3542;
+  border-radius: 7px;
+  padding: 11px 14px;
+  color: #94a3b8;
   font-family: var(--font-heading);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.8px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-  transition: all 0.15s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
 }
 
-.rocker-tab:hover {
-  color: #ffffff;
-  background: linear-gradient(180deg, #2e3542 0%, #1f232b 100%);
+.rocker-tab .tab-icon {
+  font-size: 14px;
+  transition: transform 0.2s ease;
 }
 
-.rocker-tab.active {
-  background: linear-gradient(180deg, #14171d 0%, #1b2028 100%);
-  color: var(--phosphor-green);
+.rocker-tab:hover .tab-icon {
+  transform: scale(1.15);
+}
+
+/* Tab 1: Market Pulse & Sectors (Emerald / Mint) */
+.rocker-tab.tab-pulse:hover {
+  background: linear-gradient(180deg, #1b332b 0%, #13241e 100%);
   border-color: rgba(0, 255, 136, 0.4);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 255, 136, 0.15);
+  color: #a7f3d0;
 }
-
-.rocker-tab.active::after {
+.rocker-tab.tab-pulse.active {
+  background: linear-gradient(180deg, #0e2920 0%, #173f32 100%);
+  color: #00ff88;
+  border-color: #00ff88;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 14px rgba(0, 255, 136, 0.25);
+}
+.rocker-tab.tab-pulse.active::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 20%;
-  right: 20%;
-  height: 2px;
-  background: var(--phosphor-green);
-  box-shadow: 0 0 6px var(--phosphor-green);
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: #00ff88;
+  box-shadow: 0 0 8px #00ff88;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Tab 2: Top Stock Picks (Electric Blue / Cyan) */
+.rocker-tab.tab-stocks:hover {
+  background: linear-gradient(180deg, #16324f 0%, #102135 100%);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #bae6fd;
+}
+.rocker-tab.tab-stocks.active {
+  background: linear-gradient(180deg, #0c2540 0%, #153c66 100%);
+  color: #38bdf8;
+  border-color: #38bdf8;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 14px rgba(56, 189, 248, 0.25);
+}
+.rocker-tab.tab-stocks.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Tab 3: Stock Analyzer (Violet / Amethyst) */
+.rocker-tab.tab-analyzer:hover {
+  background: linear-gradient(180deg, #321d4d 0%, #1e1130 100%);
+  border-color: rgba(192, 132, 252, 0.4);
+  color: #e9d5ff;
+}
+.rocker-tab.tab-analyzer.active {
+  background: linear-gradient(180deg, #24113a 0%, #3e1b66 100%);
+  color: #c084fc;
+  border-color: #c084fc;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 14px rgba(192, 132, 252, 0.25);
+}
+.rocker-tab.tab-analyzer.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: #c084fc;
+  box-shadow: 0 0 8px #c084fc;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Tab 4: Live News Feed (Orange / Amber) */
+.rocker-tab.tab-wire:hover {
+  background: linear-gradient(180deg, #3d2912 0%, #261909 100%);
+  border-color: rgba(251, 146, 60, 0.4);
+  color: #fed7aa;
+}
+.rocker-tab.tab-wire.active {
+  background: linear-gradient(180deg, #2c1a06 0%, #4d2b09 100%);
+  color: #fb923c;
+  border-color: #fb923c;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 14px rgba(251, 146, 60, 0.25);
+}
+.rocker-tab.tab-wire.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: #fb923c;
+  box-shadow: 0 0 8px #fb923c;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Tab 5: My Watchlist (Gold / Sunburst) */
+.rocker-tab.tab-watchlist:hover {
+  background: linear-gradient(180deg, #3d340f 0%, #262007 100%);
+  border-color: rgba(250, 204, 21, 0.4);
+  color: #fef08a;
+}
+.rocker-tab.tab-watchlist.active {
+  background: linear-gradient(180deg, #2b2406 0%, #4a3e09 100%);
+  color: #facc15;
+  border-color: #facc15;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 14px rgba(250, 204, 21, 0.25);
+}
+.rocker-tab.tab-watchlist.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: #facc15;
+  box-shadow: 0 0 8px #facc15;
+  border-radius: 3px 3px 0 0;
 }
 
 .tab-counter {
   font-family: var(--font-mono);
   font-size: 10px;
+  font-weight: 700;
   background: #090b0e;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 10px;
-  color: var(--phosphor-amber);
-  border: 1px solid rgba(255, 170, 0, 0.3);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.35);
+}
+
+/* Bright Theme Overrides for Tabs */
+body.theme-bright .rocker-selector-bar {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+body.theme-bright .rocker-tab {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  border-color: #cbd5e1;
+  color: #475569;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+body.theme-bright .rocker-tab.tab-pulse.active {
+  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
+  color: #047857;
+  border-color: #10b981;
+}
+
+body.theme-bright .rocker-tab.tab-stocks.active {
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0369a1;
+  border-color: #0284c7;
+}
+
+body.theme-bright .rocker-tab.tab-analyzer.active {
+  background: linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%);
+  color: #6b21a8;
+  border-color: #9333ea;
+}
+
+body.theme-bright .rocker-tab.tab-wire.active {
+  background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+  color: #c2410c;
+  border-color: #ea580c;
+}
+
+body.theme-bright .rocker-tab.tab-watchlist.active {
+  background: linear-gradient(180deg, #fefce8 0%, #fef9c3 100%);
+  color: #a16207;
+  border-color: #ca8a04;
 }
 
 /* ==========================================================================
