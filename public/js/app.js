@@ -109,6 +109,12 @@
     deepdiveEmptyState: document.getElementById('deepdive-empty-state'),
     deepdiveActivePanel: document.getElementById('deepdive-active-panel'),
     deepdivePopularSuggestions: document.getElementById('deepdive-popular-suggestions'),
+    tabStockSearchInput: document.getElementById('tab-stock-search-input'),
+    btnTabSearchClear: document.getElementById('btn-tab-search-clear'),
+    btnTabSearchSubmit: document.getElementById('btn-tab-search-submit'),
+    tabSearchAutocomplete: document.getElementById('tab-search-autocomplete'),
+    activePanelSearchInput: document.getElementById('active-panel-search-input'),
+    btnActivePanelSearch: document.getElementById('btn-active-panel-search'),
     ddSymbol: document.getElementById('dd-symbol'),
     ddName: document.getElementById('dd-name'),
     ddSector: document.getElementById('dd-sector'),
@@ -1304,6 +1310,67 @@
       }
     });
 
+    // Dedicated In-Tab Stock Analyzer Search
+    if (el.tabStockSearchInput) {
+      let tabSearchDebounce = null;
+      el.tabStockSearchInput.addEventListener('input', (e) => {
+        const q = e.target.value.trim();
+        if (el.btnTabSearchClear) el.btnTabSearchClear.classList.toggle('hidden', q.length === 0);
+
+        clearTimeout(tabSearchDebounce);
+        if (q.length >= 2) {
+          tabSearchDebounce = setTimeout(() => handleSearchAutocomplete(q, el.tabSearchAutocomplete, el.tabStockSearchInput), 300);
+        } else if (el.tabSearchAutocomplete) {
+          el.tabSearchAutocomplete.classList.add('hidden');
+        }
+      });
+
+      if (el.btnTabSearchClear) {
+        el.btnTabSearchClear.addEventListener('click', () => {
+          el.tabStockSearchInput.value = '';
+          el.btnTabSearchClear.classList.add('hidden');
+          if (el.tabSearchAutocomplete) el.tabSearchAutocomplete.classList.add('hidden');
+          el.tabStockSearchInput.focus();
+        });
+      }
+
+      const executeTabSearch = () => {
+        const q = el.tabStockSearchInput.value.trim();
+        if (q) {
+          if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+          if (el.tabSearchAutocomplete) el.tabSearchAutocomplete.classList.add('hidden');
+          loadStockDeepDive(q);
+        }
+      };
+
+      if (el.btnTabSearchSubmit) {
+        el.btnTabSearchSubmit.addEventListener('click', executeTabSearch);
+      }
+
+      el.tabStockSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          executeTabSearch();
+        }
+      });
+    }
+
+    // Active Panel Search Bar
+    if (el.activePanelSearchInput && el.btnActivePanelSearch) {
+      const executeActiveSearch = () => {
+        const q = el.activePanelSearchInput.value.trim();
+        if (q) {
+          if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+          el.activePanelSearchInput.value = '';
+          loadStockDeepDive(q);
+        }
+      };
+
+      el.btnActivePanelSearch.addEventListener('click', executeActiveSearch);
+      el.activePanelSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') executeActiveSearch();
+      });
+    }
+
     // Deep dive watchlist toggle
     el.ddWatchlistBtn.addEventListener('click', () => {
       if (state.selectedStock) {
@@ -1506,18 +1573,19 @@
     });
   }
 
-  async function handleSearchAutocomplete(query) {
+  async function handleSearchAutocomplete(query, targetDropdown = el.autocompleteDropdown, targetInput = el.searchInput) {
+    if (!targetDropdown) return;
     try {
       const reg = state.currentRegion;
       const res = await fetch(`/api/stock-search?q=${encodeURIComponent(query)}&region=${reg}`);
       const json = await res.json();
 
       if (!json.success || !json.results || json.results.length === 0) {
-        el.autocompleteDropdown.classList.add('hidden');
+        targetDropdown.classList.add('hidden');
         return;
       }
 
-      el.autocompleteDropdown.innerHTML = '';
+      targetDropdown.innerHTML = '';
       json.results.slice(0, 7).forEach(item => {
         const row = document.createElement('div');
         row.className = 'autocomplete-item';
@@ -1530,14 +1598,14 @@
         `;
         row.addEventListener('click', () => {
           if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
-          el.searchInput.value = item.symbol;
-          el.autocompleteDropdown.classList.add('hidden');
+          if (targetInput) targetInput.value = item.symbol;
+          targetDropdown.classList.add('hidden');
           loadStockDeepDive(item.symbol);
         });
-        el.autocompleteDropdown.appendChild(row);
+        targetDropdown.appendChild(row);
       });
 
-      el.autocompleteDropdown.classList.remove('hidden');
+      targetDropdown.classList.remove('hidden');
     } catch (err) {
       console.warn('Search autocomplete error:', err);
     }

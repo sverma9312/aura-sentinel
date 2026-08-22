@@ -233,21 +233,46 @@
         </div>
       </section>
 
-      <!-- TAB 3: STOCK DEEP DIVE & OSCILLOSCOPE -->
+      <!-- TAB 3: STOCK ANALYZER & OSCILLOSCOPE -->
       <section id="tab-deepdive" class="tab-content">
         <div id="deepdive-container">
-          <!-- Initial Prompt -->
+          <!-- Initial Prompt & Dedicated Stock Search -->
           <div class="deepdive-search-prompt" id="deepdive-empty-state">
             <div class="prompt-housing">
               <div class="radar-scope-graphic"></div>
-              <h3>SELECT OR SEARCH ANY STOCK FOR FULL DEEP DIVE</h3>
-              <p>Type any stock name or symbol (e.g. <code>HAL</code>, <code>RELIANCE</code>, <code>TCS</code>, <code>TATAPOWER</code>, <code>NVDA</code>) in the search box above or click on any catalyst card.</p>
+              <h3>ANALYZE ANY STOCK OR COMPANY</h3>
+              <p>Type any stock ticker or company name (NSE/BSE or Global) to generate real-time sentiment analysis, live price trajectories, news catalysts & risk factors.</p>
+              
+              <!-- Prominent In-Tab Stock Search Bar -->
+              <div class="tab-search-housing">
+                <div class="tab-search-bar-wrap">
+                  <span class="tab-search-icon">🔍</span>
+                  <input type="text" id="tab-stock-search-input" class="tab-search-input" placeholder="Type stock name or ticker (e.g. INFY, ZOMATO, RELIANCE, NVDA, TSLA, TCS)..." autocomplete="off">
+                  <button id="btn-tab-search-clear" class="btn-tab-clear hidden" title="Clear">✕</button>
+                  <div id="tab-search-autocomplete" class="tab-autocomplete-dropdown hidden"></div>
+                </div>
+                <button id="btn-tab-search-submit" class="btn-tab-analyze">ANALYZE STOCK 🔬</button>
+              </div>
+
+              <div class="quick-suggest-divider">
+                <span>OR CHOOSE FROM POPULAR EQUITIES:</span>
+              </div>
               <div class="popular-suggestions" id="deepdive-popular-suggestions"></div>
             </div>
           </div>
 
           <!-- Deep Dive Active View -->
           <div class="deepdive-instrument-panel hidden" id="deepdive-active-panel">
+            
+            <!-- Quick Switch Search Bar inside Active Panel -->
+            <div class="active-panel-search-bar">
+              <span class="search-bar-lbl">ANALYZE ANOTHER STOCK:</span>
+              <div class="active-search-input-wrap">
+                <input type="text" id="active-panel-search-input" placeholder="Enter symbol or company (e.g. INFY, TATA POWER, NVDA)..." autocomplete="off">
+                <button id="btn-active-panel-search" class="btn-active-analyze">ANALYZE</button>
+              </div>
+            </div>
+
             <div class="deepdive-header-bezel">
               <div class="ticker-identity-block">
                 <div class="ticker-symbol-display" id="dd-symbol">HAL.NS</div>
