@@ -1261,13 +1261,15 @@
       fetchAllIntelligence(true);
     });
 
-    // Audio Haptic Switch
-    el.audioToggle.addEventListener('change', (e) => {
-      if (window.tactileAudio) {
-        window.tactileAudio.enabled = e.target.checked;
-        if (e.target.checked) window.tactileAudio.playDialTick();
-      }
-    });
+    // Audio Haptic Switch (if present)
+    if (el.audioToggle) {
+      el.audioToggle.addEventListener('change', (e) => {
+        if (window.tactileAudio) {
+          window.tactileAudio.enabled = e.target.checked;
+          if (e.target.checked) window.tactileAudio.playDialTick();
+        }
+      });
+    }
 
     // Search Input & Autocomplete
     let searchDebounce = null;
