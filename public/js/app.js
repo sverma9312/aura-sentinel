@@ -329,12 +329,15 @@
       return false;
     }
 
+    const users = getUsers();
+    const existing = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+
     const payload = {
       name: name.trim() || 'Macro Analyst',
       org: org.trim() || 'Aura Capital Markets',
       email: cleanEmail,
       password: cleanPass,
-      role: 'TIER-1 MACRO ANALYST',
+      role: 'ANALYST',
       theme: state.currentTheme || 'dark',
       watchlist: state.watchlist || []
     };
@@ -349,29 +352,30 @@
       const data = await res.json();
 
       if (data.success && data.user) {
-        // Also cache locally
-        const users = getUsers();
-        const idx = users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
-        if (idx !== -1) users[idx] = { ...users[idx], ...payload };
-        else users.push(payload);
-        localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
+        // Cache newly registered user locally
+        if (!existing) {
+          users.push(payload);
+          localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
+        }
 
         return loginUser(cleanEmail, cleanPass);
       } else if (data.error) {
         showAuthToast(data.error.toUpperCase(), 'error');
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
         return false;
       }
     } catch (netErr) {
-      console.warn('[Auth] Server register failed, saving locally:', netErr);
+      console.warn('[Auth] Server register error, checking local registry:', netErr);
     }
 
-    // LocalStorage fallback
-    const users = getUsers();
-    const idx = users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
-    if (idx !== -1) users[idx] = { ...users[idx], ...payload };
-    else users.push(payload);
-    localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
+    if (existing) {
+      showAuthToast('AN ACCOUNT WITH THIS EMAIL ALREADY EXISTS. PLEASE LOG IN.', 'error');
+      if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+      return false;
+    }
 
+    users.push(payload);
+    localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
     return loginUser(cleanEmail, cleanPass);
   }
 

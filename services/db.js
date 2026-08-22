@@ -128,12 +128,18 @@ async function getAllUsers() {
 /**
  * Create or register a new user
  */
-async function registerUser(userData) {
+async function registerUser(userData, allowOverwrite = false) {
   const cleanEmail = (userData.email || '').trim().toLowerCase();
   const cleanPass = String(userData.password || '').trim();
 
   if (!cleanEmail || !cleanPass) {
     throw new Error('Email and passcode are required.');
+  }
+
+  // Check if user already exists
+  const existingUser = await findUserByEmail(cleanEmail);
+  if (existingUser && !allowOverwrite) {
+    throw new Error('AN ACCOUNT WITH THIS EMAIL ALREADY EXISTS. PLEASE LOG IN.');
   }
 
   const role = userData.role === 'ADMIN' ? 'ADMIN' : 'ANALYST';
@@ -147,7 +153,7 @@ async function registerUser(userData) {
     theme: userData.theme || 'dark',
     watchlist: userData.watchlist || ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS'],
     updatedAt: new Date().toISOString(),
-    createdAt: userData.createdAt || new Date().toISOString()
+    createdAt: (existingUser && existingUser.createdAt) ? existingUser.createdAt : new Date().toISOString()
   };
 
   if (isConnected && db) {
@@ -160,12 +166,16 @@ async function registerUser(userData) {
       return userDoc;
     } catch (e) {
       console.error('[DB] MongoDB Register Error:', e.message);
+      throw e;
     }
   }
 
   // Fallback in-memory
   const idx = fallbackStore.users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
   if (idx >= 0) {
+    if (!allowOverwrite) {
+      throw new Error('AN ACCOUNT WITH THIS EMAIL ALREADY EXISTS. PLEASE LOG IN.');
+    }
     fallbackStore.users[idx] = { ...fallbackStore.users[idx], ...userDoc };
   } else {
     fallbackStore.users.push(userDoc);
