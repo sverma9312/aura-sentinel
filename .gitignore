@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Environment secrets — NEVER commit your API key!
+.env
+
+# App Engine config (contains API key)
+app.yaml
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db

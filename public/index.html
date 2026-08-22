@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURA SENTINEL // Skeuomorphic Macro & Stock Intelligence Terminal</title>
+  <meta name="description" content="Event-driven financial intelligence terminal synthesizing daily worldwide & Indian macro affairs, breaking incidents, and news sentiment into actionable market sector themes and stock opportunities.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles/skeuomorphic.css">
+</head>
+<body class="skeuo-theme">
+  <div id="app-container" class="terminal-shell">
+    
+    <!-- TOP BEZEL & MACHINE HEADER -->
+    <header class="master-bezel">
+      <div class="bezel-screw top-left"></div>
+      <div class="bezel-screw top-right"></div>
+      <div class="bezel-screw bottom-left"></div>
+      <div class="bezel-screw bottom-right"></div>
+
+      <!-- Top Metal Plate / Nameplate -->
+      <div class="chassis-header">
+        <div class="branding-cluster">
+          <div class="recessed-badge">
+            <div class="led-indicator led-green pulse" id="master-led" title="System Operational & Synced"></div>
+            <span class="badge-text">AURA SENTINEL</span>
+          </div>
+          <div class="version-tag">SYSTEM MK-V // MULTI-MARKET RADAR</div>
+        </div>
+
+        <!-- MARKET REGION SELECTOR (INDIA vs GLOBAL) -->
+        <div class="market-region-deck">
+          <div class="region-deck-title">MARKET THEATER</div>
+          <div class="region-rocker-bay">
+            <button class="region-rocker-btn active" id="btn-reg-india" data-region="india">
+              <span class="region-flag">🇮🇳</span>
+              <span class="region-label">INDIA (NSE/BSE)</span>
+              <div class="region-led active" id="led-reg-india"></div>
+            </button>
+            <button class="region-rocker-btn" id="btn-reg-global" data-region="global">
+              <span class="region-flag">🌐</span>
+              <span class="region-label">GLOBAL (US/WORLD)</span>
+              <div class="region-led" id="led-reg-global"></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Global Sentiment Gauge Meter -->
+        <div class="macro-gauge-module" title="News Sentiment Index (-100 to +100)">
+          <div class="gauge-label" id="macro-gauge-title">INDIA MACRO BIAS</div>
+          <div class="analog-meter-container">
+            <div class="meter-face">
+              <div class="meter-scale">
+                <span class="scale-mark mark-neg">-100</span>
+                <span class="scale-mark mark-mid">0</span>
+                <span class="scale-mark mark-pos">+100</span>
+              </div>
+              <div class="meter-needle-housing">
+                <div class="meter-needle" id="macro-needle" style="transform: rotate(20deg);"></div>
+                <div class="meter-cap"></div>
+              </div>
+            </div>
+            <div class="lcd-digital-score" id="global-score-lcd">+22 TAILWIND</div>
+          </div>
+        </div>
+
+        <!-- 1-Hour Refresh Control Deck & Flip Countdown -->
+        <div class="refresh-deck">
+          <div class="refresh-info-block">
+            <span class="deck-title">HOURLY AUTO-SYNC</span>
+            <div class="flip-clock-display" id="flip-clock" title="Countdown to next hourly intelligence refresh">
+              <div class="clock-unit"><span class="unit-val" id="timer-minutes">59</span><span class="unit-lbl">MIN</span></div>
+              <div class="clock-separator">:</div>
+              <div class="clock-unit"><span class="unit-val" id="timer-seconds">59</span><span class="unit-lbl">SEC</span></div>
+            </div>
+            <div class="next-refresh-timestamp" id="next-refresh-label">NEXT: --:--:--</div>
+          </div>
+
+          <!-- Tactile Spring Refresh Button -->
+          <div class="tactile-button-bay">
+            <button id="btn-force-refresh" class="skeuo-push-button" title="Manually re-ingest news & re-score intelligence">
+              <span class="btn-cap">
+                <svg class="icon-refresh" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+                <span class="btn-label">FORCE REFRESH</span>
+              </span>
+            </button>
+            <div class="button-led-tray">
+              <div class="status-led-item"><div class="mini-led led-green active" id="led-live"></div><span>LIVE</span></div>
+              <div class="status-led-item"><div class="mini-led led-amber" id="led-busy"></div><span>INGEST</span></div>
+            </div>
+          </div>
+
+          <!-- Sound & Power Toggles -->
+          <div class="audio-switch-bay">
+            <label class="toggle-switch-label">
+              <span class="toggle-text">HAPTIC FX</span>
+              <input type="checkbox" id="audio-toggle" checked>
+              <div class="switch-toggle"><div class="switch-lever"></div></div>
+            </label>
+          </div>
+
+          <!-- User Account Tray -->
+          <div class="user-account-tray" id="header-account-tray">
+            <div class="user-avatar-badge" id="header-user-avatar">SA</div>
+            <div class="user-info-text">
+              <span class="user-name-display" id="header-user-name">SENIOR ARCHITECT</span>
+              <span class="user-role-badge" id="header-user-role">AURA CAPITAL</span>
+            </div>
+            <button id="btn-open-settings" class="btn-settings-gear" title="Account Settings & Theme Options">⚙️</button>
+            <button id="btn-logout-header" class="btn-header-logout" title="Lock Terminal & Log Out">🔒</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Ticker Search Console -->
+      <div class="search-command-strip">
+        <div class="search-box-recessed">
+          <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            id="ticker-search-input" 
+            placeholder="SEARCH ANY STOCK OR COMPANY (e.g. HAL, RELIANCE, TCS, TATAPOWER, NVDA, LMT)..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button id="btn-search-clear" class="btn-clear hidden">&times;</button>
+          <button id="btn-search-submit" class="btn-search-execute">DEEP DIVE</button>
+        </div>
+        <div id="search-autocomplete-dropdown" class="autocomplete-dropdown hidden"></div>
+
+        <!-- Quick Ticker Hotkeys -->
+        <div class="quick-tags" id="quick-tags-container">
+          <span class="tag-title">KEY CATALYSTS:</span>
+        </div>
+      </div>
+
+      <!-- PHYSICAL ROCKER NAVIGATION SELECTOR -->
+      <nav class="rocker-selector-bar">
+        <button class="rocker-tab active" data-tab="tab-macro">
+          <span class="tab-icon">🧭</span>
+          <span class="tab-title">MACRO RADAR & SECTORS</span>
+        </button>
+        <button class="rocker-tab" data-tab="tab-stocks">
+          <span class="tab-icon">⚡</span>
+          <span class="tab-title">STOCK OPPORTUNITIES</span>
+        </button>
+        <button class="rocker-tab" data-tab="tab-deepdive">
+          <span class="tab-icon">🔬</span>
+          <span class="tab-title">STOCK DEEP DIVE</span>
+        </button>
+        <button class="rocker-tab" data-tab="tab-wire">
+          <span class="tab-icon">📡</span>
+          <span class="tab-title">LIVE INCIDENT WIRE</span>
+          <span class="tab-counter" id="wire-counter">0</span>
+        </button>
+        <button class="rocker-tab" data-tab="tab-watchlist">
+          <span class="tab-icon">⭐</span>
+          <span class="tab-title">WATCHLIST VAULT</span>
+          <span class="tab-counter" id="watchlist-counter">0</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- MAIN CHASSIS VIEWPORTS -->
+    <main class="instrument-deck">
+      
+      <!-- TAB 1: MACRO RADAR & SECTORS -->
+      <section id="tab-macro" class="tab-content active">
+        <div class="section-banner">
+          <div class="banner-title-group">
+            <h1 class="section-heading" id="macro-radar-heading">INDIA BROAD-LEVEL MARKET RADAR</h1>
+            <p class="section-subtext" id="macro-radar-subtext">Automated synthesis of daily Indian macroeconomic affairs, RBI monetary decisions, Union Budget outlays, PLI schemes, and sector capex flows.</p>
+          </div>
+          <div class="banner-stats-tray">
+            <div class="stat-pill"><span class="pill-label">ARTICLES ANALYZED:</span> <span class="pill-val" id="stat-articles">--</span></div>
+            <div class="stat-pill"><span class="pill-label">MACRO STANCE:</span> <span class="pill-val highlight" id="stat-stance">--</span></div>
+            <div class="stat-pill"><span class="pill-label">LAST INGEST:</span> <span class="pill-val" id="stat-updated">--</span></div>
+          </div>
+        </div>
+
+        <!-- Gemini AI Narrative Panel -->
+        <div class="ai-narrative-panel" id="ai-narrative-panel" style="display:none;">
+          <div class="ai-narrative-header">
+            <span class="ai-badge">✦ GEMINI AI BRIEF</span>
+            <span class="ai-timestamp" id="ai-narrative-ts"></span>
+          </div>
+          <p class="ai-narrative-text" id="ai-narrative-text"></p>
+        </div>
+
+        <!-- Sector Instrument Grid -->
+        <div class="sectors-grid" id="sectors-container">
+          <div class="loading-plate">
+            <div class="spinner"></div>
+            <span>ANALYZING MACRO FEEDS...</span>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- TAB 2: SPECIFIC STOCK OPPORTUNITIES -->
+      <section id="tab-stocks" class="tab-content">
+        <div class="section-banner">
+          <div class="banner-title-group">
+            <h2 class="section-heading" id="stock-opps-heading">EVENT-DRIVEN STOCK OPPORTUNITIES</h2>
+            <p class="section-subtext">Equities with active geopolitical, government policy, and macroeconomic catalysts. Evaluated on qualitative impact and risk exposure.</p>
+          </div>
+          <div class="filter-switch-row">
+            <span class="filter-label">SECTOR FILTER:</span>
+            <div class="filter-buttons" id="stock-sector-filters">
+              <button class="filter-btn active" data-filter="all">ALL SECTORS</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock Cards Container -->
+        <div class="stock-cards-grid" id="stock-cards-container">
+          <div class="loading-plate">
+            <div class="spinner"></div>
+            <span>CALCULATING CATALYST SENTIMENT & LIVE QUOTES...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: STOCK DEEP DIVE & OSCILLOSCOPE -->
+      <section id="tab-deepdive" class="tab-content">
+        <div id="deepdive-container">
+          <!-- Initial Prompt -->
+          <div class="deepdive-search-prompt" id="deepdive-empty-state">
+            <div class="prompt-housing">
+              <div class="radar-scope-graphic"></div>
+              <h3>SELECT OR SEARCH ANY STOCK FOR FULL DEEP DIVE</h3>
+              <p>Type any stock name or symbol (e.g. <code>HAL</code>, <code>RELIANCE</code>, <code>TCS</code>, <code>TATAPOWER</code>, <code>NVDA</code>) in the search box above or click on any catalyst card.</p>
+              <div class="popular-suggestions" id="deepdive-popular-suggestions"></div>
+            </div>
+          </div>
+
+          <!-- Deep Dive Active View -->
+          <div class="deepdive-instrument-panel hidden" id="deepdive-active-panel">
+            <div class="deepdive-header-bezel">
+              <div class="ticker-identity-block">
+                <div class="ticker-symbol-display" id="dd-symbol">HAL.NS</div>
+                <div class="ticker-meta-block">
+                  <div class="ticker-name-display" id="dd-name">Hindustan Aeronautics Ltd</div>
+                  <div class="ticker-sector-tags">
+                    <span class="sector-tag" id="dd-sector">Defense India</span>
+                    <span class="subsector-tag" id="dd-subsector">Aerospace & Fighter Jets</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="price-quote-bezel">
+                <div class="live-price-box">
+                  <div class="price-val" id="dd-price">₹4,750.00</div>
+                  <div class="price-change-badge" id="dd-change">+85.20 (+1.83%)</div>
+                </div>
+                <button class="btn-watchlist-toggle" id="dd-watchlist-btn">
+                  <span class="star-icon">★</span>
+                  <span class="btn-text">PIN TO WATCHLIST</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Oscilloscope & Sentiment Core Grid -->
+            <div class="deepdive-core-grid">
+              <div class="oscilloscope-instrument">
+                <div class="instrument-title-bar">
+                  <div class="title-with-timeframe">
+                    <span class="instrument-title" id="oscilloscope-title">PRICE & CATALYST OSCILLOSCOPE (1-MONTH TRAJECTORY)</span>
+                    
+                    <!-- Timeframe Selector Bar (1D, 1W, 1M, 6M, 1Y, 3Y) -->
+                    <div class="timeframe-selector-bay">
+                      <span class="tf-label">RANGE:</span>
+                      <div class="timeframe-buttons" id="timeframe-buttons">
+                        <button class="tf-btn" data-range="1d" data-interval="5m" data-label="1-DAY">1D</button>
+                        <button class="tf-btn" data-range="5d" data-interval="15m" data-label="1-WEEK">1W</button>
+                        <button class="tf-btn active" data-range="1mo" data-interval="1d" data-label="1-MONTH">1M</button>
+                        <button class="tf-btn" data-range="6mo" data-interval="1d" data-label="6-MONTH">6M</button>
+                        <button class="tf-btn" data-range="1y" data-interval="1wk" data-label="1-YEAR">1Y</button>
+                        <button class="tf-btn" data-range="3y" data-interval="1wk" data-label="3-YEAR">3Y</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <span class="grid-mode-tag">ANALOG TRACE 60Hz</span>
+                </div>
+                <div class="oscilloscope-screen">
+                  <div class="crt-scanlines"></div>
+                  <div class="crt-glass-reflection"></div>
+                  <canvas id="oscilloscope-canvas" width="640" height="260"></canvas>
+                  <div class="chart-tooltip hidden" id="chart-tooltip"></div>
+                </div>
+                <div class="oscilloscope-controls">
+                  <span class="ctrl-label" id="signal-range-indicator">SIGNAL RANGE: 1-MONTH</span>
+                  <span class="ctrl-status" id="chart-status-text">LIVE QUOTE SYNCHRONIZED</span>
+                </div>
+              </div>
+
+              <div class="sentiment-meter-instrument">
+                <div class="instrument-title-bar">
+                  <span class="instrument-title">NEWS CATALYST SENTIMENT GAUGE</span>
+                </div>
+                <div class="vu-dial-housing">
+                  <div class="vu-dial-face">
+                    <div class="vu-arc-scale">
+                      <span class="scale-text scale-bear">HEADWIND</span>
+                      <span class="scale-text scale-zero">0</span>
+                      <span class="scale-text scale-bull">TAILWIND</span>
+                    </div>
+                    <div class="vu-dial-needle" id="dd-needle" style="transform: rotate(25deg);"></div>
+                    <div class="vu-center-hub"></div>
+                  </div>
+                  <div class="vu-digital-readout">
+                    <div class="readout-score" id="dd-sentiment-score">+35</div>
+                    <div class="readout-label" id="dd-sentiment-label">STRONG TAILWIND</div>
+                  </div>
+                </div>
+                <div class="catalyst-volume-meter">
+                  <div class="vol-item"><span class="vol-lbl">BULLISH NEWS:</span> <span class="vol-val val-green" id="dd-bull-count">0</span></div>
+                  <div class="vol-item"><span class="vol-lbl">BEARISH NEWS:</span> <span class="vol-val val-red" id="dd-bear-count">0</span></div>
+                  <div class="vol-item"><span class="vol-lbl">CONFIDENCE:</span> <span class="vol-val" id="dd-confidence">85%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Analysis Matrix Grid -->
+            <div class="analysis-matrix-grid">
+              <div class="matrix-card thesis-card">
+                <div class="matrix-header">
+                  <span class="header-icon">🎯</span>
+                  <h4>NEWS-DRIVEN INVESTMENT THESIS</h4>
+                </div>
+                <p class="matrix-body" id="dd-thesis">Loading news synthesis...</p>
+              </div>
+
+              <div class="matrix-card risk-card">
+                <div class="matrix-header">
+                  <span class="header-icon">⚠️</span>
+                  <h4>GEOPOLITICAL & INCIDENT RISK EXPOSURE</h4>
+                </div>
+                <p class="matrix-body" id="dd-risks">Loading risk factors...</p>
+              </div>
+
+              <div class="matrix-card macro-card">
+                <div class="matrix-header">
+                  <span class="header-icon">🌐</span>
+                  <h4>BROAD MACRO CORRELATION</h4>
+                </div>
+                <p class="matrix-body" id="dd-macro">Loading macro links...</p>
+              </div>
+            </div>
+
+            <!-- Targeted News Stream -->
+            <div class="targeted-news-panel">
+              <div class="news-panel-header">
+                <h4>ACTIVE NEWS HEADLINES FOR THIS ASSET</h4>
+                <span class="news-count" id="dd-news-count">0 ARTICLES</span>
+              </div>
+              <div class="targeted-news-list" id="dd-news-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: LIVE INCIDENT WIRE -->
+      <section id="tab-wire" class="tab-content">
+        <div class="section-banner">
+          <div class="banner-title-group">
+            <h2 class="section-heading">REAL-TIME INCIDENT & NEWS WIRE</h2>
+            <p class="section-subtext">Continuous multi-source feed from Reuters, Economic Times, Google News & Financial Press.</p>
+          </div>
+          <div class="wire-search-bar">
+            <input type="text" id="wire-filter-input" placeholder="FILTER NEWS BY KEYWORD (e.g. defense, solar, rbi, capex, chip, crude, tariff)...">
+          </div>
+        </div>
+
+        <div class="incident-wire-stream" id="incident-wire-container">
+          <div class="loading-plate">
+            <div class="spinner"></div>
+            <span>FETCHING LIVE NEWS STREAM...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: WATCHLIST VAULT -->
+      <section id="tab-watchlist" class="tab-content">
+        <div class="section-banner">
+          <div class="banner-title-group">
+            <h2 class="section-heading">WATCHLIST VAULT</h2>
+            <p class="section-subtext">Your customized tracking portfolio of catalyst-driven opportunities.</p>
+          </div>
+          <div class="watchlist-actions">
+            <button id="btn-clear-watchlist" class="btn-action-small">CLEAR VAULT</button>
+          </div>
+        </div>
+
+        <div class="stock-cards-grid" id="watchlist-container">
+          <div class="empty-vault-card">
+            <div class="vault-icon">🔒</div>
+            <h3>YOUR WATCHLIST VAULT IS EMPTY</h3>
+            <p>Click the <strong>★ PIN TO WATCHLIST</strong> button on any stock opportunity card or deep-dive page to track your favored equities here.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ARCHITECTURAL DISCLAIMER & FOOTER WITH SOURCE OF TRUTH LINK -->
+    <footer class="chassis-footer">
+      <div class="footer-engraving">
+        <div class="disclaimer-title">FINANCIAL ARCHITECTURE NOTICE & REGULATORY DISCLOSURE</div>
+        <p class="disclaimer-text">
+          AURA SENTINEL is an automated macroeconomic & geopolitical news synthesis engine. Financial markets are inherently subject to unpredictable volatility, systemic shocks, and liquidity fluctuations. <strong>Deterministic potential profit or loss cannot be guaranteed.</strong> All analysis represents qualitative & quantitative catalyst research.
+        </p>
+        
+        <!-- PROVENANCE & SOURCE OF TRUTH LINK BUTTON -->
+        <div class="source-truth-link-bar">
+          <button id="btn-open-sources" class="btn-source-registry" title="View all public APIs, RSS feeds, exchanges and regulatory sources of truth">
+            <span class="source-icon">📋</span>
+            <span class="source-text">SOURCES OF TRUTH & DATA PROVENANCE REGISTRY</span>
+            <span class="source-status-badge">🟢 VERIFIED FEEDS</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="footer-meta">
+        <div class="meta-item">ARCHITECTURE: SENTINEL MK-V</div>
+        <div class="meta-item">LOCATION: INDIA & GLOBAL</div>
+        <div class="meta-item">STATION: LOCALHOST:3000</div>
+      </div>
+    </footer>
+
+    <!-- SKEUOMORPHIC SOURCE OF TRUTH AUDIT MODAL -->
+    <div id="source-modal" class="skeuo-modal-overlay hidden">
+      <div class="skeuo-modal-chassis">
+        <div class="modal-header-bezel">
+          <div class="modal-title-group">
+            <span class="modal-icon">🏛️</span>
+            <div>
+              <h3 class="modal-title">DATA SOURCES & PROVENANCE REGISTRY (SOURCE OF TRUTH)</h3>
+              <p class="modal-subtitle">Comprehensive audit trail of public APIs, news RSS aggregators, market data exchanges, and regulatory bodies.</p>
+            </div>
+          </div>
+          <button id="btn-close-sources" class="modal-close-btn" title="Close Registry">&times;</button>
+        </div>
+
+        <div class="modal-content-deck">
+          
+          <!-- Category 1: Market Data & Exchange Sources -->
+          <div class="audit-section-block">
+            <div class="audit-sec-header">
+              <span class="sec-icon">📈</span>
+              <h4>1. REAL-TIME MARKET PRICES & EXCHANGE FEEDS</h4>
+            </div>
+            <div class="audit-cards-list">
+              <div class="audit-card">
+                <div class="audit-card-top">
+                  <span class="source-name">Yahoo Finance Chart & Quote API (v8/v1)</span>
+                  <span class="status-chip active">🟢 REAL-TIME (200 OK)</span>
+                </div>
+                <p class="source-desc">Used for live equity pricing, day percentage changes, 52-week high/low boundaries, market capitalization, and 30-day historical chart data.</p>
+                <div class="source-urls">
+                  <a href="https://finance.yahoo.com" target="_blank" rel="noopener" class="src-link">🔗 query1.finance.yahoo.com/v8/finance/chart/{SYMBOL}</a>
+                  <a href="https://finance.yahoo.com" target="_blank" rel="noopener" class="src-link">🔗 query1.finance.yahoo.com/v1/finance/search?q={QUERY}</a>
+                </div>
+                <div class="source-meta-row">
+                  <span>EXCHANGES: National Stock Exchange (NSE), Bombay Stock Exchange (BSE), NASDAQ, NYSE</span>
+                  <span>LATENCY: Real-time (15-min delayed during exchange hours)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category 2: India Macro & Financial News Feeds -->
+          <div class="audit-section-block">
+            <div class="audit-sec-header">
+              <span class="sec-icon">🇮🇳</span>
+              <h4>2. INDIA FINANCIAL, MACRO & REGULATORY FEEDS (SOURCE OF TRUTH)</h4>
+            </div>
+            <div class="audit-cards-list">
+              <div class="audit-card">
+                <div class="audit-card-top">
+                  <span class="source-name">Google News India Macro & Business RSS</span>
+                  <span class="status-chip active">🟢 ACTIVE FEED</span>
+                </div>
+                <p class="source-desc">Aggregates real-time coverage from The Economic Times, Business Standard, LiveMint, Financial Express, and Moneycontrol.</p>
+                <div class="source-urls">
+                  <a href="https://news.google.com/rss/search?q=India+economy+OR+RBI+repo+rate+OR+Sensex+OR+Nifty&hl=en-IN&gl=IN&ceid=IN:en" target="_blank" rel="noopener" class="src-link">🔗 Google News India Economy & RBI RSS Feed</a>
+                  <a href="https://news.google.com/rss/search?q=India+defense+spending+OR+Make+in+India+OR+HAL+OR+BEL&hl=en-IN&gl=IN&ceid=IN:en" target="_blank" rel="noopener" class="src-link">🔗 India Defense & Make in India RSS Feed</a>
+                  <a href="https://news.google.com/rss/search?q=India+renewable+energy+OR+Tata+Power+OR+IREDA+OR+solar+grid&hl=en-IN&gl=IN&ceid=IN:en" target="_blank" rel="noopener" class="src-link">🔗 India Power & Green Energy RSS Feed</a>
+                </div>
+              </div>
+
+              <div class="audit-card">
+                <div class="audit-card-top">
+                  <span class="source-name">Reserve Bank of India (RBI) & Ministry of Finance Directives</span>
+                  <span class="status-chip policy">🏛️ REGULATORY BENCHMARK</span>
+                </div>
+                <p class="source-desc">Monetary Policy Committee (MPC) repo rate statements, CPI inflation targeting, Union Budget capital outlays, and Production Linked Incentive (PLI) updates.</p>
+                <div class="source-urls">
+                  <a href="https://www.rbi.org.in" target="_blank" rel="noopener" class="src-link">🔗 rbi.org.in (Monetary Policy & Credit Outlays)</a>
+                  <a href="https://www.indiabudget.gov.in" target="_blank" rel="noopener" class="src-link">🔗 indiabudget.gov.in (Union Budget & Capex Allocations)</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category 3: Global Macro & Geopolitical Feeds -->
+          <div class="audit-section-block">
+            <div class="audit-sec-header">
+              <span class="sec-icon">🌐</span>
+              <h4>3. GLOBAL MACRO, COMMODITIES & GEOPOLITICAL FEEDS</h4>
+            </div>
+            <div class="audit-cards-list">
+              <div class="audit-card">
+                <div class="audit-card-top">
+                  <span class="source-name">Global Financial Wire RSS (Reuters, MarketWatch, CNBC, Yahoo)</span>
+                  <span class="status-chip active">🟢 ACTIVE FEED</span>
+                </div>
+                <p class="source-desc">Worldwide macroeconomic updates, Central Bank statements (US Federal Reserve, ECB), geopolitical incident reporting, and energy transit corridors.</p>
+                <div class="source-urls">
+                  <a href="https://finance.yahoo.com/news/rssindex" target="_blank" rel="noopener" class="src-link">🔗 finance.yahoo.com/news/rssindex (Top Global Markets)</a>
+                  <a href="https://news.google.com/rss/search?q=geopolitics+OR+economy+OR+central+bank+when:3d&hl=en-US&gl=US&ceid=US:en" target="_blank" rel="noopener" class="src-link">🔗 Global Macro & Geopolitics Feed</a>
+                  <a href="https://news.google.com/rss/search?q=semiconductor+OR+artificial+intelligence+chips+OR+ASML+OR+NVIDIA&hl=en-US&gl=US&ceid=US:en" target="_blank" rel="noopener" class="src-link">🔗 Global Tech & Semiconductor Sovereignty Feed</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category 4: Methodology & NLP Architecture -->
+          <div class="audit-section-block">
+            <div class="audit-sec-header">
+              <span class="sec-icon">⚙️</span>
+              <h4>4. FINANCIAL NLP SYNTHESIS & SCORING METHODOLOGY</h4>
+            </div>
+            <div class="audit-card methodology-card">
+              <ul class="methodology-list">
+                <li><strong>Loughran-McDonald Financial Lexicon:</strong> Peer-reviewed financial domain sentiment dictionary tailored for corporate disclosures, earnings reports, and macroeconomic news.</li>
+                <li><strong>Geopolitical Entity Extractor:</strong> Classifies raw news into 12 distinct macro pillars (Defense Indigenization, Power/Solar Grid, Rail Capex, Banking Credit, Semiconductors, Energy Transit).</li>
+                <li><strong>Hourly Automated Synchronization:</strong> Ingests live RSS streams every 60 minutes with automated caching, next-refresh scheduling, and on-demand manual push triggers.</li>
+                <li><strong>Strict Fiduciary Disclaimer:</strong> Deterministic profits or losses cannot be predicted. All models provide qualitative & quantitative catalyst intelligence to assist your research.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer-bezel">
+          <span class="audit-timestamp" id="modal-audit-timestamp">STATUS: ALL DATA FEEDS VERIFIED & CONNECTED</span>
+          <button id="btn-close-sources-bottom" class="btn-card-deepdive">ACKNOWLEDGE & RETURN</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKEUOMORPHIC ACCOUNT SETTINGS & THEME MODAL -->
+    <div id="settings-modal" class="skeuo-modal-overlay hidden">
+      <div class="skeuo-modal-chassis">
+        <div class="modal-header-bezel">
+          <div class="modal-title-group">
+            <span class="modal-icon">⚙️</span>
+            <div>
+              <h3 class="modal-title">TERMINAL SETTINGS & THEME SELECTION</h3>
+              <p class="modal-subtitle">Configure display chassis aesthetics, operating parameters, and account profile.</p>
+            </div>
+          </div>
+          <button id="btn-close-settings" class="modal-close-btn" title="Close Settings">&times;</button>
+        </div>
+
+        <div class="modal-content-deck">
+          
+          <!-- Section 1: Visual Theme Mode Selection -->
+          <div class="audit-section-block">
+            <div class="audit-sec-header">
+              <span class="sec-icon">🎨</span>
+              <h4>1. CHASSIS VISUAL THEME SELECTION</h4>
+            </div>
+            
+            <div class="theme-selector-grid">
+              <!-- Option A: Dark Theme (Titanium Obsidian) -->
+              <div class="theme-card-option active" id="theme-card-dark" data-theme="dark">
+                <div class="theme-preview-swatch theme-preview-dark">
+                  <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 700;">🌙 TITANIUM DARK</span>
+                </div>
+                <div class="theme-card-info">
+                  <div>
+                    <div class="theme-name">Titanium Obsidian (Dark)</div>
+                    <div style="font-size: 10px; color: var(--text-dim);">Anodized titanium, phosphor CRT glow & slate plates.</div>
+                  </div>
+                  <div class="theme-radio-dot"></div>
+                </div>
+              </div>
+
+              <!-- Option B: Bright Theme (Brushed Platinum & Daylight) -->
+              <div class="theme-card-option" id="theme-card-bright" data-theme="bright">
+                <div class="theme-preview-swatch theme-preview-bright">
+                  <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 700;">☀️ PLATINUM BRIGHT</span>
+                </div>
+                <div class="theme-card-info">
+                  <div>
+                    <div class="theme-name">Brushed Platinum (Bright)</div>
+                    <div style="font-size: 10px; color: var(--text-dim);">Polished chrome, daylight parchment & emerald readouts.</div>
+                  </div>
+                  <div class="theme-radio-dot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: User Profile & Organization -->
+          <div class="audit-section-block">
+            <div class="audit-sec-header">
+              <span class="sec-icon">👤</span>
+              <h4>2. AUTHORIZED ANALYST PROFILE</h4>
+            </div>
+            <div class="audit-card">
+              <div class="profile-field-row">
+                <span class="profile-field-lbl">FULL NAME:</span>
+                <span class="profile-field-val" id="profile-name">Senior Financial Architect</span>
+              </div>
+              <div class="profile-field-row">
+                <span class="profile-field-lbl">EMAIL / ID:</span>
+                <span class="profile-field-val" id="profile-email">analyst@aura.capital</span>
+              </div>
+              <div class="profile-field-row">
+                <span class="profile-field-lbl">ORGANIZATION:</span>
+                <span class="profile-field-val" id="profile-org">Aura Capital Markets</span>
+              </div>
+              <div class="profile-field-row">
+                <span class="profile-field-lbl">ACCESS LEVEL:</span>
+                <span class="profile-field-val" style="color: var(--phosphor-green);">TIER-1 MACRO STRATEGIST</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer-bezel">
+          <button id="btn-logout-settings" class="btn-action-small" style="color: var(--phosphor-red); border-color: var(--phosphor-red);">🔒 TERMINATE SESSION & LOG OUT</button>
+          <button id="btn-save-settings" class="btn-card-deepdive">APPLY & SAVE SETTINGS</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKEUOMORPHIC AUTHENTICATION SECURITY VAULT GATE -->
+    <div id="auth-modal" class="auth-vault-overlay">
+      <div class="vault-door-chassis">
+        <div class="vault-header">
+          <div class="vault-brand-cluster">
+            <div class="vault-title">
+              <span>🛡️</span>
+              <span>AURA SENTINEL</span>
+            </div>
+            <div class="vault-subtitle">RESTRICTED FINANCIAL ACCESS GATE</div>
+          </div>
+          <div class="vault-lock-status">
+            <div class="mini-led led-amber active" id="auth-gate-led"></div>
+            <span class="lock-label" id="auth-lock-label">AUTHENTICATION REQUIRED</span>
+          </div>
+        </div>
+
+        <div class="vault-form-body">
+          <!-- Switcher: Login vs Sign Up -->
+          <div class="auth-tabs-row">
+            <button class="auth-tab-btn active" id="tab-auth-login">LOG IN</button>
+            <button class="auth-tab-btn" id="tab-auth-signup">CREATE ACCOUNT</button>
+          </div>
+
+          <div id="auth-toast" class="auth-msg-toast hidden"></div>
+
+          <!-- Login Form -->
+          <form id="form-login" class="auth-form">
+            <div class="auth-field-group">
+              <label class="auth-label">ANALYST EMAIL / USERNAME</label>
+              <div class="auth-input-recess">
+                <input type="email" id="login-email" class="auth-input" placeholder="e.g. analyst@aura.capital" required autocomplete="username">
+              </div>
+            </div>
+
+            <div class="auth-field-group" style="margin-top: 10px;">
+              <label class="auth-label">SECURITY PASSCODE / PIN</label>
+              <div class="auth-input-recess">
+                <input type="password" id="login-password" class="auth-input" placeholder="Enter your passcode" required autocomplete="current-password">
+              </div>
+            </div>
+
+            <button type="submit" class="auth-btn-submit" style="margin-top: 16px;">
+              <span>⚡ UNLOCK TERMINAL ACCESS</span>
+            </button>
+          </form>
+
+          <!-- Signup Form (Hidden initially) -->
+          <form id="form-signup" class="auth-form hidden">
+            <div class="auth-field-group">
+              <label class="auth-label">FULL NAME</label>
+              <div class="auth-input-recess">
+                <input type="text" id="signup-name" class="auth-input" placeholder="e.g. Rahul Sharma" required>
+              </div>
+            </div>
+
+            <div class="auth-field-group" style="margin-top: 8px;">
+              <label class="auth-label">ORGANIZATION / COMPANY</label>
+              <div class="auth-input-recess">
+                <input type="text" id="signup-org" class="auth-input" placeholder="e.g. Aura Capital India" required>
+              </div>
+            </div>
+
+            <div class="auth-field-group" style="margin-top: 8px;">
+              <label class="auth-label">WORK EMAIL</label>
+              <div class="auth-input-recess">
+                <input type="email" id="signup-email" class="auth-input" placeholder="e.g. analyst@company.com" required>
+              </div>
+            </div>
+
+            <div class="auth-field-group" style="margin-top: 8px;">
+              <label class="auth-label">CREATE PASSCODE (MIN 6 CHARS)</label>
+              <div class="auth-input-recess">
+                <input type="password" id="signup-password" class="auth-input" placeholder="Create a secure passcode" required minlength="6">
+              </div>
+            </div>
+
+            <button type="submit" class="auth-btn-submit" style="margin-top: 16px;">
+              <span>📝 REGISTER & AUTHORIZE ACCESS</span>
+            </button>
+          </form>
+
+          <!-- 1-Click Quick Demo Shortcut -->
+          <div class="auth-demo-shortcut">
+            <div class="demo-text">
+              <span class="demo-title">⚡ QUICK 1-CLICK DEMO ACCESS</span>
+              <span class="demo-sub">Pre-filled credentials for instant testing</span>
+            </div>
+            <button type="button" id="btn-demo-login" class="btn-demo-fill">AUTO-FILL & LOGIN</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/js/audio.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
