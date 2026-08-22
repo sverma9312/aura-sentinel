@@ -2046,6 +2046,9 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .filter-label {
@@ -2053,11 +2056,27 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   font-size: 10px;
   font-weight: 700;
   color: var(--text-dim);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .filter-buttons {
   display: flex;
   gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  flex: 1;
+  padding: 2px 2px 6px 2px;
+  scrollbar-width: thin;
+}
+
+.filter-buttons::-webkit-scrollbar {
+  height: 3px;
+}
+.filter-buttons::-webkit-scrollbar-thumb {
+  background: #384252;
+  border-radius: 3px;
 }
 
 .filter-btn {
@@ -2069,8 +2088,10 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   font-family: var(--font-heading);
   font-size: 11px;
   font-weight: 700;
-  padding: 5px 10px;
+  padding: 6px 12px;
   transition: all 0.15s;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .filter-btn.active, .filter-btn:hover {
@@ -2081,8 +2102,10 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
 
 .stock-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
   gap: 20px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .stock-opportunity-card {
@@ -2111,6 +2134,7 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
 .stock-ticker-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -4284,13 +4308,46 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   }
 
   /* Sectors & Stock Opportunities Grid */
+  .filter-switch-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .filter-buttons {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    display: flex;
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+
   .sectors-grid, .stock-cards-grid {
     grid-template-columns: 1fr;
     gap: 14px;
   }
 
-  .sector-instrument-card, .stock-card {
+  .sector-instrument-card, .stock-opportunity-card, .stock-card {
     padding: 14px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .stock-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .price-cluster {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 4px;
   }
 
   .sector-card-header {
