@@ -967,37 +967,64 @@
     }
   }
 
-  // Draw Glowing Phosphor Oscilloscope Chart on Canvas
+  // Draw High-Resolution Vector Oscilloscope Stock Chart
   function drawOscilloscopeChart(points, currencySymbol = '$', currentRange = '1mo') {
     const canvas = el.oscilloscopeCanvas;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
 
-    ctx.clearRect(0, 0, width, height);
+    // HiDPI / Retina Crisp Rendering
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.max(window.devicePixelRatio || 1, 2);
+    const width = rect.width || 640;
+    const height = rect.height || 260;
 
-    ctx.strokeStyle = 'rgba(0, 255, 136, 0.08)';
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.scale(dpr, dpr);
+
+    const isBright = document.body.classList.contains('theme-bright');
+
+    // Theme Palette Tokens
+    const bgFill = isBright ? '#ffffff' : '#080d14';
+    const gridMajor = isBright ? 'rgba(203, 213, 225, 0.5)' : 'rgba(0, 229, 255, 0.08)';
+    const gridCenter = isBright ? 'rgba(148, 163, 184, 0.4)' : 'rgba(0, 229, 255, 0.16)';
+    const traceColor = isBright ? '#059669' : '#00ff88';
+    const traceGlow = isBright ? 'rgba(5, 150, 105, 0.2)' : 'rgba(0, 255, 136, 0.35)';
+    const fillTop = isBright ? 'rgba(5, 150, 105, 0.18)' : 'rgba(0, 255, 136, 0.22)';
+    const fillBottom = isBright ? 'rgba(5, 150, 105, 0.0)' : 'rgba(0, 255, 136, 0.0)';
+    const textMain = isBright ? '#0f172a' : '#ffffff';
+    const textDim = isBright ? '#64748b' : '#8e99a8';
+    const highColor = isBright ? '#047857' : '#00ff88';
+    const lowColor = isBright ? '#dc2626' : '#ff3344';
+
+    // Clear Background
+    ctx.fillStyle = bgFill;
+    ctx.fillRect(0, 0, width, height);
+
+    // Draw Subtle Grid
     ctx.lineWidth = 1;
+    ctx.strokeStyle = gridMajor;
 
-    const gridStepX = width / 10;
-    const gridStepY = height / 6;
+    const gridStepX = width / 8;
+    const gridStepY = height / 5;
 
-    for (let x = 0; x < width; x += gridStepX) {
+    for (let x = gridStepX; x < width; x += gridStepX) {
       ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
     }
-    for (let y = 0; y < height; y += gridStepY) {
+    for (let y = gridStepY; y < height; y += gridStepY) {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
     }
 
-    ctx.strokeStyle = 'rgba(0, 255, 136, 0.18)';
+    // Center Crosshair Axis
+    ctx.strokeStyle = gridCenter;
     ctx.beginPath();
     ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height);
     ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2);
     ctx.stroke();
 
     if (!points || points.length < 2) {
-      ctx.strokeStyle = '#00ff88';
+      ctx.strokeStyle = traceColor;
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
       return;
@@ -1007,69 +1034,101 @@
     const minP = Math.min(...prices);
     const maxP = Math.max(...prices);
     const range = (maxP - minP) || 1;
-    const padTop = 32;
-    const padBottom = 30;
+    const padTop = 38;
+    const padBottom = 34;
     const usableHeight = height - padTop - padBottom;
 
+    // Calculate Coordinates
+    const coords = points.map((pt, idx) => ({
+      x: (idx / (points.length - 1)) * (width - 24) + 12,
+      y: padTop + usableHeight - ((pt.price - minP) / range) * usableHeight,
+      price: pt.price,
+      date: pt.date
+    }));
+
+    // Draw Gradient Area Fill under Curve
     const gradient = ctx.createLinearGradient(0, padTop, 0, height);
-    gradient.addColorStop(0, 'rgba(0, 255, 136, 0.28)');
-    gradient.addColorStop(1, 'rgba(0, 255, 136, 0.0)');
+    gradient.addColorStop(0, fillTop);
+    gradient.addColorStop(1, fillBottom);
 
     ctx.beginPath();
-    points.forEach((pt, idx) => {
-      const x = (idx / (points.length - 1)) * width;
-      const y = padTop + usableHeight - ((pt.price - minP) / range) * usableHeight;
-      if (idx === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.lineTo(width, height);
-    ctx.lineTo(0, height);
+    ctx.moveTo(coords[0].x, height);
+    ctx.lineTo(coords[0].x, coords[0].y);
+
+    // Smooth Bezier Curve
+    for (let i = 0; i < coords.length - 1; i++) {
+      const p0 = coords[i];
+      const p1 = coords[i + 1];
+      const mx = (p0.x + p1.x) / 2;
+      ctx.bezierCurveTo(mx, p0.y, mx, p1.y, p1.x, p1.y);
+    }
+    ctx.lineTo(coords[coords.length - 1].x, height);
     ctx.closePath();
     ctx.fillStyle = gradient;
     ctx.fill();
 
-    ctx.shadowColor = '#00ff88';
-    ctx.shadowBlur = 10;
-    ctx.strokeStyle = '#00ff88';
+    // Draw Smooth Main Stroke Line
+    ctx.save();
+    if (!isBright) {
+      ctx.shadowColor = traceColor;
+      ctx.shadowBlur = 8;
+    }
+    ctx.strokeStyle = traceColor;
     ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
     ctx.beginPath();
-    points.forEach((pt, idx) => {
-      const x = (idx / (points.length - 1)) * width;
-      const y = padTop + usableHeight - ((pt.price - minP) / range) * usableHeight;
-      if (idx === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
+    ctx.moveTo(coords[0].x, coords[0].y);
+    for (let i = 0; i < coords.length - 1; i++) {
+      const p0 = coords[i];
+      const p1 = coords[i + 1];
+      const mx = (p0.x + p1.x) / 2;
+      ctx.bezierCurveTo(mx, p0.y, mx, p1.y, p1.x, p1.y);
+    }
     ctx.stroke();
-    ctx.shadowBlur = 0;
+    ctx.restore();
 
-    const stepNodes = points.length > 50 ? 8 : points.length > 25 ? 4 : 2;
-    points.forEach((pt, idx) => {
-      if (idx % stepNodes === 0 || idx === points.length - 1) {
-        const x = (idx / (points.length - 1)) * width;
-        const y = padTop + usableHeight - ((pt.price - minP) / range) * usableHeight;
+    // Draw Data Point Nodes
+    const stepNodes = coords.length > 50 ? 8 : coords.length > 25 ? 4 : 2;
+    coords.forEach((pt, idx) => {
+      if (idx % stepNodes === 0 || idx === coords.length - 1) {
+        ctx.fillStyle = isBright ? '#ffffff' : '#0f172a';
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2); ctx.fill();
 
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
-
-        ctx.strokeStyle = '#00ff88';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = traceColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2); ctx.stroke();
       }
     });
 
-    ctx.font = '10px "JetBrains Mono"';
-    ctx.fillStyle = '#00ff88';
-    ctx.fillText(`HI: ${currencySymbol}${maxP.toFixed(2)}`, 10, 20);
-    ctx.fillStyle = '#8e99a8';
-    ctx.fillText(`LO: ${currencySymbol}${minP.toFixed(2)}`, 10, height - 10);
-    ctx.fillText(`LATEST: ${currencySymbol}${prices[prices.length - 1].toFixed(2)}`, width - 130, 20);
+    // Draw Latest Node with Pulsing Halo
+    const lastNode = coords[coords.length - 1];
+    ctx.fillStyle = traceColor;
+    ctx.beginPath(); ctx.arc(lastNode.x, lastNode.y, 5, 0, Math.PI * 2); ctx.fill();
 
-    // Display Start and End timestamps on bottom corners
-    if (points.length > 0) {
-      ctx.fillStyle = '#5a6473';
-      ctx.fillText(points[0].date || '', 80, height - 10);
-      ctx.fillText(points[points.length - 1].date || '', width - 90, height - 10);
+    // Price Badges (Top & Bottom High-Contrast Headers)
+    ctx.font = '700 11px "JetBrains Mono", monospace';
+    
+    // High Price Tag
+    ctx.fillStyle = highColor;
+    ctx.fillText(`▲ HI: ${currencySymbol}${maxP.toFixed(2)}`, 14, 22);
+
+    // Latest Price Tag
+    ctx.fillStyle = textMain;
+    const latestStr = `LATEST: ${currencySymbol}${prices[prices.length - 1].toFixed(2)}`;
+    ctx.fillText(latestStr, width - 145, 22);
+
+    // Low Price Tag
+    ctx.fillStyle = lowColor;
+    ctx.fillText(`▼ LO: ${currencySymbol}${minP.toFixed(2)}`, 14, height - 12);
+
+    // Timestamps
+    ctx.font = '600 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = textDim;
+    if (coords.length > 0) {
+      if (coords[0].date) ctx.fillText(coords[0].date, 120, height - 12);
+      if (coords[coords.length - 1].date) ctx.fillText(coords[coords.length - 1].date, width - 90, height - 12);
     }
   }
 
