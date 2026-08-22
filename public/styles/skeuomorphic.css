@@ -100,7 +100,8 @@ body.theme-bright {
 
 body.theme-bright .terminal-shell {
   border-color: #cbd5e1;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0,0,0,0.05);
+  background: #f8fafc;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.06);
 }
 
 body.theme-bright .master-bezel {
@@ -115,20 +116,186 @@ body.theme-bright .recessed-badge {
 
 body.theme-bright .badge-text {
   color: #0f172a;
+  text-shadow: none;
 }
 
-body.theme-bright .rocker-tab {
+body.theme-bright .version-tag {
+  color: #0284c7;
+}
+
+/* Region Deck */
+body.theme-bright .market-region-deck {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+body.theme-bright .region-deck-title {
+  color: #64748b;
+}
+body.theme-bright .region-rocker-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  border-color: #cbd5e1;
+  color: #475569;
+}
+body.theme-bright .region-rocker-btn.active {
+  background: #dcfce7;
+  color: #047857;
+  border-color: #10b981;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Macro Mood Gauge in Header */
+body.theme-bright .macro-gauge-module {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+body.theme-bright .gauge-label {
+  color: #64748b;
+}
+body.theme-bright .meter-face {
+  background: radial-gradient(ellipse at 50% 100%, #ffffff 0%, #e2e8f0 100%);
+  border-color: #cbd5e1;
+}
+body.theme-bright .scale-mark.mark-mid {
+  color: #64748b;
+}
+body.theme-bright .lcd-digital-score {
+  color: #047857;
+  text-shadow: none;
+}
+
+/* Flip Clock & Refresh Deck */
+body.theme-bright .refresh-deck {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  border-color: #cbd5e1;
+}
+body.theme-bright .deck-title {
+  color: #64748b;
+}
+body.theme-bright .flip-clock-display {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+body.theme-bright .unit-val {
+  color: #b45309;
+  text-shadow: none;
+}
+body.theme-bright .unit-lbl {
+  color: #64748b;
+}
+body.theme-bright .clock-separator {
+  color: #b45309;
+}
+body.theme-bright .next-refresh-timestamp {
+  color: #64748b;
+}
+body.theme-bright .skeuo-push-button {
   background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+body.theme-bright .skeuo-push-button .btn-label {
+  color: #0f172a;
+}
+
+/* User Account Tray */
+body.theme-bright .user-account-tray {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+body.theme-bright .user-name-display {
+  color: #0f172a;
+}
+body.theme-bright .user-role-badge {
+  color: #0284c7;
+}
+body.theme-bright .btn-settings-gear,
+body.theme-bright .btn-header-logout {
+  background: #ffffff;
   border-color: #cbd5e1;
   color: #475569;
 }
 
-body.theme-bright .rocker-tab.active {
-  background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
-  color: #059669;
-  border-color: #059669;
+/* Search Box & Quick Chips */
+body.theme-bright .search-box-recessed {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+body.theme-bright .search-icon {
+  stroke: #64748b;
+}
+body.theme-bright .search-box-recessed input {
+  color: #0f172a;
+}
+body.theme-bright .search-box-recessed input::placeholder {
+  color: #94a3b8;
+}
+body.theme-bright .btn-search-clear {
+  color: #64748b;
+}
+body.theme-bright .btn-search-submit {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #0284c7;
+  color: #ffffff;
+}
+body.theme-bright .quick-chips-bay {
+  border-left-color: #cbd5e1;
+}
+body.theme-bright .tag-title {
+  color: #64748b;
+}
+body.theme-bright .quick-chip {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+body.theme-bright .quick-chip:hover {
+  background: #f1f5f9;
+  border-color: #0284c7;
+  color: #0284c7;
+}
+body.theme-bright .autocomplete-dropdown {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+body.theme-bright .autocomplete-item {
+  border-bottom-color: #f1f5f9;
+}
+body.theme-bright .autocomplete-item:hover {
+  background: #f8fafc;
+}
+body.theme-bright .item-ticker {
+  color: #047857;
+}
+body.theme-bright .item-name {
+  color: #334155;
+}
+body.theme-bright .item-exchange {
+  color: #64748b;
 }
 
+/* Section Banners & Stat Pills */
+body.theme-bright .section-heading {
+  color: #0f172a;
+}
+body.theme-bright .section-subtext {
+  color: #475569;
+}
+body.theme-bright .stat-pill {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+body.theme-bright .pill-label {
+  color: #64748b;
+}
+body.theme-bright .pill-val {
+  color: #0f172a;
+}
+body.theme-bright .pill-val.highlight {
+  color: #047857;
+}
+
+/* Cards (Sector, Stock, Deep Dive, News) */
 body.theme-bright .sector-instrument-card,
 body.theme-bright .stock-opportunity-card,
 body.theme-bright .matrix-card,
@@ -137,7 +304,7 @@ body.theme-bright .deepdive-header-bezel,
 body.theme-bright .oscilloscope-instrument,
 body.theme-bright .sentiment-meter-instrument,
 body.theme-bright .wire-incident-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   border-color: #cbd5e1;
   box-shadow: var(--shadow-bevel-out);
 }
@@ -147,7 +314,6 @@ body.theme-bright .ticker-symbol,
 body.theme-bright .ticker-name-display,
 body.theme-bright .stock-price,
 body.theme-bright .price-val,
-body.theme-bright .section-heading,
 body.theme-bright .vol-val,
 body.theme-bright .matrix-header h4,
 body.theme-bright .news-panel-header h4,
@@ -156,14 +322,349 @@ body.theme-bright .source-name {
   color: #0f172a;
 }
 
+body.theme-bright .sector-desc,
+body.theme-bright .company-name,
+body.theme-bright .matrix-body,
+body.theme-bright .wire-desc {
+  color: #334155;
+}
+
+/* Subsector & Theme Badges on Cards */
+body.theme-bright .subsector-badge {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+body.theme-bright .subsector-tag,
+body.theme-bright .sector-tag {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0284c7;
+}
+
+/* Sector Track Bar & Catalysts */
+body.theme-bright .score-track-labels {
+  color: #64748b;
+}
+body.theme-bright .score-track-bar {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+body.theme-bright .sector-catalysts {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+body.theme-bright .catalysts-title {
+  color: #64748b;
+}
+body.theme-bright .catalyst-link {
+  color: #1e293b;
+}
+body.theme-bright .catalyst-link:hover {
+  color: #0284c7;
+}
+body.theme-bright .catalyst-source {
+  color: #64748b;
+}
+body.theme-bright .footer-ticker-lbl {
+  color: #64748b;
+}
+body.theme-bright .ticker-chip {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* Stock Opportunities Filters & Cards */
+body.theme-bright .filter-label {
+  color: #64748b;
+}
+body.theme-bright .filter-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+body.theme-bright .filter-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+body.theme-bright .filter-btn.active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+body.theme-bright .catalyst-meter-row {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+body.theme-bright .catalyst-score-badge {
+  color: #047857;
+  text-shadow: none;
+}
+body.theme-bright .catalyst-label-tag {
+  color: #475569;
+}
+body.theme-bright .catalyst-news-counter {
+  color: #0284c7;
+}
 body.theme-bright .card-thesis-box,
 body.theme-bright .card-risk-box {
-  background: rgba(0, 0, 0, 0.02);
+  background: #f8fafc;
+}
+body.theme-bright .box-title {
+  color: #64748b;
+}
+body.theme-bright .box-text {
+  color: #1e293b;
+}
+body.theme-bright .btn-card-deepdive {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-color: #334155;
+  color: #ffffff;
+}
+body.theme-bright .btn-pin-toggle {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+body.theme-bright .btn-pin-toggle:hover,
+body.theme-bright .btn-pin-toggle.pinned {
+  background: #fef9c3;
+  border-color: #ca8a04;
+  color: #a16207;
+}
+
+/* STOCK ANALYZER (TAB 3) EMPTY STATE & IN-TAB SEARCH */
+body.theme-bright .deepdive-search-prompt {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  border-color: #cbd5e1;
+}
+body.theme-bright .prompt-housing h3 {
+  color: #0f172a;
+}
+body.theme-bright .prompt-housing p {
+  color: #475569;
+}
+body.theme-bright .tab-search-bar-wrap {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+body.theme-bright .tab-search-input {
+  color: #0f172a;
+}
+body.theme-bright .tab-search-input::placeholder {
+  color: #94a3b8;
+}
+body.theme-bright .btn-tab-clear {
+  color: #64748b;
+}
+body.theme-bright .btn-tab-analyze {
+  background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 100%);
+  border-color: #7c3aed;
+  color: #ffffff;
+}
+body.theme-bright .quick-suggest-divider {
+  color: #64748b;
+}
+body.theme-bright .btn-sample-pick {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+body.theme-bright .btn-sample-pick:hover {
+  background: #f1f5f9;
+  border-color: #7c3aed;
+  color: #7c3aed;
+}
+body.theme-bright .tab-autocomplete-dropdown {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+/* Active Deep Dive Panel in Bright Mode */
+body.theme-bright .active-panel-search-bar {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+body.theme-bright .search-bar-lbl {
+  color: #7c3aed;
+}
+body.theme-bright .active-search-input-wrap input {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+body.theme-bright .btn-active-analyze {
+  background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 100%);
+  border-color: #7c3aed;
+  color: #ffffff;
+}
+body.theme-bright .ticker-symbol-display {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+body.theme-bright .timeframe-selector-bay {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+body.theme-bright .tf-label {
+  color: #64748b;
+}
+body.theme-bright .tf-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+body.theme-bright .tf-btn.active {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+body.theme-bright .oscilloscope-controls {
+  color: #64748b;
+}
+body.theme-bright .ctrl-status {
+  color: #047857;
+}
+
+/* Deep Dive Sentiment Meter in Bright Mode */
+body.theme-bright .vu-dial-face {
+  background: radial-gradient(ellipse at 50% 100%, #ffffff 0%, #e2e8f0 100%);
+  border-color: #cbd5e1;
+}
+body.theme-bright .scale-text.scale-zero {
+  color: #64748b;
+}
+body.theme-bright .vu-digital-readout {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+body.theme-bright .readout-score {
+  color: #047857;
+  text-shadow: none;
+}
+body.theme-bright .readout-label {
+  color: #475569;
+}
+body.theme-bright .catalyst-volume-meter {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+body.theme-bright .vol-lbl {
+  color: #64748b;
+}
+body.theme-bright .targeted-news-header h4 {
+  color: #0f172a;
+}
+body.theme-bright .targeted-news-item {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+body.theme-bright .targeted-news-link {
+  color: #0f172a;
+}
+body.theme-bright .targeted-news-source {
+  color: #64748b;
+}
+
+/* Incident Wire in Bright Mode */
+body.theme-bright .wire-search-bar input {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+body.theme-bright .wire-theme-tag {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+body.theme-bright .wire-source-tag {
+  color: #64748b;
+}
+
+/* Watchlist in Bright Mode */
+body.theme-bright .btn-clear-vault {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+body.theme-bright .empty-vault-card {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #64748b;
+}
+
+/* Modals & Dialogs in Bright Mode */
+body.theme-bright .vault-door-chassis {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+body.theme-bright .vault-header {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+body.theme-bright .vault-title {
+  color: #0f172a;
+}
+body.theme-bright .vault-subtitle {
+  color: #64748b;
+}
+body.theme-bright .auth-tabs-row {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+body.theme-bright .auth-tab-btn {
+  color: #64748b;
+}
+body.theme-bright .auth-tab-btn.active {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #047857;
+}
+body.theme-bright .auth-label {
+  color: #475569;
+}
+body.theme-bright .auth-input-recess {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+body.theme-bright .auth-input {
+  color: #0f172a;
+}
+body.theme-bright .auth-btn-submit {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #0284c7;
+  color: #ffffff;
+}
+body.theme-bright .auth-demo-shortcut {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+body.theme-bright .demo-title {
+  color: #0284c7;
+}
+body.theme-bright .demo-sub {
+  color: #64748b;
+}
+body.theme-bright .btn-demo-fill {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
 }
 
 body.theme-bright .chassis-footer {
   background: #e2e8f0;
   border-top-color: #cbd5e1;
+}
+body.theme-bright .footer-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+body.theme-bright .footer-meta {
+  color: #64748b;
 }
 
 /* Reset & Base Setup */
