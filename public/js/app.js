@@ -154,6 +154,11 @@
     renderRegionControls();
     updateWatchlistBadge();
 
+    const footerStation = document.getElementById('footer-station');
+    if (footerStation && window.location.host) {
+      footerStation.textContent = `STATION: ${window.location.host.toUpperCase()}`;
+    }
+
     // Check Authentication Session
     const authenticated = checkAuthSession();
     if (authenticated) {
