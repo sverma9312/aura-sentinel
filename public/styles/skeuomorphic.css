@@ -561,11 +561,25 @@ body.theme-bright .tf-btn.active {
   border-color: #059669;
   color: #ffffff;
 }
+body.theme-bright .instrument-title {
+  color: #0f172a;
+}
+body.theme-bright .grid-mode-tag {
+  color: #0284c7;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 4px;
+}
 body.theme-bright .oscilloscope-controls {
   color: #64748b;
 }
+body.theme-bright .ctrl-label {
+  color: #64748b;
+  font-weight: 600;
+}
 body.theme-bright .ctrl-status {
   color: #047857;
+  font-weight: 700;
 }
 
 /* Deep Dive Sentiment Meter in Bright Mode */
