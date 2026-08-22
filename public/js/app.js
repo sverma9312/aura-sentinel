@@ -2282,53 +2282,53 @@
   // =========================================================================
   const TOUR_STEPS = [
     {
-      targetId: 'region-controls',
+      selector: '.market-region-deck',
       title: '1. Dual Market Theaters',
       desc: 'Seamlessly toggle between the India (NSE/BSE) and Global (US/World) macroeconomic intelligence models.',
       icon: '🌐',
       tab: 'tab-macro'
     },
     {
-      targetId: 'macro-gauge-title',
+      selector: '.macro-gauge-module',
       title: '2. Real-Time Macro Bias Gauge',
       desc: 'Visualizes live multi-source news sentiment from -100 (Strong Headwind) to +100 (Strong Tailwind).',
       icon: '🧭',
       tab: 'tab-macro'
     },
     {
-      targetId: 'flip-clock',
+      selector: '.refresh-deck',
       title: '3. Hourly Auto-Sync Engine',
       desc: 'Countdown timer to the next hourly news ingestion. Click "FORCE REFRESH" anytime to re-run on demand.',
       icon: '⏱️',
       tab: 'tab-macro'
     },
     {
-      targetId: 'search-input',
+      selector: '.search-box-recessed',
       title: '4. Universal Stock Deep Dive',
       desc: 'Search any NSE or US equity (e.g. HAL, RELIANCE, NVDA, AAPL) for instant catalyst evaluation and technical trajectories.',
       icon: '🔍',
       tab: 'tab-macro'
     },
     {
-      targetId: 'rocker-tabs',
+      selector: '.rocker-selector-bar',
       title: '5. Navigation Rocker Switch Rack',
       desc: 'Switch between Market Pulse, Top Stock Picks, Stock Analyzer, Breaking News Wire, and your Watchlist Vault.',
       icon: '🎛️',
       tab: 'tab-macro'
     },
     {
-      targetId: 'tab-btn-picks',
+      selector: '.tab-stocks',
       title: '6. Top Stock Picks & Catalyst Cards',
       desc: 'Displays the Top 21 catalyst-driven stocks ranked by score with news-driven investment theses and risk matrices.',
       icon: '⚡',
-      tab: 'tab-picks'
+      tab: 'tab-stocks'
     },
     {
-      targetId: 'tab-btn-watchlist',
+      selector: '.tab-watchlist',
       title: '7. Watchlist Vault & Cloud Sync',
       desc: 'Pin your favorite stocks to your MongoDB Atlas Cloud Vault, synchronized permanently across all your devices.',
       icon: '★',
-      tab: 'tab-picks'
+      tab: 'tab-watchlist'
     }
   ];
 
@@ -2382,17 +2382,19 @@
 
     // Position spotlight & popover
     setTimeout(() => {
-      let targetEl = document.getElementById(step.targetId);
-      if (!targetEl) targetEl = document.querySelector('.' + step.targetId);
-      if (!targetEl) targetEl = document.querySelector(`[data-tab="${step.tab}"]`);
+      let targetEl = document.querySelector(step.selector);
+      if (!targetEl && step.targetId) targetEl = document.getElementById(step.targetId);
 
       if (targetEl && spotlight && popover) {
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const rect = targetEl.getBoundingClientRect();
-        const pad = 8;
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-        const top = Math.max(0, rect.top + window.scrollY - pad);
-        const left = Math.max(0, rect.left + window.scrollX - pad);
+        const rect = targetEl.getBoundingClientRect();
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const pad = 6;
+
+        const top = rect.top + scrollY - pad;
+        const left = rect.left + scrollX - pad;
         const width = rect.width + pad * 2;
         const height = rect.height + pad * 2;
 
@@ -2403,18 +2405,19 @@
 
         // Position Popover card
         const popWidth = Math.min(360, window.innerWidth - 32);
-        let popLeft = rect.left + (rect.width / 2) - (popWidth / 2);
+        let popLeft = (rect.left + scrollX) + (rect.width / 2) - (popWidth / 2);
         popLeft = Math.max(16, Math.min(window.innerWidth - popWidth - 16, popLeft));
 
-        let popTop = top + height + 14;
-        if (popTop + 240 > window.innerHeight + window.scrollY) {
+        // Place below if there's space, or above if target is near bottom
+        let popTop = top + height + 12;
+        if (rect.bottom + 260 > window.innerHeight && rect.top > 260) {
           popTop = Math.max(16, top - 240);
         }
 
         popover.style.top = `${popTop}px`;
         popover.style.left = `${popLeft}px`;
       }
-    }, 120);
+    }, 100);
   }
 
   function nextTourStep() {

@@ -4991,10 +4991,14 @@ body.theme-bright .ai-narrative-text {
    INTERACTIVE ONBOARDING TUTORIAL TOUR STYLES
    ========================================================================== */
 .tutorial-tour-overlay {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
   z-index: 999999;
   pointer-events: auto;
+  overflow: visible;
   transition: opacity 0.3s ease;
 }
 .tutorial-tour-overlay.hidden {
@@ -5007,7 +5011,7 @@ body.theme-bright .ai-narrative-text {
   border: 2px solid var(--phosphor-cyan);
   box-shadow: 0 0 0 9999px rgba(5, 8, 14, 0.82), 0 0 25px var(--phosphor-cyan);
   pointer-events: none;
-  transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 1000000;
   animation: pulseSpotlight 2.5s infinite ease-in-out;
 }
