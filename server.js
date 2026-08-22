@@ -27,6 +27,9 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
+// Initialize MongoDB Connection (if MONGODB_URI is provided in .env/Render)
+dbService.initDb();
+
 // Pre-warm macro engine on boot for both regions
 Promise.all([
   macroEngine.getOrUpdateData('india'),
@@ -36,6 +39,27 @@ Promise.all([
 }).catch(err => {
   console.warn('[Server] Initial pre-warm notice:', err.message);
 });
+
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+      if (body.length > 1e6) {
+        req.destroy();
+        reject(new Error('Request payload too large'));
+      }
+    });
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (err) {
+        reject(new Error('Invalid JSON payload'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
 
 function sendJson(res, statusCode, data) {
   res.writeHead(statusCode, {
@@ -192,10 +216,72 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // API Route: Auth Register
+  if (pathname === '/api/auth/register' && req.method === 'POST') {
+    try {
+      const body = await readJsonBody(req);
+      const user = await dbService.registerUser(body);
+      return sendJson(res, 200, {
+        success: true,
+        message: 'User successfully registered.',
+        user: {
+          name: user.name,
+          org: user.org,
+          email: user.email,
+          role: user.role,
+          theme: user.theme,
+          watchlist: user.watchlist
+        }
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Auth Login
+  if (pathname === '/api/auth/login' && req.method === 'POST') {
+    try {
+      const body = await readJsonBody(req);
+      const user = await dbService.authenticateUser(body.email, body.password);
+      if (!user) {
+        return sendJson(res, 401, { success: false, error: 'INVALID SECURITY CREDENTIALS. ACCESS DENIED.' });
+      }
+      return sendJson(res, 200, {
+        success: true,
+        message: 'ACCESS GRANTED.',
+        user
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Watchlist Get & Sync
+  if (pathname === '/api/auth/watchlist' && req.method === 'GET') {
+    try {
+      const email = query.email;
+      const watchlist = await dbService.getUserWatchlist(email);
+      return sendJson(res, 200, { success: true, watchlist });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  if (pathname === '/api/auth/watchlist' && req.method === 'POST') {
+    try {
+      const body = await readJsonBody(req);
+      await dbService.saveUserWatchlist(body.email, body.watchlist);
+      return sendJson(res, 200, { success: true, message: 'Watchlist updated.' });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
   // API Route: Health check
   if (pathname === '/api/health' && req.method === 'GET') {
     return sendJson(res, 200, {
       status: 'OPERATIONAL',
+      mongoConnected: dbService.isMongoConnected(),
       timestamp: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),
       service: 'AURA SENTINEL Multi-Region Macro Engine (India & Global)'

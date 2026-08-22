@@ -209,8 +209,7 @@
     return false;
   }
 
-  function loginUser(email, password) {
-    const users = getUsers();
+  async function loginUser(email, password) {
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanPass = String(password || '').trim();
 
@@ -219,38 +218,74 @@
       return false;
     }
 
-    const user = users.find(u => {
+    try {
+      // 1. Try Server-Side Verification (MongoDB / Central DB)
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password: cleanPass })
+      });
+      const data = await res.json();
+
+      if (data.success && data.user) {
+        state.currentUser = data.user;
+        localStorage.setItem('aura_sentinel_session', JSON.stringify(data.user));
+        if (data.user.watchlist && data.user.watchlist.length > 0) {
+          state.watchlist = data.user.watchlist;
+          localStorage.setItem('aura_sentinel_watchlist', JSON.stringify(data.user.watchlist));
+          updateWatchlistBadge();
+        }
+        applyTheme(data.user.theme || 'dark');
+        updateHeaderUserUI(data.user);
+
+        showAuthToast('ACCESS GRANTED. DECRYPTING TERMINAL...', 'success');
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+
+        setTimeout(() => {
+          const authModal = document.getElementById('auth-modal');
+          if (authModal) authModal.classList.add('hidden');
+          fetchAllIntelligence();
+          startCountdownEngine();
+        }, 500);
+
+        return true;
+      }
+    } catch (netErr) {
+      console.warn('[Auth] Server login fetch error, attempting local vault fallback:', netErr);
+    }
+
+    // 2. Fallback to LocalStorage check if offline or local
+    const users = getUsers();
+    const localUser = users.find(u => {
       const uEmail = (u.email || '').trim().toLowerCase();
       const uPass = String(u.password || '').trim();
       return uEmail === cleanEmail && uPass === cleanPass;
     });
 
-    if (!user) {
-      showAuthToast('INVALID SECURITY CREDENTIALS. ACCESS DENIED.', 'error');
+    if (localUser) {
+      state.currentUser = localUser;
+      localStorage.setItem('aura_sentinel_session', JSON.stringify(localUser));
+      applyTheme(localUser.theme || 'dark');
+      updateHeaderUserUI(localUser);
+
+      showAuthToast('ACCESS GRANTED. DECRYPTING TERMINAL...', 'success');
       if (window.tactileAudio) window.tactileAudio.playRelaySnap();
-      return false;
+
+      setTimeout(() => {
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) authModal.classList.add('hidden');
+        fetchAllIntelligence();
+        startCountdownEngine();
+      }, 500);
+      return true;
     }
 
-    state.currentUser = user;
-    localStorage.setItem('aura_sentinel_session', JSON.stringify(user));
-    applyTheme(user.theme || 'dark');
-    updateHeaderUserUI(user);
-
-    showAuthToast('ACCESS GRANTED. DECRYPTING TERMINAL...', 'success');
+    showAuthToast('INVALID SECURITY CREDENTIALS. ACCESS DENIED.', 'error');
     if (window.tactileAudio) window.tactileAudio.playRelaySnap();
-
-    setTimeout(() => {
-      const authModal = document.getElementById('auth-modal');
-      if (authModal) authModal.classList.add('hidden');
-      fetchAllIntelligence();
-      startCountdownEngine();
-    }, 600);
-
-    return true;
+    return false;
   }
 
-  function registerUser(name, org, email, password) {
-    const users = getUsers();
+  async function registerUser(name, org, email, password) {
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanPass = String(password || '').trim();
 
@@ -259,36 +294,50 @@
       return false;
     }
 
-    const exists = users.some(u => (u.email || '').trim().toLowerCase() === cleanEmail);
-
-    if (exists) {
-      const idx = users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
-      if (idx !== -1) {
-        users[idx].password = cleanPass;
-        users[idx].name = name.trim() || users[idx].name;
-        users[idx].org = org.trim() || users[idx].org;
-        localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
-        loginUser(cleanEmail, cleanPass);
-        return true;
-      }
-    }
-
-    const newUser = {
+    const payload = {
       name: name.trim() || 'Macro Analyst',
       org: org.trim() || 'Aura Capital Markets',
       email: cleanEmail,
       password: cleanPass,
       role: 'TIER-1 MACRO ANALYST',
       theme: state.currentTheme || 'dark',
-      createdAt: new Date().toISOString()
+      watchlist: state.watchlist || []
     };
 
-    users.push(newUser);
+    try {
+      // 1. Send to Server (MongoDB Central Database)
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (data.success && data.user) {
+        // Also cache locally
+        const users = getUsers();
+        const idx = users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+        if (idx !== -1) users[idx] = { ...users[idx], ...payload };
+        else users.push(payload);
+        localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
+
+        return loginUser(cleanEmail, cleanPass);
+      } else if (data.error) {
+        showAuthToast(data.error.toUpperCase(), 'error');
+        return false;
+      }
+    } catch (netErr) {
+      console.warn('[Auth] Server register failed, saving locally:', netErr);
+    }
+
+    // LocalStorage fallback
+    const users = getUsers();
+    const idx = users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+    if (idx !== -1) users[idx] = { ...users[idx], ...payload };
+    else users.push(payload);
     localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
 
-    // Automatically log in newly created user
-    loginUser(newUser.email, newUser.password);
-    return true;
+    return loginUser(cleanEmail, cleanPass);
   }
 
   function logoutUser() {

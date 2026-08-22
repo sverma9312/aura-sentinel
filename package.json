@@ -16,6 +16,7 @@
   "author": "Antigravity Senior Financial Architect",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "mongodb": "^7.5.0"
   }
 }
