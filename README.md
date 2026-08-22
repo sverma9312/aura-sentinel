@@ -112,8 +112,8 @@
    PORT=3000
    GEMINI_API_KEY=your_gemini_api_key_here
    MONGODB_URI=your_mongodb_connection_string_here
-   ADMIN_EMAIL=admin@aura.capital
-   ADMIN_PASSWORD=admin2026
+   ADMIN_EMAIL=your_admin_email_here
+   ADMIN_PASSWORD=your_admin_password_here
    ```
 
 4. **Start the server:**
@@ -123,18 +123,3 @@
 
 5. **Open Terminal:**
    Navigate to `http://localhost:3000` in your web browser.
-
----
-
-## 🔒 Default Security Credentials
-
-| Role | Email | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| **Master Admin** | `admin@aura.capital` | `admin2026` | 👑 Full Root Governance & User Management |
-| **Demo Analyst** | `analyst@aura.capital` | `sentinel2026` | ⚡ Tier-1 Macro & Equity Intelligence |
-
----
-
-## 📜 License
-
-MIT License © 2026 AURA SENTINEL Financial Architecture Team
