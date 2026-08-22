@@ -189,12 +189,40 @@ body.theme-bright .next-refresh-timestamp {
   color: #64748b;
 }
 body.theme-bright .skeuo-push-button {
-  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
   border-color: #cbd5e1;
+  box-shadow: 0 3px 0 #94a3b8, 0 4px 8px rgba(0,0,0,0.12);
+}
+body.theme-bright .skeuo-push-button .btn-cap {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  border-top: 1px solid #ffffff;
   color: #0f172a;
+  text-shadow: none;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.06);
+}
+body.theme-bright .skeuo-push-button:hover .btn-cap {
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+  color: #0284c7;
 }
 body.theme-bright .skeuo-push-button .btn-label {
   color: #0f172a;
+}
+body.theme-bright .skeuo-push-button:hover .btn-label {
+  color: #0284c7;
+}
+body.theme-bright .skeuo-push-button .icon-refresh {
+  stroke: #0f172a;
+}
+body.theme-bright .skeuo-push-button:hover .icon-refresh {
+  stroke: #0284c7;
+}
+body.theme-bright .skeuo-push-button:active .btn-cap,
+body.theme-bright .skeuo-push-button.depressed .btn-cap {
+  background: #e2e8f0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+body.theme-bright .status-led-item span {
+  color: #64748b;
 }
 
 /* User Account Tray */
