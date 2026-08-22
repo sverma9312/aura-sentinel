@@ -416,6 +416,13 @@
     if (formLogin) formLogin.classList.remove('hidden');
     if (formSignup) formSignup.classList.add('hidden');
 
+    // Reset active viewport to default Market Pulse tab
+    switchActiveTab('tab-macro');
+    const tabAdmin = document.getElementById('tab-btn-admin');
+    if (tabAdmin) tabAdmin.classList.add('hidden');
+    const adminTbody = document.getElementById('admin-user-tbody');
+    if (adminTbody) adminTbody.innerHTML = '';
+
     // Show Auth Gate Modal
     const authModal = document.getElementById('auth-modal');
     if (authModal) {
@@ -470,6 +477,9 @@
       tabAdmin.classList.toggle('hidden', !isAdmin);
       if (isAdmin) {
         fetchAdminUsers();
+      } else if (state.currentTab === 'tab-admin') {
+        // If regular user was on admin tab, immediately switch them to default Market Pulse tab
+        switchActiveTab('tab-macro');
       }
     }
   }
