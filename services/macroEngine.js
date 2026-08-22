@@ -219,10 +219,10 @@ class MacroEngine {
         let stance = 'NEUTRAL';
         let tailwindStrength = 'MODERATE';
 
-        if (avgScore >= 20) { stance = 'STRONG_TAILWIND'; tailwindStrength = 'VERY_HIGH'; }
-        else if (avgScore >= 6) { stance = 'MODERATE_TAILWIND'; tailwindStrength = 'HIGH'; }
-        else if (avgScore <= -20) { stance = 'STRONG_HEADWIND'; tailwindStrength = 'CAUTION'; }
-        else if (avgScore <= -6) { stance = 'MODERATE_HEADWIND'; tailwindStrength = 'LOW'; }
+        if (avgScore >= 20) { stance = 'STRONG TAILWIND'; tailwindStrength = 'VERY HIGH'; }
+        else if (avgScore >= 6) { stance = 'MODERATE TAILWIND'; tailwindStrength = 'HIGH'; }
+        else if (avgScore <= -20) { stance = 'STRONG HEADWIND'; tailwindStrength = 'CAUTION'; }
+        else if (avgScore <= -6) { stance = 'MODERATE HEADWIND'; tailwindStrength = 'LOW'; }
 
         return {
           sectorId: sec.id,

@@ -84,6 +84,22 @@ function callGeminiApi(prompt) {
 }
 
 /**
+ * Format internal stance strings into human-friendly plain English.
+ */
+function formatFriendlyStance(stance) {
+  if (!stance) return 'Balanced';
+  const clean = String(stance).toUpperCase().replace(/_/g, ' ').trim();
+  switch (clean) {
+    case 'STRONG TAILWIND': return 'Strong Growth';
+    case 'MODERATE TAILWIND': return 'Moderate Growth';
+    case 'NEUTRAL': return 'Balanced';
+    case 'MODERATE HEADWIND': return 'Mild Headwinds';
+    case 'STRONG HEADWIND': return 'Strong Headwinds';
+    default: return clean.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+  }
+}
+
+/**
  * Generate a macro market intelligence narrative for a given region.
  * @param {string} region - 'india' or 'global'
  * @param {Array} topArticles - Array of top processed news articles
@@ -103,7 +119,7 @@ async function generateMacroNarrative(region, topArticles, overallScore, sectors
   const topSectors = sectors
     .sort((a, b) => Math.abs(b.tailwindScore) - Math.abs(a.tailwindScore))
     .slice(0, 3)
-    .map(s => `${s.sectorName}: ${s.stance} (score: ${s.tailwindScore})`)
+    .map(s => `${s.sectorName} (${formatFriendlyStance(s.stance)}, Score: ${s.tailwindScore > 0 ? '+' : ''}${s.tailwindScore})`)
     .join(', ');
 
   const prompt = `You are a Chief Financial Strategist analyzing ${regionLabel} financial markets.
@@ -130,10 +146,10 @@ Ensure the text is complete, professional, beautifully written in clear business
     return narrative;
   } catch (err) {
     console.warn(`[GeminiClient] Narrative generation failed: ${err.message}. Using fallback.`);
-    // Graceful fallback — does not break the app if Gemini fails
-    const direction = overallScore > 10 ? 'bullish' : overallScore < -10 ? 'bearish' : 'mixed';
-    return `${regionLabel} markets show ${direction} sentiment with an aggregate score of ${overallScore}. ` +
-           `Key sector drivers: ${topSectors}. Analysis based on ${topArticles.length} live news articles.`;
+    // Graceful fallback — formatted in clean plain English without code variable names
+    const direction = overallScore > 10 ? 'positive growth' : overallScore < -10 ? 'cautious' : 'balanced';
+    return `${regionLabel} markets currently show ${direction} momentum with an aggregate score of ${overallScore > 0 ? '+' : ''}${overallScore}. ` +
+           `Leading sector drivers: ${topSectors}. Analysis synthesized from ${topArticles.length} live market reports.`;
   }
 }
 
