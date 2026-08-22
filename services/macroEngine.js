@@ -251,10 +251,20 @@ class MacroEngine {
       processedArticles.forEach(a => globalScore += a.sentimentScore);
       const overallSentimentScore = processedArticles.length > 0 ? Math.round(globalScore / processedArticles.length) : (reg === 'india' ? 22 : 12);
 
-      // 4. Target Tickers based on region
+      // 4. Target Tickers based on region (Top 20 Equities per Theater)
       const targetTickers = reg === 'india' 
-        ? ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS', 'LT.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'TATAMOTORS.NS', 'IREDA.NS', 'SBIN.NS', 'NTPC.NS']
-        : ['NVDA', 'TSM', 'ASML', 'LMT', 'RTX', 'CCJ', 'CEG', 'PLTR', 'NVO', 'XOM', 'BA', 'AAPL'];
+        ? [
+            'HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS', 'LT.NS',
+            'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS',
+            'TATAMOTORS.NS', 'IREDA.NS', 'NTPC.NS', 'BHARTIARTL.NS', 'ITC.NS',
+            'SUNPHARMA.NS', 'ADANIPORTS.NS', 'BAJFINANCE.NS', 'ONGC.NS', 'KOTAKBANK.NS'
+          ]
+        : [
+            'NVDA', 'TSM', 'ASML', 'LMT', 'RTX',
+            'PLTR', 'MSFT', 'AAPL', 'GOOGL', 'AMZN',
+            'META', 'AMD', 'QCOM', 'CCJ', 'CEG',
+            'XOM', 'NVO', 'LLY', 'BA', 'CAT'
+          ];
 
       const stockOpportunities = [];
 

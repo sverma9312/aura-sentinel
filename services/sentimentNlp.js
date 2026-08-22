@@ -113,23 +113,31 @@ const GEOPOLITICAL_THEMES_INDIA = [
   }
 ];
 
-// Stock Entity Mapping dictionary (Global + India)
+// Stock Entity Mapping dictionary (Global + India) - 20 Tickers Per Theater
 const KNOWN_TICKERS = {
-  // Global Tickers
+  // Global Tickers (Top 20)
   'NVDA': { name: 'NVIDIA Corp', sector: 'technology', subsector: 'Semiconductors & AI', region: 'global', keywords: ['nvidia', 'nvda', 'jensen huang', 'blackwell', 'cuda', 'h100', 'b200'] },
   'TSM': { name: 'Taiwan Semiconductor Mfg', sector: 'technology', subsector: 'Foundry & Chips', region: 'global', keywords: ['tsmc', 'tsm', 'taiwan semi', 'arizona fab', '2nm'] },
   'ASML': { name: 'ASML Holding NV', sector: 'technology', subsector: 'Lithography Equipment', region: 'global', keywords: ['asml', 'euv', 'high-na', 'lithography'] },
   'LMT': { name: 'Lockheed Martin Corp', sector: 'defense', subsector: 'Defense & Aerospace', region: 'global', keywords: ['lockheed', 'lmt', 'f-35', 'himars', 'missile defense'] },
   'RTX': { name: 'RTX Corporation', sector: 'defense', subsector: 'Aerospace & Defense', region: 'global', keywords: ['rtx', 'raytheon', 'pratt & whitney', 'patriot missile'] },
-  'XOM': { name: 'Exxon Mobil Corp', sector: 'energy', subsector: 'Integrated Oil & Gas', region: 'global', keywords: ['exxon', 'xom', 'guyana oil', 'permian', 'lng export'] },
-  'CCJ': { name: 'Cameco Corporation', sector: 'energy', subsector: 'Uranium & Nuclear Fuel', region: 'global', keywords: ['cameco', 'ccj', 'uranium', 'nuclear fuel', 'kazatomprom'] },
   'PLTR': { name: 'Palantir Technologies', sector: 'technology', subsector: 'Defense AI & Data', region: 'global', keywords: ['palantir', 'pltr', 'karp', 'aip', 'gotham'] },
-  'NVO': { name: 'Novo Nordisk', sector: 'healthcare', subsector: 'Biopharma & GLP-1', region: 'global', keywords: ['novo nordisk', 'nvo', 'wegovy', 'ozempic', 'semaglutide'] },
-  'AAPL': { name: 'Apple Inc.', sector: 'technology', subsector: 'Consumer Tech & AI', region: 'global', keywords: ['apple', 'aapl', 'iphone', 'tim cook', 'apple intelligence'] },
   'MSFT': { name: 'Microsoft Corp', sector: 'technology', subsector: 'Cloud & Enterprise AI', region: 'global', keywords: ['microsoft', 'msft', 'azure', 'copilot', 'satya nadella'] },
+  'AAPL': { name: 'Apple Inc.', sector: 'technology', subsector: 'Consumer Tech & AI', region: 'global', keywords: ['apple', 'aapl', 'iphone', 'tim cook', 'apple intelligence'] },
+  'GOOGL': { name: 'Alphabet Inc.', sector: 'technology', subsector: 'Cloud, AI & Search', region: 'global', keywords: ['google', 'alphabet', 'googl', 'gemini ai', 'sundar pichai', 'google cloud'] },
+  'AMZN': { name: 'Amazon.com Inc.', sector: 'industrials', subsector: 'Cloud Infrastructure & Logistics', region: 'global', keywords: ['amazon', 'amzn', 'aws', 'andy jassy', 'amazon web services'] },
+  'META': { name: 'Meta Platforms Inc.', sector: 'technology', subsector: 'AI Infrastructure & Platforms', region: 'global', keywords: ['meta', 'meta platforms', 'mark zuckerberg', 'llama', 'ai datacenter'] },
+  'AMD': { name: 'Advanced Micro Devices', sector: 'technology', subsector: 'Datacenter GPU & Silicon', region: 'global', keywords: ['amd', 'lisa su', 'mi300', 'ryzen', 'epyc'] },
+  'QCOM': { name: 'Qualcomm Inc.', sector: 'technology', subsector: 'Edge AI & Mobile Silicon', region: 'global', keywords: ['qualcomm', 'qcom', 'snapdragon', 'ai pc', '5g chipset'] },
+  'CCJ': { name: 'Cameco Corporation', sector: 'energy', subsector: 'Uranium & Nuclear Fuel', region: 'global', keywords: ['cameco', 'ccj', 'uranium', 'nuclear fuel', 'kazatomprom'] },
+  'CEG': { name: 'Constellation Energy Corp', sector: 'energy', subsector: 'Nuclear Baseload Clean Energy', region: 'global', keywords: ['constellation energy', 'ceg', 'three mile island', 'nuclear power datacenter'] },
+  'XOM': { name: 'Exxon Mobil Corp', sector: 'energy', subsector: 'Integrated Oil & Gas', region: 'global', keywords: ['exxon', 'xom', 'guyana oil', 'permian', 'lng export'] },
+  'NVO': { name: 'Novo Nordisk', sector: 'healthcare', subsector: 'Biopharma & GLP-1', region: 'global', keywords: ['novo nordisk', 'nvo', 'wegovy', 'ozempic', 'semaglutide'] },
+  'LLY': { name: 'Eli Lilly and Company', sector: 'healthcare', subsector: 'Metabolic & Therapeutics', region: 'global', keywords: ['eli lilly', 'lly', 'mounjaro', 'zepbound', 'glp-1 pipeline'] },
   'BA': { name: 'Boeing Company', sector: 'industrials', subsector: 'Commercial & Defense Aviation', region: 'global', keywords: ['boeing', 'ba', '737 max', 'faa', 'starliner'] },
+  'CAT': { name: 'Caterpillar Inc.', sector: 'industrials', subsector: 'Global Heavy Machinery & Infra', region: 'global', keywords: ['caterpillar', 'cat', 'construction machinery', 'mining equipment', 'infrastructure capex'] },
 
-  // India Tickers (NSE)
+  // India Tickers (Top 20 NSE)
   'HAL.NS': { name: 'Hindustan Aeronautics Ltd', sector: 'defense_india', subsector: 'Defense Aerospace & Fighter Jets', region: 'india', keywords: ['hindustan aeronautics', 'hal', 'tejas mk1a', 'lch prachand', 'su-30mki', 'ge f404 engine'] },
   'BEL.NS': { name: 'Bharat Electronics Ltd', sector: 'defense_india', subsector: 'Defense Radar & Avionics', region: 'india', keywords: ['bharat electronics', 'bel', 'radar', 'electronic warfare', 'defense avionics', 'qrsam'] },
   'RELIANCE.NS': { name: 'Reliance Industries Ltd', sector: 'energy_india', subsector: 'Energy, Retail & Telecom', region: 'india', keywords: ['reliance', 'mukesh ambani', 'jio', 'reliance retail', 'jamnagar refinery', 'green energy gigafactory'] },
@@ -143,7 +151,13 @@ const KNOWN_TICKERS = {
   'TATAMOTORS.NS': { name: 'Tata Motors Ltd', sector: 'auto_india', subsector: 'EV, Commercial & JLR', region: 'india', keywords: ['tata motors', 'jlr', 'jaguar land rover', 'tata ev', 'nexon ev', 'curvv', 'commercial vehicle demand'] },
   'IREDA.NS': { name: 'Indian Renewable Energy Dev', sector: 'energy_india', subsector: 'Green Energy Financing', region: 'india', keywords: ['ireda', 'green financing', 'renewable loan book', 'solar project funding', 'navratna psu'] },
   'NTPC.NS': { name: 'NTPC Limited', sector: 'energy_india', subsector: 'Power Generation & Green Energy', region: 'india', keywords: ['ntpc', 'green energy ipo', 'thermal power capacity', 'nuclear power project', 'renewable target'] },
-  'SUNPHARMA.NS': { name: 'Sun Pharmaceutical Ind', sector: 'healthcare_india', subsector: 'Global Specialty & Generics', region: 'india', keywords: ['sun pharma', 'dilip shanghvi', 'specialty pharma', 'illuymya', 'us fda inspection', 'dermatology pipeline'] }
+  'BHARTIARTL.NS': { name: 'Bharti Airtel Ltd', sector: 'technology_india', subsector: 'Telecom, 5G & Digital Data', region: 'india', keywords: ['bharti airtel', 'airtel', 'sunil mittal', 'arpu growth', '5g network roll out', 'airtel payments'] },
+  'ITC.NS': { name: 'ITC Limited', sector: 'industrials_india', subsector: 'Consumer Goods, Agri & Hotels', region: 'india', keywords: ['itc', 'sanjiv puri', 'fmcg expansion', 'hotel demerger', 'cigarette tax', 'agri business'] },
+  'SUNPHARMA.NS': { name: 'Sun Pharmaceutical Ind', sector: 'healthcare_india', subsector: 'Global Specialty & Generics', region: 'india', keywords: ['sun pharma', 'dilip shanghvi', 'specialty pharma', 'illuymya', 'us fda inspection', 'dermatology pipeline'] },
+  'ADANIPORTS.NS': { name: 'Adani Ports and SEZ', sector: 'industrials_india', subsector: 'Port Logistics & Maritime Infrastructure', region: 'india', keywords: ['adani ports', 'karan adani', 'mundra port', 'container volume', 'port expansion'] },
+  'BAJFINANCE.NS': { name: 'Bajaj Finance Ltd', sector: 'financials_india', subsector: 'Consumer Credit & Digital NBFC', region: 'india', keywords: ['bajaj finance', 'rajeev jain', 'omnichannel app', 'unsecured loan', 'assets under management'] },
+  'ONGC.NS': { name: 'Oil & Natural Gas Corp', sector: 'energy_india', subsector: 'Oil Exploration & Offshore Gas', region: 'india', keywords: ['ongc', 'crude oil production', 'kg basin gas', 'offshore drilling', 'petroleum ministry'] },
+  'KOTAKBANK.NS': { name: 'Kotak Mahindra Bank', sector: 'financials_india', subsector: 'Private Banking & Wealth Management', region: 'india', keywords: ['kotak bank', 'uday kotak', 'ashok vaswani', '811 digital banking', 'wealth management'] }
 };
 
 /**
