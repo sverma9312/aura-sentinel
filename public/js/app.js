@@ -396,17 +396,194 @@
     const profName = document.getElementById('profile-name');
     const profEmail = document.getElementById('profile-email');
     const profOrg = document.getElementById('profile-org');
+    const tabAdmin = document.getElementById('tab-btn-admin');
 
     if (nameEl) nameEl.textContent = user.name.toUpperCase();
     if (roleEl) roleEl.textContent = user.org ? user.org.toUpperCase() : 'AURA CAPITAL';
     if (avatarEl) {
       const initials = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-      avatarEl.textContent = initials || 'SA';
+      avatarEl.textContent = initials || (user.role === 'ADMIN' ? '👑' : 'SA');
     }
 
     if (profName) profName.textContent = user.name;
     if (profEmail) profEmail.textContent = user.email;
     if (profOrg) profOrg.textContent = user.org || 'Aura Capital Markets';
+
+    // Show/Hide Admin Console tab based on Role
+    const isAdmin = user.role === 'ADMIN';
+    if (tabAdmin) {
+      tabAdmin.classList.toggle('hidden', !isAdmin);
+      if (isAdmin) {
+        fetchAdminUsers();
+      }
+    }
+  }
+
+  // =========================================================================
+  // ADMIN CONSOLE CONTROLLER (RBAC & MONGODB MANAGEMENT)
+  // =========================================================================
+  async function fetchAdminUsers() {
+    if (!state.currentUser || state.currentUser.role !== 'ADMIN') return;
+
+    try {
+      const res = await fetch('/api/admin/users', {
+        headers: { 'x-user-email': state.currentUser.email }
+      });
+      const data = await res.json();
+
+      if (data.success && data.users) {
+        state.adminUsers = data.users;
+        renderAdminKPIs(data);
+        renderAdminTable(data.users);
+      }
+    } catch (err) {
+      console.error('[Admin] Error fetching user registry:', err);
+    }
+  }
+
+  function renderAdminKPIs(data) {
+    const totalEl = document.getElementById('admin-kpi-total');
+    const adminsEl = document.getElementById('admin-kpi-admins');
+    const analystsEl = document.getElementById('admin-kpi-analysts');
+    const counterEl = document.getElementById('admin-user-counter');
+    const dbInd = document.getElementById('admin-db-indicator');
+
+    const total = data.totalUsers || data.users.length;
+    const admins = data.users.filter(u => u.role === 'ADMIN').length;
+    const analysts = total - admins;
+
+    if (totalEl) totalEl.textContent = total;
+    if (adminsEl) adminsEl.textContent = admins;
+    if (analystsEl) analystsEl.textContent = analysts;
+    if (counterEl) counterEl.textContent = total;
+
+    if (dbInd) {
+      if (data.mongoConnected) {
+        dbInd.textContent = '🍃 MONGODB ATLAS: CONNECTED';
+        dbInd.className = 'admin-db-status status-online';
+      } else {
+        dbInd.textContent = '⚡ HIGH-SPEED MEMORY MODE';
+        dbInd.className = 'admin-db-status status-local';
+      }
+    }
+  }
+
+  function renderAdminTable(users) {
+    const tbody = document.getElementById('admin-user-tbody');
+    if (!tbody) return;
+
+    if (!users || users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--text-dim);">No analyst records found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    users.forEach(u => {
+      const tr = document.createElement('tr');
+      const isAdmin = u.role === 'ADMIN';
+      const isSelf = state.currentUser && state.currentUser.email.toLowerCase() === u.email.toLowerCase();
+      const isRootAdmin = u.email.toLowerCase() === 'admin@aura.capital';
+      const dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'Preset';
+
+      tr.innerHTML = `
+        <td>
+          <div class="analyst-name-cell">
+            <span class="user-avatar-mini ${isAdmin ? 'admin-avatar' : ''}">${isAdmin ? '👑' : '👤'}</span>
+            <div>
+              <strong class="user-display-name">${escapeHtml(u.name)}</strong>
+              ${isSelf ? '<span class="self-pill">YOU</span>' : ''}
+            </div>
+          </div>
+        </td>
+        <td><span class="user-email-tag">${escapeHtml(u.email)}</span></td>
+        <td><span class="user-org-text">${escapeHtml(u.org || 'Aura Capital')}</span></td>
+        <td>
+          <span class="role-badge ${isAdmin ? 'role-admin' : 'role-analyst'}">
+            ${isAdmin ? '👑 ADMIN' : '⚡ ANALYST'}
+          </span>
+        </td>
+        <td><span class="date-text">${dateStr}</span></td>
+        <td style="text-align: right;">
+          <div class="admin-actions-cell">
+            ${!isRootAdmin && !isSelf ? `
+              <button class="btn-table-action btn-role-toggle" data-email="${escapeHtml(u.email)}" data-current-role="${u.role}" title="Toggle Role">
+                ${isAdmin ? 'DEMOTE' : 'PROMOTE'}
+              </button>
+              <button class="btn-table-action btn-delete-user" data-email="${escapeHtml(u.email)}" title="Delete user from MongoDB">
+                🗑️ REVOKE
+              </button>
+            ` : '<span class="action-locked">PROTECTED</span>'}
+          </div>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    // Wire action buttons
+    tbody.querySelectorAll('.btn-delete-user').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const email = btn.getAttribute('data-email');
+        if (confirm(`Are you sure you want to REVOKE ACCESS and permanently DELETE [${email}] from MongoDB?`)) {
+          if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+          deleteAdminUser(email);
+        }
+      });
+    });
+
+    tbody.querySelectorAll('.btn-role-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const email = btn.getAttribute('data-email');
+        const currentRole = btn.getAttribute('data-current-role');
+        const newRole = currentRole === 'ADMIN' ? 'ANALYST' : 'ADMIN';
+        if (confirm(`Change security clearance for [${email}] to [${newRole}]?`)) {
+          if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+          toggleAdminUserRole(email, newRole);
+        }
+      });
+    });
+  }
+
+  async function deleteAdminUser(email) {
+    try {
+      const res = await fetch('/api/admin/users/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': state.currentUser.email
+        },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchAdminUsers();
+      } else {
+        alert(data.error || 'Failed to delete user.');
+      }
+    } catch (e) {
+      console.error('[Admin] Delete error:', e);
+    }
+  }
+
+  async function toggleAdminUserRole(email, newRole) {
+    try {
+      const res = await fetch('/api/admin/users/role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': state.currentUser.email
+        },
+        body: JSON.stringify({ email, role: newRole })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchAdminUsers();
+      } else {
+        alert(data.error || 'Failed to update role.');
+      }
+    } catch (e) {
+      console.error('[Admin] Role update error:', e);
+    }
   }
 
   function showAuthToast(msg, type = 'error') {
@@ -1456,7 +1633,7 @@
     }
 
     // Rocker Tabs
-    el.rockerTabs.forEach(tab => {
+    document.querySelectorAll('.rocker-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const targetTab = tab.getAttribute('data-tab');
         if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
@@ -1651,8 +1828,96 @@
       if (btnCloseSources) btnCloseSources.addEventListener('click', closeModal);
       if (btnCloseSourcesBottom) btnCloseSourcesBottom.addEventListener('click', closeModal);
 
-      sourceModal.addEventListener('click', (e) => {
-        if (e.target === sourceModal) closeModal();
+    // Admin Provision Modal & Management Handlers
+    const provisionModal = document.getElementById('provision-modal');
+    const btnOpenProvision = document.getElementById('btn-open-provision-modal');
+    const btnCloseProvision = document.getElementById('btn-close-provision');
+    const btnCancelProvision = document.getElementById('btn-cancel-provision');
+    const formProvision = document.getElementById('form-provision-user');
+    const adminUserSearch = document.getElementById('admin-user-search');
+    const btnRefreshAdmin = document.getElementById('btn-refresh-admin-users');
+
+    if (btnOpenProvision && provisionModal) {
+      btnOpenProvision.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        provisionModal.classList.remove('hidden');
+        const toast = document.getElementById('provision-toast');
+        if (toast) toast.classList.add('hidden');
+      });
+
+      const closeProv = () => {
+        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        provisionModal.classList.add('hidden');
+        if (formProvision) formProvision.reset();
+      };
+
+      if (btnCloseProvision) btnCloseProvision.addEventListener('click', closeProv);
+      if (btnCancelProvision) btnCancelProvision.addEventListener('click', closeProv);
+      provisionModal.addEventListener('click', (e) => {
+        if (e.target === provisionModal) closeProv();
+      });
+    }
+
+    if (formProvision) {
+      formProvision.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const toast = document.getElementById('provision-toast');
+        const name = document.getElementById('prov-name').value;
+        const org = document.getElementById('prov-org').value;
+        const email = document.getElementById('prov-email').value;
+        const password = document.getElementById('prov-password').value;
+        const role = document.getElementById('prov-role').value;
+
+        try {
+          const res = await fetch('/api/admin/users/create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-email': state.currentUser.email
+            },
+            body: JSON.stringify({ name, org, email, password, role })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+            provisionModal.classList.add('hidden');
+            formProvision.reset();
+            fetchAdminUsers();
+          } else {
+            if (toast) {
+              toast.textContent = data.error || 'Failed to provision account.';
+              toast.className = 'auth-msg-toast error';
+              toast.classList.remove('hidden');
+            }
+          }
+        } catch (err) {
+          if (toast) {
+            toast.textContent = 'Server communication failure.';
+            toast.className = 'auth-msg-toast error';
+            toast.classList.remove('hidden');
+          }
+        }
+      });
+    }
+
+    if (btnRefreshAdmin) {
+      btnRefreshAdmin.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+        fetchAdminUsers();
+      });
+    }
+
+    if (adminUserSearch) {
+      adminUserSearch.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        if (!state.adminUsers) return;
+        const filtered = state.adminUsers.filter(u => 
+          (u.name || '').toLowerCase().includes(q) ||
+          (u.email || '').toLowerCase().includes(q) ||
+          (u.org || '').toLowerCase().includes(q)
+        );
+        renderAdminTable(filtered);
       });
     }
 
@@ -1847,12 +2112,12 @@
   function switchActiveTab(tabId) {
     state.currentTab = tabId;
 
-    el.rockerTabs.forEach(t => {
+    document.querySelectorAll('.rocker-tab').forEach(t => {
       if (t.getAttribute('data-tab') === tabId) t.classList.add('active');
       else t.classList.remove('active');
     });
 
-    el.tabContents.forEach(content => {
+    document.querySelectorAll('.tab-content').forEach(content => {
       if (content.id === tabId) content.classList.add('active');
       else content.classList.remove('active');
     });
@@ -1860,6 +2125,10 @@
     if (tabId === 'tab-deepdive' && state.selectedStock && state.selectedStock.quote) {
       const isIndia = state.selectedStock.symbol.endsWith('.NS') || state.selectedStock.quote.currency === 'INR';
       setTimeout(() => drawOscilloscopeChart(state.selectedStock.quote.sparkline || [], isIndia ? '₹' : '$'), 50);
+    }
+
+    if (tabId === 'tab-admin') {
+      fetchAdminUsers();
     }
   }
 

@@ -160,6 +160,11 @@
           <span class="tab-title">MY WATCHLIST</span>
           <span class="tab-counter" id="watchlist-counter">0</span>
         </button>
+        <button class="rocker-tab tab-admin hidden" id="tab-btn-admin" data-tab="tab-admin" title="Master Security & User Management Console">
+          <span class="tab-icon">👑</span>
+          <span class="tab-title">ADMIN CONSOLE</span>
+          <span class="tab-counter admin-badge-counter" id="admin-user-counter">0</span>
+        </button>
       </nav>
     </header>
 
@@ -438,6 +443,77 @@
             <div class="vault-icon">🔒</div>
             <h3>YOUR WATCHLIST VAULT IS EMPTY</h3>
             <p>Click the <strong>★ PIN TO WATCHLIST</strong> button on any stock opportunity card or deep-dive page to track your favored equities here.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: ADMIN GOVERNANCE CONSOLE (ADMIN ONLY) -->
+      <section id="tab-admin" class="tab-content">
+        <div class="section-banner">
+          <div class="banner-title-group">
+            <div class="banner-badge-row">
+              <span class="admin-shield-badge">👑 ROOT GOVERNANCE CONSOLE</span>
+              <span class="admin-db-status" id="admin-db-indicator">🍃 MONGODB ATLAS: CONNECTED</span>
+            </div>
+            <h2 class="section-heading">INSTITUTIONAL USER & ACCESS MANAGEMENT</h2>
+            <p class="section-subtext">Provision new analysts, manage access clearances, and revoke credentials directly in the MongoDB cloud database.</p>
+          </div>
+          <div class="admin-top-actions">
+            <button id="btn-open-provision-modal" class="btn-admin-primary">
+              <span>+ PROVISION NEW ANALYST</span>
+            </button>
+            <button id="btn-refresh-admin-users" class="btn-admin-secondary" title="Reload User Database">
+              <span>🔄 REFRESH</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Admin KPI Metric Bay -->
+        <div class="admin-kpi-grid">
+          <div class="admin-kpi-card">
+            <span class="kpi-lbl">TOTAL REGISTERED USERS</span>
+            <span class="kpi-val" id="admin-kpi-total">--</span>
+          </div>
+          <div class="admin-kpi-card">
+            <span class="kpi-lbl">ACTIVE ADMIN ACCOUNTS</span>
+            <span class="kpi-val highlight-gold" id="admin-kpi-admins">--</span>
+          </div>
+          <div class="admin-kpi-card">
+            <span class="kpi-lbl">TIER-1 ANALYSTS</span>
+            <span class="kpi-val highlight-cyan" id="admin-kpi-analysts">--</span>
+          </div>
+          <div class="admin-kpi-card">
+            <span class="kpi-lbl">DATABASE CLOUD ENGINE</span>
+            <span class="kpi-val highlight-green" id="admin-kpi-engine">MONGODB ATLAS</span>
+          </div>
+        </div>
+
+        <!-- User Directory Bezel Table -->
+        <div class="admin-table-chassis">
+          <div class="admin-table-header-row">
+            <div class="admin-table-title">INSTITUTIONAL ANALYST DIRECTORY</div>
+            <div class="admin-search-wrap">
+              <input type="text" id="admin-user-search" placeholder="Search by name, email, or organization...">
+            </div>
+          </div>
+          <div class="admin-table-scroll">
+            <table class="admin-user-table">
+              <thead>
+                <tr>
+                  <th>ANALYST / USER</th>
+                  <th>WORK EMAIL</th>
+                  <th>ORGANIZATION</th>
+                  <th>CLEARANCE / ROLE</th>
+                  <th>REGISTERED DATE</th>
+                  <th style="text-align: right;">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="admin-user-tbody">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-dim);">Loading user registry from MongoDB Atlas...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -778,6 +854,71 @@
           </div>
 
         </div>
+      </div>
+    </div>
+
+    <!-- PROVISION NEW USER MODAL (ADMIN ONLY) -->
+    <div id="provision-modal" class="skeuo-modal-overlay hidden">
+      <div class="skeuo-modal-chassis modal-small">
+        <div class="modal-header-bezel">
+          <div class="modal-title-group">
+            <span class="modal-icon">👤</span>
+            <div>
+              <h3 class="modal-bezel-title">PROVISION NEW ANALYST</h3>
+              <span class="modal-bezel-sub">DIRECT MONGODB CLOUD REGISTRATION</span>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" id="btn-close-provision">&times;</button>
+        </div>
+
+        <form id="form-provision-user" class="vault-form-body">
+          <div id="provision-toast" class="auth-msg-toast hidden"></div>
+
+          <div class="auth-field-group">
+            <label class="auth-label">FULL NAME</label>
+            <div class="auth-input-recess">
+              <input type="text" id="prov-name" class="auth-input" placeholder="e.g. Vikram Malhotra" required>
+            </div>
+          </div>
+
+          <div class="auth-field-group" style="margin-top: 8px;">
+            <label class="auth-label">ORGANIZATION / COMPANY</label>
+            <div class="auth-input-recess">
+              <input type="text" id="prov-org" class="auth-input" placeholder="e.g. Aura Capital Markets" required>
+            </div>
+          </div>
+
+          <div class="auth-field-group" style="margin-top: 8px;">
+            <label class="auth-label">WORK EMAIL</label>
+            <div class="auth-input-recess">
+              <input type="email" id="prov-email" class="auth-input" placeholder="e.g. analyst@auracapital.com" required>
+            </div>
+          </div>
+
+          <div class="auth-field-group" style="margin-top: 8px;">
+            <label class="auth-label">INITIAL PASSCODE / PIN (MIN 6 CHARS)</label>
+            <div class="auth-input-recess">
+              <input type="password" id="prov-password" class="auth-input" placeholder="Create security passcode" required minlength="6">
+            </div>
+          </div>
+
+          <div class="auth-field-group" style="margin-top: 8px;">
+            <label class="auth-label">SECURITY CLEARANCE / ROLE</label>
+            <div class="auth-input-recess">
+              <select id="prov-role" class="admin-select-input">
+                <option value="ANALYST">ANALYST (STANDARD ACCESS)</option>
+                <option value="ADMIN">ADMIN (ELEVATED ROOT PRIVILEGES)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer-bezel" style="margin-top: 14px; padding: 12px 0 0 0; background: transparent; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn-cancel-modal" id="btn-cancel-provision">CANCEL</button>
+            <button type="submit" class="auth-btn-submit" style="margin: 0; padding: 10px 18px;">
+              <span>✅ PROVISION ACCOUNT</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 

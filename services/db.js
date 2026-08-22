@@ -1,6 +1,6 @@
 /**
  * AURA SENTINEL - Database & Authentication Engine
- * Supports Free Forever MongoDB Atlas with In-Memory/Local Fallback.
+ * Supports Free Forever MongoDB Atlas with In-Memory/Local Fallback and RBAC.
  */
 
 const { MongoClient } = require('mongodb');
@@ -15,15 +15,27 @@ const DEFAULT_DEMO_USER = {
   password: 'sentinel2026',
   name: 'Senior Financial Architect',
   org: 'Aura Capital Markets',
-  role: 'TIER-1 MACRO STRATEGIST',
+  role: 'ANALYST',
   theme: 'dark',
+  watchlist: ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS'],
+  createdAt: new Date().toISOString()
+};
+
+// Default master admin account
+const DEFAULT_ADMIN_USER = {
+  email: (process.env.ADMIN_EMAIL || 'admin@aura.capital').toLowerCase(),
+  password: process.env.ADMIN_PASSWORD || 'admin2026',
+  name: 'Master System Administrator',
+  org: 'Aura Capital Global',
+  role: 'ADMIN',
+  theme: 'dark',
+  watchlist: ['HAL.NS', 'BEL.NS', 'NVDA', 'TSM', 'LMT'],
   createdAt: new Date().toISOString()
 };
 
 // In-Memory fallback store
 const fallbackStore = {
-  users: [DEFAULT_DEMO_USER],
-  watchlists: {}
+  users: [DEFAULT_ADMIN_USER, DEFAULT_DEMO_USER]
 };
 
 /**
@@ -50,18 +62,26 @@ async function initDb() {
 
     console.log('=======================================================');
     console.log(' 🍃 [MongoDB Atlas] Connected successfully to Cloud Database!');
-    console.log(' 🔐 Cross-Device User Accounts & Watchlist Sync is ACTIVE.');
+    console.log(' 🔐 Cross-Device User Accounts & Admin RBAC is ACTIVE.');
     console.log('=======================================================');
 
     // Create unique index on email
     const usersCollection = db.collection('users');
     await usersCollection.createIndex({ email: 1 }, { unique: true });
 
-    // Seed default demo account if collection is empty
-    const count = await usersCollection.countDocuments();
-    if (count === 0) {
-      await usersCollection.insertOne(DEFAULT_DEMO_USER);
-    }
+    // Seed master admin account if not present
+    await usersCollection.updateOne(
+      { email: DEFAULT_ADMIN_USER.email },
+      { $setOnInsert: DEFAULT_ADMIN_USER },
+      { upsert: true }
+    );
+
+    // Seed demo analyst if not present
+    await usersCollection.updateOne(
+      { email: DEFAULT_DEMO_USER.email },
+      { $setOnInsert: DEFAULT_DEMO_USER },
+      { upsert: true }
+    );
   } catch (err) {
     console.warn('[DB] MongoDB Connection warning (falling back to memory):', err.message);
     isConnected = false;
@@ -87,6 +107,25 @@ async function findUserByEmail(email) {
 }
 
 /**
+ * Get all registered users (for Admin console)
+ */
+async function getAllUsers() {
+  if (isConnected && db) {
+    try {
+      const users = await db.collection('users')
+        .find({}, { projection: { password: 0 } })
+        .sort({ createdAt: -1 })
+        .toArray();
+      return users;
+    } catch (e) {
+      console.error('[DB] Error fetching all users:', e.message);
+    }
+  }
+
+  return fallbackStore.users.map(({ password, ...rest }) => rest);
+}
+
+/**
  * Create or register a new user
  */
 async function registerUser(userData) {
@@ -97,12 +136,14 @@ async function registerUser(userData) {
     throw new Error('Email and passcode are required.');
   }
 
+  const role = userData.role === 'ADMIN' ? 'ADMIN' : 'ANALYST';
+
   const userDoc = {
     name: (userData.name || '').trim() || 'Macro Analyst',
     org: (userData.org || '').trim() || 'Aura Capital Markets',
     email: cleanEmail,
     password: cleanPass,
-    role: userData.role || 'TIER-1 MACRO ANALYST',
+    role,
     theme: userData.theme || 'dark',
     watchlist: userData.watchlist || ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS'],
     updatedAt: new Date().toISOString(),
@@ -134,6 +175,63 @@ async function registerUser(userData) {
 }
 
 /**
+ * Delete a user by email (Admin only)
+ */
+async function deleteUser(email) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@aura.capital').toLowerCase();
+
+  if (cleanEmail === adminEmail) {
+    throw new Error('Master root administrator cannot be deleted.');
+  }
+
+  if (isConnected && db) {
+    try {
+      const res = await db.collection('users').deleteOne({ email: cleanEmail });
+      return res.deletedCount > 0;
+    } catch (e) {
+      console.error('[DB] MongoDB Delete Error:', e.message);
+      throw e;
+    }
+  }
+
+  const idx = fallbackStore.users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+  if (idx !== -1) {
+    fallbackStore.users.splice(idx, 1);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Update user role (Admin only)
+ */
+async function updateUserRole(email, newRole) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const role = newRole === 'ADMIN' ? 'ADMIN' : 'ANALYST';
+
+  if (isConnected && db) {
+    try {
+      await db.collection('users').updateOne(
+        { email: cleanEmail },
+        { $set: { role, updatedAt: new Date().toISOString() } }
+      );
+      return true;
+    } catch (e) {
+      console.error('[DB] MongoDB Role Update Error:', e.message);
+      throw e;
+    }
+  }
+
+  const user = fallbackStore.users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+  if (user) {
+    user.role = role;
+    return true;
+  }
+  return false;
+}
+
+/**
  * Authenticate user credentials
  */
 async function authenticateUser(email, password) {
@@ -146,12 +244,11 @@ async function authenticateUser(email, password) {
   if (!user) return null;
 
   if (String(user.password || '').trim() === cleanPass) {
-    // Return user object without sensitive fields if needed
     return {
       name: user.name,
       org: user.org,
       email: user.email,
-      role: user.role || 'TIER-1 MACRO ANALYST',
+      role: user.role || 'ANALYST',
       theme: user.theme || 'dark',
       watchlist: user.watchlist || []
     };
@@ -198,7 +295,10 @@ async function saveUserWatchlist(email, watchlistArray) {
 module.exports = {
   initDb,
   findUserByEmail,
+  getAllUsers,
   registerUser,
+  deleteUser,
+  updateUserRole,
   authenticateUser,
   getUserWatchlist,
   saveUserWatchlist,

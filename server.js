@@ -278,6 +278,99 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // API Route: Admin Get All Users
+  if (pathname === '/api/admin/users' && req.method === 'GET') {
+    try {
+      const requesterEmail = req.headers['x-user-email'] || query.adminEmail;
+      const requester = await dbService.findUserByEmail(requesterEmail);
+      if (!requester || requester.role !== 'ADMIN') {
+        return sendJson(res, 403, { success: false, error: 'ELEVATED SECURITY CLEARANCE REQUIRED (ADMIN ONLY).' });
+      }
+
+      const users = await dbService.getAllUsers();
+      return sendJson(res, 200, {
+        success: true,
+        totalUsers: users.length,
+        mongoConnected: dbService.isMongoConnected(),
+        users
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Admin Provision User
+  if (pathname === '/api/admin/users/create' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const requester = await dbService.findUserByEmail(requesterEmail);
+      if (!requester || requester.role !== 'ADMIN') {
+        return sendJson(res, 403, { success: false, error: 'ELEVATED SECURITY CLEARANCE REQUIRED (ADMIN ONLY).' });
+      }
+
+      const body = await readJsonBody(req);
+      const user = await dbService.registerUser(body);
+      return sendJson(res, 200, {
+        success: true,
+        message: `Account created for ${user.email} with role [${user.role}].`,
+        user: {
+          name: user.name,
+          org: user.org,
+          email: user.email,
+          role: user.role,
+          theme: user.theme
+        }
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Admin Delete / Purge User
+  if (pathname === '/api/admin/users/delete' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const requester = await dbService.findUserByEmail(requesterEmail);
+      if (!requester || requester.role !== 'ADMIN') {
+        return sendJson(res, 403, { success: false, error: 'ELEVATED SECURITY CLEARANCE REQUIRED (ADMIN ONLY).' });
+      }
+
+      const body = await readJsonBody(req);
+      const targetEmail = body.email;
+      if (!targetEmail) {
+        return sendJson(res, 400, { success: false, error: 'Target email is required.' });
+      }
+
+      await dbService.deleteUser(targetEmail);
+      return sendJson(res, 200, {
+        success: true,
+        message: `User ${targetEmail} access revoked and purged from MongoDB.`
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Admin Toggle User Role
+  if (pathname === '/api/admin/users/role' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const requester = await dbService.findUserByEmail(requesterEmail);
+      if (!requester || requester.role !== 'ADMIN') {
+        return sendJson(res, 403, { success: false, error: 'ELEVATED SECURITY CLEARANCE REQUIRED (ADMIN ONLY).' });
+      }
+
+      const body = await readJsonBody(req);
+      await dbService.updateUserRole(body.email, body.role);
+      return sendJson(res, 200, {
+        success: true,
+        message: `User ${body.email} role updated to [${body.role}].`
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
   // API Route: Health check
   if (pathname === '/api/health' && req.method === 'GET') {
     return sendJson(res, 200, {
