@@ -7,15 +7,25 @@
 (function () {
   'use strict';
 
-  // Default Demo Users Database
+  // Default System Users Database
   const DEFAULT_USERS = [
+    {
+      email: 'admin@aura.capital',
+      password: 'admin2026',
+      name: 'Master System Administrator',
+      org: 'Aura Capital Global',
+      role: 'ADMIN',
+      theme: 'dark',
+      watchlist: ['HAL.NS', 'BEL.NS', 'NVDA', 'TSM', 'LMT']
+    },
     {
       email: 'analyst@aura.capital',
       password: 'sentinel2026',
       name: 'Senior Financial Architect',
       org: 'Aura Capital Markets',
-      role: 'TIER-1 MACRO STRATEGIST',
-      theme: 'dark'
+      role: 'ANALYST',
+      theme: 'dark',
+      watchlist: ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS']
     }
   ];
 
@@ -218,6 +228,8 @@
       return false;
     }
 
+    let loggedInUser = null;
+
     try {
       // 1. Try Server-Side Verification (MongoDB / Central DB)
       const res = await fetch('/api/auth/login', {
@@ -228,45 +240,58 @@
       const data = await res.json();
 
       if (data.success && data.user) {
-        state.currentUser = data.user;
-        localStorage.setItem('aura_sentinel_session', JSON.stringify(data.user));
-        if (data.user.watchlist && data.user.watchlist.length > 0) {
-          state.watchlist = data.user.watchlist;
-          localStorage.setItem('aura_sentinel_watchlist', JSON.stringify(data.user.watchlist));
-          updateWatchlistBadge();
-        }
-        applyTheme(data.user.theme || 'dark');
-        updateHeaderUserUI(data.user);
-
-        showAuthToast('ACCESS GRANTED. DECRYPTING TERMINAL...', 'success');
-        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
-
-        setTimeout(() => {
-          const authModal = document.getElementById('auth-modal');
-          if (authModal) authModal.classList.add('hidden');
-          fetchAllIntelligence();
-          startCountdownEngine();
-        }, 500);
-
-        return true;
+        loggedInUser = data.user;
       }
     } catch (netErr) {
-      console.warn('[Auth] Server login fetch error, attempting local vault fallback:', netErr);
+      console.warn('[Auth] Server login fetch notice, checking local vault fallback:', netErr);
     }
 
-    // 2. Fallback to LocalStorage check if offline or local
-    const users = getUsers();
-    const localUser = users.find(u => {
-      const uEmail = (u.email || '').trim().toLowerCase();
-      const uPass = String(u.password || '').trim();
-      return uEmail === cleanEmail && uPass === cleanPass;
-    });
+    // 2. Fallback to LocalStorage user registry
+    if (!loggedInUser) {
+      const users = getUsers();
+      const localUser = users.find(u => {
+        const uEmail = (u.email || '').trim().toLowerCase();
+        const uPass = String(u.password || '').trim();
+        return uEmail === cleanEmail && uPass === cleanPass;
+      });
+      if (localUser) {
+        loggedInUser = localUser;
+      }
+    }
 
-    if (localUser) {
-      state.currentUser = localUser;
-      localStorage.setItem('aura_sentinel_session', JSON.stringify(localUser));
-      applyTheme(localUser.theme || 'dark');
-      updateHeaderUserUI(localUser);
+    // 3. Fallback direct match for built-in admin & demo accounts
+    if (!loggedInUser) {
+      if (cleanEmail === 'admin@aura.capital' && cleanPass === 'admin2026') {
+        loggedInUser = {
+          name: 'Master System Administrator',
+          org: 'Aura Capital Global',
+          email: 'admin@aura.capital',
+          role: 'ADMIN',
+          theme: 'dark',
+          watchlist: ['HAL.NS', 'BEL.NS', 'NVDA', 'TSM', 'LMT']
+        };
+      } else if (cleanEmail === 'analyst@aura.capital' && cleanPass === 'sentinel2026') {
+        loggedInUser = {
+          name: 'Senior Financial Architect',
+          org: 'Aura Capital Markets',
+          email: 'analyst@aura.capital',
+          role: 'ANALYST',
+          theme: 'dark',
+          watchlist: ['HAL.NS', 'BEL.NS', 'RELIANCE.NS', 'TATAPOWER.NS']
+        };
+      }
+    }
+
+    if (loggedInUser) {
+      state.currentUser = loggedInUser;
+      localStorage.setItem('aura_sentinel_session', JSON.stringify(loggedInUser));
+      if (loggedInUser.watchlist && loggedInUser.watchlist.length > 0) {
+        state.watchlist = loggedInUser.watchlist;
+        localStorage.setItem('aura_sentinel_watchlist', JSON.stringify(loggedInUser.watchlist));
+        updateWatchlistBadge();
+      }
+      applyTheme(loggedInUser.theme || 'dark');
+      updateHeaderUserUI(loggedInUser);
 
       showAuthToast('ACCESS GRANTED. DECRYPTING TERMINAL...', 'success');
       if (window.tactileAudio) window.tactileAudio.playRelaySnap();
@@ -276,7 +301,8 @@
         if (authModal) authModal.classList.add('hidden');
         fetchAllIntelligence();
         startCountdownEngine();
-      }, 500);
+      }, 400);
+
       return true;
     }
 

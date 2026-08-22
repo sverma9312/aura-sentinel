@@ -240,6 +240,30 @@ async function authenticateUser(email, password) {
 
   if (!cleanEmail || !cleanPass) return null;
 
+  // 1. Direct master admin credential check
+  if (cleanEmail === DEFAULT_ADMIN_USER.email && cleanPass === DEFAULT_ADMIN_USER.password) {
+    return {
+      name: DEFAULT_ADMIN_USER.name,
+      org: DEFAULT_ADMIN_USER.org,
+      email: DEFAULT_ADMIN_USER.email,
+      role: 'ADMIN',
+      theme: 'dark',
+      watchlist: DEFAULT_ADMIN_USER.watchlist || []
+    };
+  }
+
+  // 2. Direct default demo analyst credential check
+  if (cleanEmail === DEFAULT_DEMO_USER.email && cleanPass === DEFAULT_DEMO_USER.password) {
+    return {
+      name: DEFAULT_DEMO_USER.name,
+      org: DEFAULT_DEMO_USER.org,
+      email: DEFAULT_DEMO_USER.email,
+      role: 'ANALYST',
+      theme: 'dark',
+      watchlist: DEFAULT_DEMO_USER.watchlist || []
+    };
+  }
+
   const user = await findUserByEmail(cleanEmail);
   if (!user) return null;
 
