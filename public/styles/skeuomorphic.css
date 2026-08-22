@@ -515,6 +515,17 @@ body.theme-bright .active-panel-search-bar {
   background: #f1f5f9;
   border-color: #cbd5e1;
 }
+body.theme-bright .btn-reset-deepdive {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0284c7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+body.theme-bright .btn-reset-deepdive:hover {
+  background: #f1f5f9;
+  border-color: #0284c7;
+  color: #0369a1;
+}
 body.theme-bright .search-bar-lbl {
   color: #7c3aed;
 }
@@ -2437,6 +2448,33 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   padding: 8px 14px;
   gap: 12px;
   box-shadow: var(--shadow-bevel-in);
+  flex-wrap: wrap;
+}
+
+.btn-reset-deepdive {
+  cursor: pointer;
+  background: linear-gradient(180deg, #252b36 0%, #171b22 100%);
+  border: 1px solid #3d4a5d;
+  border-radius: 6px;
+  color: var(--phosphor-cyan);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-bevel-out);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-reset-deepdive:hover {
+  background: linear-gradient(180deg, #333d4d 0%, #1e242e 100%);
+  border-color: var(--phosphor-cyan);
+  color: #ffffff;
+  box-shadow: 0 0 10px var(--phosphor-cyan-glow);
 }
 
 .search-bar-lbl {

@@ -109,6 +109,7 @@
     deepdiveEmptyState: document.getElementById('deepdive-empty-state'),
     deepdiveActivePanel: document.getElementById('deepdive-active-panel'),
     deepdivePopularSuggestions: document.getElementById('deepdive-popular-suggestions'),
+    btnResetDeepdive: document.getElementById('btn-reset-deepdive'),
     tabStockSearchInput: document.getElementById('tab-stock-search-input'),
     btnTabSearchClear: document.getElementById('btn-tab-search-clear'),
     btnTabSearchSubmit: document.getElementById('btn-tab-search-submit'),
@@ -363,6 +364,18 @@
       ? 'SEARCH INDIAN EQUITIES (e.g. HAL, RELIANCE, TCS, TATAPOWER, LT, HDFCBANK)...'
       : 'SEARCH GLOBAL EQUITIES (e.g. NVDA, LMT, CCJ, TSM, XOM, AAPL, TSLA)...';
 
+    if (el.tabStockSearchInput) {
+      el.tabStockSearchInput.placeholder = isIndia
+        ? 'Type Indian stock name or ticker (e.g. INFY, ZOMATO, RELIANCE, HAL)...'
+        : 'Type US/Global stock or ticker (e.g. NVDA, AAPL, TSM, MSFT)...';
+    }
+
+    if (el.activePanelSearchInput) {
+      el.activePanelSearchInput.placeholder = isIndia
+        ? 'Enter symbol or company (e.g. INFY, TATA POWER, HAL)...'
+        : 'Enter symbol or company (e.g. NVDA, TSM, AAPL)...';
+    }
+
     // Render Quick Tags
     renderQuickTags();
 
@@ -370,6 +383,15 @@
     renderSectorFilterButtons();
 
     // Render Deep Dive Suggestions
+    renderDeepDiveSuggestions();
+  }
+
+  function resetDeepDiveView() {
+    state.selectedStock = null;
+    if (el.deepdiveActivePanel) el.deepdiveActivePanel.classList.add('hidden');
+    if (el.deepdiveEmptyState) el.deepdiveEmptyState.classList.remove('hidden');
+    if (el.tabStockSearchInput) el.tabStockSearchInput.value = '';
+    if (el.activePanelSearchInput) el.activePanelSearchInput.value = '';
     renderDeepDiveSuggestions();
   }
 
@@ -1237,6 +1259,7 @@
       if (window.tactileAudio) window.tactileAudio.playRelaySnap();
       state.currentRegion = 'india';
       state.currentStockFilter = 'all';
+      resetDeepDiveView();
       renderRegionControls();
       fetchAllIntelligence();
     });
@@ -1246,9 +1269,18 @@
       if (window.tactileAudio) window.tactileAudio.playRelaySnap();
       state.currentRegion = 'global';
       state.currentStockFilter = 'all';
+      resetDeepDiveView();
       renderRegionControls();
       fetchAllIntelligence();
     });
+
+    // Reset Deep Dive Button
+    if (el.btnResetDeepdive) {
+      el.btnResetDeepdive.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        resetDeepDiveView();
+      });
+    }
 
     // Rocker Tabs
     el.rockerTabs.forEach(tab => {

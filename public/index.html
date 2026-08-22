@@ -255,11 +255,14 @@
           <!-- Deep Dive Active View -->
           <div class="deepdive-instrument-panel hidden" id="deepdive-active-panel">
             
-            <!-- Quick Switch Search Bar inside Active Panel -->
+            <!-- Quick Switch & Reset Bar inside Active Panel -->
             <div class="active-panel-search-bar">
-              <span class="search-bar-lbl">ANALYZE ANOTHER STOCK:</span>
+              <button id="btn-reset-deepdive" class="btn-reset-deepdive" title="Reset and return to Stock Analyzer search screen">
+                <span>◀ BACK TO SEARCH</span>
+              </button>
               <div class="active-search-input-wrap">
-                <input type="text" id="active-panel-search-input" placeholder="Enter symbol or company (e.g. INFY, TATA POWER, NVDA)..." autocomplete="off">
+                <span class="search-bar-lbl">QUICK SWITCH:</span>
+                <input type="text" id="active-panel-search-input" placeholder="Enter symbol or company (e.g. INFY, NVDA, TATA POWER)..." autocomplete="off">
                 <button id="btn-active-panel-search" class="btn-active-analyze">ANALYZE</button>
               </div>
             </div>
