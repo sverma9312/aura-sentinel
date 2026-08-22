@@ -106,17 +106,23 @@ async function generateMacroNarrative(region, topArticles, overallScore, sectors
     .map(s => `${s.sectorName}: ${s.stance} (score: ${s.tailwindScore})`)
     .join(', ');
 
-  const prompt = `You are a senior financial analyst specializing in ${regionLabel} equity markets.
-Based on today's news sentiment data below, write a concise 2-3 sentence macro market intelligence brief.
-Be factual, professional, and actionable. Do NOT use generic phrases.
+  const prompt = `You are a Chief Financial Strategist analyzing ${regionLabel} financial markets.
+Synthesize today's breaking news and sector sentiment data into a clear, insightful, and actionable macro market intelligence brief.
 
-Overall Market Sentiment Score: ${overallScore}/100 (positive = bullish)
-Top Sectors: ${topSectors}
+MARKET METRICS:
+- Market Sentiment Score: ${overallScore}/100 (${overallScore >= 15 ? 'Bullish expansion' : overallScore <= -15 ? 'Defensive/Headwinds' : 'Neutral/Selective'})
+- Leading Sectors with Tailwinds: ${topSectors}
 
-Today's Key Headlines:
+KEY BREAKING HEADLINES TODAY:
 ${headlines}
 
-Write the market intelligence brief now (2-3 sentences only, no bullet points, no headers):`;
+INSTRUCTIONS FOR OUTPUT:
+Write a cohesive 2 to 3-sentence executive summary that clearly explains:
+1. The primary macroeconomic catalyst or policy driver from today's news.
+2. How this catalyst specifically impacts key leading sectors (e.g. Infrastructure, Auto/EV, Defense, IT, or Banking).
+3. The actionable takeaway or market outlook for equity investors.
+
+Ensure the text is complete, professional, beautifully written in clear business English, and immediately understandable. Do NOT use bullet points or markdown headers.`;
 
   try {
     const narrative = await callGeminiApi(prompt);
