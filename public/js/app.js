@@ -2446,6 +2446,10 @@
     if (state.currentUser && state.currentUser.email) {
       localStorage.setItem('aura_tour_completed_' + state.currentUser.email.toLowerCase(), 'true');
     }
+
+    // Always reset viewport cleanly to the default Market Pulse & Sectors tab
+    switchActiveTab('tab-macro');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // =========================================================================
