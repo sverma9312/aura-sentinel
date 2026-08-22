@@ -1877,8 +1877,24 @@
     // Clear Watchlist Button
     el.btnClearWatchlist.addEventListener('click', () => {
       if (confirm('Clear all stocks from your Watchlist Vault?')) {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
         state.watchlist = [];
-        localStorage.removeItem('aura_sentinel_watchlist');
+        localStorage.setItem('aura_sentinel_watchlist', JSON.stringify([]));
+        
+        if (state.currentUser) {
+          state.currentUser.watchlist = [];
+          localStorage.setItem('aura_sentinel_session', JSON.stringify(state.currentUser));
+
+          // Sync empty watchlist to MongoDB Atlas cloud database
+          if (state.currentUser.email) {
+            fetch('/api/auth/watchlist', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: state.currentUser.email, watchlist: [] })
+            }).catch(e => console.warn('[Watchlist] Clear server sync notice:', e));
+          }
+        }
+
         updateWatchlistBadge();
         renderWatchlist();
         renderStockOpportunities();
