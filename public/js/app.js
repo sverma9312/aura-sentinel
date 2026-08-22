@@ -1883,6 +1883,11 @@
       if (btnCloseSources) btnCloseSources.addEventListener('click', closeModal);
       if (btnCloseSourcesBottom) btnCloseSourcesBottom.addEventListener('click', closeModal);
 
+      sourceModal.addEventListener('click', (e) => {
+        if (e.target === sourceModal) closeModal();
+      });
+    }
+
     // Admin Provision Modal & Management Handlers
     const provisionModal = document.getElementById('provision-modal');
     const btnOpenProvision = document.getElementById('btn-open-provision-modal');
