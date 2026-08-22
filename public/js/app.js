@@ -211,7 +211,19 @@
 
   function loginUser(email, password) {
     const users = getUsers();
-    const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password);
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPass = String(password || '').trim();
+
+    if (!cleanEmail || !cleanPass) {
+      showAuthToast('PLEASE ENTER BOTH EMAIL AND PASSCODE.', 'error');
+      return false;
+    }
+
+    const user = users.find(u => {
+      const uEmail = (u.email || '').trim().toLowerCase();
+      const uPass = String(u.password || '').trim();
+      return uEmail === cleanEmail && uPass === cleanPass;
+    });
 
     if (!user) {
       showAuthToast('INVALID SECURITY CREDENTIALS. ACCESS DENIED.', 'error');
@@ -239,18 +251,33 @@
 
   function registerUser(name, org, email, password) {
     const users = getUsers();
-    const exists = users.some(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPass = String(password || '').trim();
 
-    if (exists) {
-      showAuthToast('USER WITH THIS EMAIL ALREADY REGISTERED. PLEASE LOG IN.', 'error');
+    if (!cleanEmail || !cleanPass) {
+      showAuthToast('EMAIL AND PASSCODE ARE REQUIRED.', 'error');
       return false;
     }
 
+    const exists = users.some(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+
+    if (exists) {
+      const idx = users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+      if (idx !== -1) {
+        users[idx].password = cleanPass;
+        users[idx].name = name.trim() || users[idx].name;
+        users[idx].org = org.trim() || users[idx].org;
+        localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
+        loginUser(cleanEmail, cleanPass);
+        return true;
+      }
+    }
+
     const newUser = {
-      name: name.trim(),
+      name: name.trim() || 'Macro Analyst',
       org: org.trim() || 'Aura Capital Markets',
-      email: email.trim().toLowerCase(),
-      password,
+      email: cleanEmail,
+      password: cleanPass,
       role: 'TIER-1 MACRO ANALYST',
       theme: state.currentTheme || 'dark',
       createdAt: new Date().toISOString()
