@@ -672,10 +672,22 @@ body.theme-bright .wire-source-tag {
 }
 
 /* Watchlist in Bright Mode */
+body.theme-bright .btn-action-small,
+body.theme-bright #btn-clear-watchlist,
 body.theme-bright .btn-clear-vault {
   background: #ffffff;
-  border-color: #cbd5e1;
-  color: #475569;
+  border: 1px solid #cbd5e1;
+  color: #dc2626;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+body.theme-bright .btn-action-small:hover,
+body.theme-bright #btn-clear-watchlist:hover,
+body.theme-bright .btn-clear-vault:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+  color: #b91c1c;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.2);
 }
 body.theme-bright .empty-vault-card {
   background: #ffffff;
@@ -3318,21 +3330,26 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   font-size: 32px;
   margin-bottom: 8px;
 }
-
 .btn-action-small {
   cursor: pointer;
-  background: #1c2027;
-  border: 1px solid #333c4a;
-  color: var(--text-muted);
+  background: linear-gradient(180deg, #252b36 0%, #161a22 100%);
+  border: 1px solid #384252;
+  color: #cbd5e1;
   font-family: var(--font-mono);
-  font-size: 10px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  transition: all 0.15s;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  box-shadow: var(--shadow-bevel-out);
+  transition: all 0.15s ease;
 }
+
 .btn-action-small:hover {
-  color: var(--phosphor-red);
+  background: linear-gradient(180deg, #372024 0%, #201316 100%);
   border-color: var(--phosphor-red);
+  color: #ff6b7a;
+  box-shadow: 0 0 8px rgba(255, 51, 68, 0.4);
 }
 
 /* ==========================================================================
