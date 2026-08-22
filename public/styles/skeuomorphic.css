@@ -4033,7 +4033,7 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
 }
 
 .auth-vault-overlay.hidden {
-  display: none;
+  display: none !important;
 }
 
 .vault-door-chassis {

@@ -205,7 +205,10 @@
         state.currentUser = user;
         applyTheme(user.theme || 'dark');
         updateHeaderUserUI(user);
-        if (authModal) authModal.classList.add('hidden');
+        if (authModal) {
+          authModal.classList.add('hidden');
+          authModal.style.setProperty('display', 'none', 'important');
+        }
         return true;
       } catch (e) {
         localStorage.removeItem('aura_sentinel_session');
@@ -215,7 +218,10 @@
     // Not authenticated -> show security vault gate
     state.currentUser = null;
     applyTheme('dark');
-    if (authModal) authModal.classList.remove('hidden');
+    if (authModal) {
+      authModal.classList.remove('hidden');
+      authModal.style.removeProperty('display');
+    }
     return false;
   }
 
@@ -298,10 +304,13 @@
 
       setTimeout(() => {
         const authModal = document.getElementById('auth-modal');
-        if (authModal) authModal.classList.add('hidden');
+        if (authModal) {
+          authModal.classList.add('hidden');
+          authModal.style.setProperty('display', 'none', 'important');
+        }
         fetchAllIntelligence();
         startCountdownEngine();
-      }, 400);
+      }, 300);
 
       return true;
     }
@@ -409,7 +418,10 @@
 
     // Show Auth Gate Modal
     const authModal = document.getElementById('auth-modal');
-    if (authModal) authModal.classList.remove('hidden');
+    if (authModal) {
+      authModal.classList.remove('hidden');
+      authModal.style.removeProperty('display');
+    }
 
     if (window.tactileAudio) window.tactileAudio.playRelaySnap();
   }
