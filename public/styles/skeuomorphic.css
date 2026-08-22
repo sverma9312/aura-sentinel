@@ -3007,50 +3007,338 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE ADJUSTMENTS
+   COMPREHENSIVE RESPONSIVE DESIGN & MOBILE UI SYSTEM
    ========================================================================== */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
   .chassis-header {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
   }
-  .deepdive-core-grid {
-    grid-template-columns: 1fr;
+  .macro-gauge-module {
+    grid-column: span 2;
+    max-width: 100%;
+    width: 100%;
   }
-  .analysis-matrix-grid {
-    grid-template-columns: 1fr;
+  .refresh-deck {
+    justify-content: center;
   }
-  .rocker-selector-bar {
-    grid-template-columns: repeat(3, 1fr);
+  .user-account-tray {
+    justify-content: flex-end;
   }
 }
 
 @media (max-width: 768px) {
   body {
+    padding: 6px;
+  }
+
+  .terminal-shell {
+    border-radius: 8px;
+    border-width: 2px;
+  }
+
+  .bezel-screw {
+    width: 10px;
+    height: 10px;
+  }
+  .bezel-screw.top-left { top: 6px; left: 6px; }
+  .bezel-screw.top-right { top: 6px; right: 6px; }
+  .bezel-screw.bottom-left { bottom: 6px; left: 6px; }
+  .bezel-screw.bottom-right { bottom: 6px; right: 6px; }
+
+  .master-bezel {
+    padding: 16px 12px 10px 12px;
+  }
+
+  .chassis-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .branding-cluster {
+    align-items: center;
+    text-align: center;
+  }
+
+  .user-account-tray {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .market-region-deck {
+    width: 100%;
+  }
+
+  .region-rocker-bay {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .region-rocker-btn {
+    justify-content: center;
     padding: 8px;
   }
+
+  .macro-gauge-module {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .refresh-deck {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+  }
+
+  /* Search Command Strip */
   .search-command-strip {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
   }
+
+  .header-search-bar {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .quick-catalyst-chips {
+    width: 100%;
+  }
+
+  .quick-tags-container {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    gap: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .quick-tags-container::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .quick-tags-container::-webkit-scrollbar-thumb {
+    background: #384252;
+    border-radius: 3px;
+  }
+
+  /* Rocker Tabs Nav - Touch Scrollable */
+  .rocker-nav {
+    margin: 8px 0 0 0;
+  }
+
   .rocker-selector-bar {
-    grid-template-columns: 1fr;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    gap: 6px;
+    padding: 4px 2px 6px 2px;
+    scrollbar-width: thin;
   }
+
+  .rocker-selector-bar::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .rocker-selector-bar::-webkit-scrollbar-thumb {
+    background: #384252;
+    border-radius: 3px;
+  }
+
+  .rocker-tab {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 11px;
+    border-radius: 6px;
+  }
+
+  /* Main Instrument Deck */
+  .instrument-deck {
+    padding: 12px 10px;
+  }
+
+  /* Banner & Stats Tray */
   .section-banner {
     flex-direction: column;
+    align-items: stretch;
     gap: 12px;
   }
-  .stock-cards-grid, .sectors-grid {
+
+  .banner-stats-tray {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .stat-pill {
+    flex: 1 1 calc(50% - 6px);
+    justify-content: space-between;
+    font-size: 10px;
+  }
+
+  /* Sectors & Stock Opportunities Grid */
+  .sectors-grid, .stock-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .sector-instrument-card, .stock-card {
+    padding: 14px;
+  }
+
+  .sector-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* Deep Dive Panel */
+  .deepdive-header-bezel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .ticker-identity-block {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .price-quote-bezel {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .title-with-timeframe {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .timeframe-selector-bay {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .timeframe-buttons {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .tf-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .deepdive-core-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .oscilloscope-canvas {
+    width: 100% !important;
+    height: 200px !important;
+  }
+
+  .analysis-matrix-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .matrix-cell {
+    padding: 12px;
+  }
+
+  /* Incident Wire */
+  .wire-card {
+    padding: 12px;
+  }
+
+  .wire-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Modals & Dialogs */
+  .auth-vault-overlay {
+    padding: 10px;
+  }
+
+  .vault-door-chassis {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .vault-header {
+    padding: 14px 16px;
+  }
+
+  .vault-form-body {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .theme-selector-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Footer */
   .chassis-footer {
     flex-direction: column;
     align-items: flex-start;
-  }
-  .footer-meta {
-    text-align: left;
+    gap: 12px;
+    padding: 14px;
   }
 }
+
+@media (max-width: 480px) {
+  body {
+    padding: 2px;
+  }
+
+  .badge-text {
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+
+  .stat-pill {
+    flex: 1 1 100%;
+  }
+
+  .refresh-deck {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .timeframe-selector-bay {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
 
 /* ==========================================================================
    GEMINI AI NARRATIVE PANEL
