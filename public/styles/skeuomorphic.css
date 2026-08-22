@@ -558,16 +558,41 @@ body.theme-bright .ctrl-status {
 }
 
 /* Deep Dive Sentiment Meter in Bright Mode */
-body.theme-bright .vu-dial-face {
-  background: radial-gradient(ellipse at 50% 100%, #ffffff 0%, #e2e8f0 100%);
-  border-color: #cbd5e1;
-}
-body.theme-bright .scale-text.scale-zero {
-  color: #64748b;
-}
-body.theme-bright .vu-digital-readout {
+body.theme-bright .rect-gauge-housing {
   background: #ffffff;
   border-color: #cbd5e1;
+}
+body.theme-bright .rect-gauge-readout-row {
+  border-bottom-color: #f1f5f9;
+}
+body.theme-bright .rect-gauge-readout-row .readout-label {
+  color: #0f172a;
+}
+body.theme-bright .rect-scale-labels .scale-lbl.bear {
+  color: #dc2626;
+  text-shadow: none;
+}
+body.theme-bright .rect-scale-labels .scale-lbl.mid {
+  color: #64748b;
+}
+body.theme-bright .rect-scale-labels .scale-lbl.bull {
+  color: #059669;
+  text-shadow: none;
+}
+body.theme-bright .rect-spectrum-bar {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+body.theme-bright .rect-spectrum-center-mark {
+  background: #0f172a;
+}
+body.theme-bright .indicator-arrow {
+  border-top-color: #0f172a;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+}
+body.theme-bright .indicator-line {
+  background: #0f172a;
+  box-shadow: 0 0 6px rgba(2, 132, 199, 0.6);
 }
 body.theme-bright .readout-score {
   color: #047857;
@@ -2685,95 +2710,144 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
   align-items: center;
 }
 
-.vu-dial-housing {
+/* Precision Rectangular Sentiment Spectrum Gauge (Dark Theme Default) */
+.rect-gauge-housing {
   width: 100%;
+  background: var(--display-recess);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-bevel-in);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin: 12px 0;
+  gap: 12px;
+  margin: 10px 0;
 }
 
-.vu-dial-face {
-  width: 240px;
-  height: 120px;
-  background: radial-gradient(ellipse at 50% 100%, #1c222e 0%, #090c10 100%);
-  border-top-left-radius: 120px;
-  border-top-right-radius: 120px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-bottom: none;
-  position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
-}
-
-.vu-arc-scale {
+.rect-gauge-readout-row {
   display: flex;
   justify-content: space-between;
-  padding: 16px 24px 0 24px;
-  font-family: var(--font-mono);
-  font-size: 8.5px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-.scale-text {
-  position: relative;
-  z-index: 2;
-  white-space: nowrap;
-}
-.scale-text.scale-bear { color: var(--phosphor-red); text-shadow: 0 0 4px rgba(255, 51, 68, 0.4); }
-.scale-text.scale-zero { color: var(--text-dim); }
-.scale-text.scale-bull { color: var(--phosphor-green); text-shadow: 0 0 4px rgba(0, 255, 136, 0.4); }
-
-.vu-dial-needle {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  height: 104px;
-  background: #ff3344;
-  box-shadow: 0 0 8px var(--phosphor-red);
-  transform-origin: bottom center;
-  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform: rotate(0deg);
-}
-
-.vu-center-hub {
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #64748b, #0f172a);
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.9);
-}
-
-.vu-digital-readout {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  background: var(--display-recess);
-  padding: 6px 18px;
-  border-radius: 6px;
-  box-shadow: var(--shadow-bevel-in);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  margin-top: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
 }
 
-.readout-score {
+.rect-gauge-readout-row .readout-label {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-heading);
+  text-transform: uppercase;
+}
+
+.rect-gauge-readout-row .readout-score {
   font-family: var(--font-mono);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--phosphor-green);
-  text-shadow: 0 0 8px var(--phosphor-green-glow);
+  text-shadow: 0 0 10px var(--phosphor-green-glow);
 }
 
-.readout-label {
+.rect-scale-track {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rect-scale-labels {
+  display: flex;
+  justify-content: space-between;
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 700;
-  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.rect-scale-labels .scale-lbl.bear {
+  color: var(--phosphor-red);
+  text-shadow: 0 0 4px rgba(255, 51, 68, 0.3);
+}
+
+.rect-scale-labels .scale-lbl.mid {
+  color: var(--text-dim);
+}
+
+.rect-scale-labels .scale-lbl.bull {
+  color: var(--phosphor-green);
+  text-shadow: 0 0 4px rgba(0, 255, 136, 0.3);
+}
+
+.rect-spectrum-bar {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  background: #090c10;
+  border-radius: 7px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: visible;
+}
+
+.rect-spectrum-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg, 
+    rgba(255, 51, 68, 0.85) 0%, 
+    rgba(255, 170, 0, 0.4) 35%, 
+    rgba(90, 100, 115, 0.2) 50%, 
+    rgba(0, 229, 255, 0.4) 65%, 
+    rgba(0, 255, 136, 0.85) 100%
+  );
+  opacity: 0.85;
+}
+
+.rect-spectrum-center-mark {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 2px;
+  background: #ffffff;
+  transform: translateX(-50%);
+  opacity: 0.6;
+  z-index: 2;
+}
+
+.rect-spectrum-indicator {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+  transition: left 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.indicator-arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #ffffff;
+  filter: drop-shadow(0 0 4px #00e5ff);
+}
+
+.indicator-line {
+  flex: 1;
+  width: 3px;
+  background: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 0 8px #00e5ff, 0 0 12px #00e5ff;
 }
 
 .catalyst-volume-meter {

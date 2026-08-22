@@ -882,11 +882,15 @@
       else el.ddWatchlistBtn.classList.remove('pinned');
 
       const score = data.catalystScore || 0;
-      const angle = Math.max(-45, Math.min(45, (score / 100) * 45));
-      el.ddNeedle.style.transform = `rotate(${angle}deg)`;
+      const clampedScore = Math.max(-100, Math.min(100, score));
+      const leftPct = 50 + (clampedScore / 100) * 47;
+      if (el.ddNeedle) {
+        el.ddNeedle.style.left = `${leftPct}%`;
+      }
 
       el.ddSentimentScore.textContent = `${score > 0 ? '+' : ''}${score}`;
-      el.ddSentimentLabel.textContent = (data.sentimentLabel || 'NEUTRAL').replace(/_/g, ' ');
+      el.ddSentimentScore.style.color = score > 5 ? 'var(--phosphor-green)' : score < -5 ? 'var(--phosphor-red)' : 'var(--phosphor-cyan)';
+      el.ddSentimentLabel.textContent = (data.sentimentLabel || 'BALANCED').replace(/_/g, ' ');
       el.ddBullCount.textContent = data.bullishNewsCount || 0;
       el.ddBearCount.textContent = data.bearishNewsCount || 0;
       el.ddConfidence.textContent = `${data.confidence}%`;

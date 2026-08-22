@@ -327,19 +327,28 @@
                 <div class="instrument-title-bar">
                   <span class="instrument-title">NEWS CATALYST SENTIMENT GAUGE</span>
                 </div>
-                <div class="vu-dial-housing">
-                  <div class="vu-dial-face">
-                    <div class="vu-arc-scale">
-                      <span class="scale-text scale-bear">HEADWIND</span>
-                      <span class="scale-text scale-zero">0</span>
-                      <span class="scale-text scale-bull">TAILWIND</span>
-                    </div>
-                    <div class="vu-dial-needle" id="dd-needle" style="transform: rotate(25deg);"></div>
-                    <div class="vu-center-hub"></div>
+                <div class="rect-gauge-housing">
+                  <!-- Top Digital Readout Strip -->
+                  <div class="rect-gauge-readout-row">
+                    <div class="readout-label" id="dd-sentiment-label">POSITIVE MOMENTUM</div>
+                    <div class="readout-score" id="dd-sentiment-score">+17</div>
                   </div>
-                  <div class="vu-digital-readout">
-                    <div class="readout-score" id="dd-sentiment-score">+35</div>
-                    <div class="readout-label" id="dd-sentiment-label">STRONG TAILWIND</div>
+
+                  <!-- Rectangular Spectrum Scale -->
+                  <div class="rect-scale-track">
+                    <div class="rect-scale-labels">
+                      <span class="scale-lbl bear">◀ -100 HEADWIND</span>
+                      <span class="scale-lbl mid">0 BALANCED</span>
+                      <span class="scale-lbl bull">TAILWIND +100 ▶</span>
+                    </div>
+                    <div class="rect-spectrum-bar">
+                      <div class="rect-spectrum-gradient"></div>
+                      <div class="rect-spectrum-center-mark"></div>
+                      <div class="rect-spectrum-indicator" id="dd-needle" style="left: 58.5%;">
+                        <div class="indicator-arrow"></div>
+                        <div class="indicator-line"></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div class="catalyst-volume-meter">
