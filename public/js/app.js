@@ -924,8 +924,9 @@
       if (diffMs <= 0) {
         el.timerMinutes.textContent = '00';
         el.timerSeconds.textContent = '00';
-        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
-        fetchAllIntelligence(true);
+        if (!state.isRefreshing) {
+          fetchAllIntelligence(true);
+        }
         return;
       }
 
