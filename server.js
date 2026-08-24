@@ -199,6 +199,16 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // API Route: Data Provenance & Sources of Truth
+  if (pathname === '/api/data-provenance' && req.method === 'GET') {
+    try {
+      const data = macroEngine.getDataProvenance(region);
+      return sendJson(res, 200, data);
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
   // API Route: Manual Force Refresh
   if (pathname === '/api/refresh' && req.method === 'POST') {
     try {
