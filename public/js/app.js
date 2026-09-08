@@ -3134,11 +3134,17 @@
             </div>
 
             <div class="stock-rating-group">
-              <div class="verdict-badge ${st.verdictClass}">
-                ${st.stars} ${escapeHtml(st.verdict)}
+              <div class="stock-health-bar-row">
+                <span class="stock-health-score-badge ${st.verdictClass}">
+                  <span class="score-title">HEALTH SCORE</span>
+                  <span class="score-num">${st.healthScore || 50}/100</span>
+                </span>
+                <div class="verdict-badge ${st.verdictClass}">
+                  ${st.stars} ${escapeHtml(st.verdict)}
+                </div>
               </div>
               <p class="stock-driver-text">
-                <strong>Macro:</strong> ${escapeHtml(st.macroTailwind)}
+                <strong>Macro Thesis:</strong> ${escapeHtml(st.macroTailwind)}
               </p>
             </div>
           </div>

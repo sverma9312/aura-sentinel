@@ -5696,7 +5696,7 @@ body.theme-bright .portfolio-kpi-card {
   border-radius: 8px;
   padding: 14px 16px;
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr 1.5fr;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr 1.7fr;
   align-items: center;
   gap: 16px;
   transition: all 0.15s ease;
@@ -5749,7 +5749,77 @@ body.theme-bright .portfolio-stock-row {
 .stock-rating-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+}
+
+.stock-health-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stock-health-score-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  letter-spacing: 0.3px;
+}
+
+.stock-health-score-badge .score-title {
+  font-size: 8.5px;
+  color: var(--text-dim);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.stock-health-score-badge .score-num {
+  font-weight: 900;
+  font-size: 11px;
+}
+
+.stock-health-score-badge.strong-bullish {
+  border-color: rgba(0, 255, 136, 0.4);
+  background: rgba(0, 255, 136, 0.12);
+  color: var(--phosphor-green);
+}
+.stock-health-score-badge.strong-bullish .score-title {
+  color: rgba(0, 255, 136, 0.85);
+}
+
+.stock-health-score-badge.bullish {
+  border-color: rgba(0, 229, 255, 0.35);
+  background: rgba(0, 229, 255, 0.1);
+  color: var(--phosphor-cyan);
+}
+.stock-health-score-badge.bullish .score-title {
+  color: rgba(0, 229, 255, 0.85);
+}
+
+.stock-health-score-badge.neutral {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+}
+.stock-health-score-badge.neutral .score-title {
+  color: rgba(245, 158, 11, 0.85);
+}
+
+.stock-health-score-badge.bearish {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+.stock-health-score-badge.bearish .score-title {
+  color: rgba(239, 68, 68, 0.85);
 }
 
 .stock-rating-group .verdict-badge {
