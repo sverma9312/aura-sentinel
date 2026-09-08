@@ -2604,12 +2604,14 @@
       document.querySelectorAll('.broker-pane').forEach(p => {
         p.classList.add('hidden');
         p.classList.remove('active');
+        p.style.display = 'none';
       });
 
       const activePane = document.getElementById(`pane-${broker}`);
       if (activePane) {
         activePane.classList.remove('hidden');
         activePane.classList.add('active');
+        activePane.style.display = 'block';
       }
 
       const statusEl = document.getElementById('broker-sync-status');

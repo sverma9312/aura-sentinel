@@ -5831,6 +5831,14 @@ body.theme-bright .portfolio-stock-row {
   gap: 16px;
 }
 
+.broker-pane {
+  display: none;
+}
+
+.broker-pane.active {
+  display: block !important;
+}
+
 .broker-pane.hidden {
   display: none !important;
 }
