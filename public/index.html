@@ -1333,24 +1333,24 @@
             </form>
           </div>
 
-          <!-- BROKER 7: UNIVERSAL CSV FILE IMPORT -->
+          <!-- BROKER 7: UNIVERSAL CSV / EXCEL FILE IMPORT -->
           <div class="broker-pane hidden" id="pane-csv">
             <div class="broker-guide-box">
-              <h4>📁 Universal CSV / Excel Import</h4>
-              <p>Upload any exported holdings CSV file from <strong>Groww</strong>, <strong>Zerodha</strong>, <strong>Upstox</strong>, <strong>ICICI Direct</strong>, or <strong>HDFC Sky</strong>.</p>
-              <p style="font-size: 10.5px; margin-top: 4px; color: var(--text-dim);">Required columns: <code>Symbol/Stock</code>, <code>Quantity/Qty</code>, <code>Avg Buy Price/Cost</code>.</p>
+              <h4>📁 Universal CSV / Excel Statement Import</h4>
+              <p>Upload any exported holdings statement (.csv or .xlsx) from <strong>Groww</strong>, <strong>Zerodha</strong>, <strong>Upstox</strong>, <strong>ICICI Direct</strong>, <strong>Angel One</strong>, or <strong>HDFC Sky</strong>.</p>
+              <p style="font-size: 10.5px; margin-top: 4px; color: var(--text-dim);">Auto-detects columns: <code>Symbol/Stock</code>, <code>Quantity/Qty</code>, <code>Avg Buy Price/Cost</code>.</p>
             </div>
-            <form id="form-connect-csv" class="broker-form">
+            <form id="form-connect-csv" class="broker-form" onsubmit="return false;">
               <div class="auth-field-group">
-                <label class="auth-label">SELECT HOLDINGS CSV FILE</label>
-                <input type="file" id="input-csv-file" accept=".csv,text/csv" class="file-picker-input">
+                <label class="auth-label">SELECT HOLDINGS FILE (.CSV / .XLSX / .XLS)</label>
+                <input type="file" id="input-csv-file" accept=".csv,.xlsx,.xls,.tsv,.txt,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain" class="file-picker-input">
               </div>
               <div class="auth-field-group" style="margin-top: 10px;">
-                <label class="auth-label">OR PASTE CSV RAW TEXT</label>
+                <label class="auth-label">OR PASTE CSV / TEXT</label>
                 <textarea id="input-csv-raw" class="csv-raw-textarea" rows="4" placeholder="Symbol,Quantity,AvgPrice&#10;HAL,25,4250.00&#10;TCS,30,3820.00&#10;BEL,120,245.50"></textarea>
               </div>
-              <button type="submit" class="auth-btn-submit">
-                <span>📊 PARSE & ANALYZE CSV PORTFOLIO</span>
+              <button type="button" id="btn-parse-csv" class="auth-btn-submit">
+                <span>📊 PARSE & ANALYZE PORTFOLIO</span>
               </button>
             </form>
           </div>
@@ -1397,7 +1397,8 @@
     </div>
   </div>
 
-  <script src="/js/audio.js?v=2.7.2"></script>
-  <script src="/js/app.js?v=2.7.2"></script>
+  <script src="/js/audio.js?v=2.7.3"></script>
+  <script src="/js/xlsx.mini.min.js"></script>
+  <script src="/js/app.js?v=2.7.3"></script>
 </body>
 </html>

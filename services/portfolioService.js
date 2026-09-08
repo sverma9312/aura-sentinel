@@ -5,6 +5,7 @@
  */
 
 const https = require('https');
+const XLSX = require('xlsx');
 const financeApi = require('./financeApi');
 const macroEngine = require('./macroEngine');
 
@@ -288,51 +289,115 @@ async function fetchFyersHoldings(appId, accessToken) {
 }
 
 /**
- * Universal CSV / Excel Text Parser for Groww, Zerodha, Upstox holdings exports
+ * Universal CSV / Excel (XLSX, XLS) Parser for Groww, Zerodha, Upstox, ICICI Direct, Angel One exports
  */
-function parseHoldingsCsv(csvContent) {
-  if (!csvContent || typeof csvContent !== 'string') {
-    throw new Error('CSV content must be a valid text string.');
+function parseHoldingsCsv(contentOrBuffer) {
+  if (!contentOrBuffer) {
+    throw new Error('No holdings data provided. Please select a CSV or Excel file.');
   }
 
-  const lines = csvContent.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  if (lines.length < 2) {
-    throw new Error('CSV file must contain a header row and at least one stock holding row.');
+  let workbook;
+  try {
+    if (typeof contentOrBuffer === 'string') {
+      if (contentOrBuffer.startsWith('data:') && contentOrBuffer.includes('base64,')) {
+        const b64 = contentOrBuffer.split('base64,')[1];
+        workbook = XLSX.read(Buffer.from(b64, 'base64'), { type: 'buffer' });
+      } else if (contentOrBuffer.startsWith('PK\x03\x04') || contentOrBuffer.startsWith('UEsDB')) {
+        workbook = XLSX.read(Buffer.from(contentOrBuffer, contentOrBuffer.startsWith('UEsDB') ? 'base64' : 'binary'), { type: 'buffer' });
+      } else {
+        workbook = XLSX.read(contentOrBuffer, { type: 'string' });
+      }
+    } else if (Buffer.isBuffer(contentOrBuffer)) {
+      workbook = XLSX.read(contentOrBuffer, { type: 'buffer' });
+    } else {
+      throw new Error('Unsupported file format.');
+    }
+  } catch (err) {
+    throw new Error(`Failed to read file: ${err.message}`);
   }
 
-  const header = lines[0].toLowerCase().split(',').map(h => h.replace(/["']/g, '').trim());
+  const sheetName = workbook.SheetNames && workbook.SheetNames[0];
+  if (!sheetName) throw new Error('No worksheet found in uploaded file.');
 
-  // Find column indices
-  const symIdx = header.findIndex(h => h.includes('symbol') || h.includes('stock') || h.includes('instrument') || h.includes('ticker') || h.includes('scrip') || h.includes('company'));
-  const qtyIdx = header.findIndex(h => h.includes('qty') || h.includes('quantity') || h.includes('shares') || h.includes('units'));
-  const priceIdx = header.findIndex(h => h.includes('avg') || h.includes('buy') || h.includes('cost') || h.includes('price') || h.includes('rate'));
+  const worksheet = workbook.Sheets[sheetName];
+  const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
 
-  if (symIdx === -1 || qtyIdx === -1) {
-    throw new Error('CSV must include "Symbol/Stock" and "Quantity" columns.');
+  if (!rawRows || rawRows.length < 1) {
+    throw new Error('The uploaded spreadsheet or CSV is empty.');
   }
 
-  const holdings = [];
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.replace(/["']/g, '').trim());
-    if (cols.length <= symIdx || !cols[symIdx]) continue;
+  // Find header row by searching for standard column keywords
+  let headerRowIdx = -1;
+  let symCol = -1;
+  let qtyCol = -1;
+  let priceCol = -1;
+  let nameCol = -1;
 
-    const rawSym = cols[symIdx].replace(/^NSE:|-EQ$/g, '').trim().toUpperCase();
-    const qty = parseFloat(cols[qtyIdx]) || 0;
-    const buyPrice = priceIdx !== -1 ? (parseFloat(cols[priceIdx]) || 0) : 0;
+  for (let r = 0; r < Math.min(rawRows.length, 30); r++) {
+    const row = rawRows[r].map(c => String(c || '').toLowerCase().trim());
+    const sIdx = row.findIndex(c => c === 'symbol' || c === 'stock symbol' || c === 'ticker' || c === 'instrument' || c === 'scrip' || c === 'trading symbol' || c === 'stock' || c.includes('symbol'));
+    const qIdx = row.findIndex(c => c === 'qty' || c === 'quantity' || c === 'shares' || c === 'units' || c === 'total qty' || c.includes('qty') || c.includes('quantity'));
+    const pIdx = row.findIndex(c => c === 'avg price' || c === 'avg cost' || c === 'avg. price' || c === 'buy price' || c === 'average buy price' || c === 'cost price' || c === 'average price' || c.includes('avg') || c.includes('buy price') || c.includes('cost'));
+    const nIdx = row.findIndex(c => c === 'stock name' || c === 'company' || c === 'company name' || c === 'instrument name' || c.includes('stock name') || c.includes('company'));
 
-    if (rawSym && qty > 0) {
-      holdings.push({
-        symbol: rawSym,
-        quantity: qty,
-        buyPrice,
-        exchange: 'NSE',
-        source: 'CSV Import'
-      });
+    if ((sIdx !== -1 || nIdx !== -1) && qIdx !== -1) {
+      headerRowIdx = r;
+      symCol = sIdx !== -1 ? sIdx : nIdx;
+      nameCol = nIdx;
+      qtyCol = qIdx;
+      priceCol = pIdx;
+      break;
     }
   }
 
+  const holdings = [];
+  const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
+
+  for (let r = startRow; r < rawRows.length; r++) {
+    const row = rawRows[r];
+    if (!row || row.length === 0) continue;
+
+    let symbol = '';
+    let quantity = 0;
+    let buyPrice = 0;
+
+    if (headerRowIdx !== -1) {
+      symbol = String(row[symCol] || '').trim();
+      if (!symbol && nameCol !== -1) {
+        symbol = String(row[nameCol] || '').trim();
+      }
+      quantity = parseFloat(String(row[qtyCol] || '').replace(/,/g, '')) || 0;
+      if (priceCol !== -1) {
+        buyPrice = parseFloat(String(row[priceCol] || '').replace(/[₹$,]/g, '')) || 0;
+      }
+    } else {
+      symbol = String(row[0] || '').trim();
+      quantity = parseFloat(String(row[1] || '').replace(/,/g, '')) || 0;
+      buyPrice = parseFloat(String(row[2] || '').replace(/[₹$,]/g, '')) || 0;
+    }
+
+    const cleanSym = symbol
+      .replace(/^NSE:|^BSE:/i, '')
+      .replace(/-EQ$|-BE$/i, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase();
+
+    if (!cleanSym || cleanSym.startsWith('TOTAL') || cleanSym.startsWith('GRAND') || cleanSym.startsWith('SUMMARY') || cleanSym.startsWith('DISCLAIMER') || isNaN(quantity) || quantity <= 0) {
+      continue;
+    }
+
+    holdings.push({
+      symbol: cleanSym,
+      quantity,
+      buyPrice: isNaN(buyPrice) ? 0 : buyPrice,
+      exchange: 'NSE',
+      source: 'CSV / Excel Import'
+    });
+  }
+
   if (holdings.length === 0) {
-    throw new Error('No valid stock holdings could be parsed from the CSV file.');
+    throw new Error('No valid stock holding rows found. Ensure the file contains stock symbols and quantities.');
   }
 
   return holdings;

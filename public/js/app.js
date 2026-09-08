@@ -2717,17 +2717,47 @@
       accessToken: (document.getElementById('input-fyers-token')?.value || '').trim()
     }));
 
-    // CSV Form
+    // Universal CSV / Excel Form Ingestion
     const formCsv = document.getElementById('form-connect-csv');
     const inputCsvFile = document.getElementById('input-csv-file');
     const inputCsvRaw = document.getElementById('input-csv-raw');
+    const btnParseCsv = document.getElementById('btn-parse-csv');
+    let uploadedFilePayload = '';
 
     if (inputCsvFile && inputCsvRaw) {
       inputCsvFile.addEventListener('change', (e) => {
         const file = e.target.files && e.target.files[0];
-        if (file) {
+        if (!file) return;
+
+        const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+
+        if (isExcel) {
           const reader = new FileReader();
           reader.onload = (evt) => {
+            const dataUrl = evt.target.result;
+            uploadedFilePayload = dataUrl;
+
+            // If XLSX mini bundle is available in client, extract and display CSV preview
+            if (window.XLSX && typeof window.XLSX.read === 'function') {
+              try {
+                const b64 = dataUrl.split('base64,')[1];
+                const wb = window.XLSX.read(b64, { type: 'base64' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const csvText = window.XLSX.utils.sheet_to_csv(ws);
+                inputCsvRaw.value = csvText;
+              } catch (err) {
+                inputCsvRaw.value = `[Excel File Loaded: ${file.name} (${Math.round(file.size / 1024)} KB)]`;
+              }
+            } else {
+              inputCsvRaw.value = `[Excel File Loaded: ${file.name} (${Math.round(file.size / 1024)} KB)]`;
+            }
+          };
+          reader.readAsDataURL(file);
+        } else {
+          // Plain text CSV / TSV / TXT
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            uploadedFilePayload = evt.target.result;
             inputCsvRaw.value = evt.target.result;
           };
           reader.readAsText(file);
@@ -2735,17 +2765,28 @@
       });
     }
 
+    const handleParseCsv = (e) => {
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+
+      const rawText = (inputCsvRaw?.value || '').trim();
+      const payloadContent = (uploadedFilePayload && !rawText.startsWith('Symbol') && uploadedFilePayload.startsWith('data:')) 
+        ? uploadedFilePayload 
+        : (rawText || uploadedFilePayload);
+
+      if (!payloadContent) {
+        alert('Please choose a CSV / Excel file or paste your stock holdings text.');
+        return;
+      }
+
+      syncBrokerPortfolio('csv', { csvContent: payloadContent });
+    };
+
+    if (btnParseCsv) {
+      btnParseCsv.addEventListener('click', handleParseCsv);
+    }
     if (formCsv) {
-      formCsv.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
-        const csvContent = (inputCsvRaw?.value || '').trim();
-        if (!csvContent) {
-          alert('Please choose a CSV file or paste holdings text.');
-          return;
-        }
-        syncBrokerPortfolio('csv', { csvContent });
-      });
+      formCsv.addEventListener('submit', handleParseCsv);
     }
   }
 
