@@ -5843,34 +5843,53 @@ body.theme-bright .portfolio-stock-row {
 
 .broker-tabs-bar {
   display: flex;
-  overflow-x: auto;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 12px 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0d121b;
+  overflow: visible;
+  scrollbar-width: none;
+}
+
+.broker-tabs-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .broker-tab-btn {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-bottom: none;
   border-radius: 6px 6px 0 0;
   color: var(--text-dim);
   font-family: var(--font-heading);
   font-size: 11px;
   font-weight: 700;
-  padding: 8px 14px;
+  padding: 8px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
   transition: all 0.15s ease;
+  user-select: none;
+}
+
+.broker-tab-btn * {
+  pointer-events: none;
+}
+
+.broker-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(0, 229, 255, 0.35);
 }
 
 .broker-tab-btn.active {
   background: #141b27;
   color: var(--phosphor-cyan);
-  border-color: rgba(0, 229, 255, 0.4);
+  border-color: rgba(0, 229, 255, 0.5);
+  box-shadow: 0 -2px 8px rgba(0, 229, 255, 0.2);
 }
 
 .broker-guide-box {

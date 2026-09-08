@@ -2589,18 +2589,46 @@
     if (btnLoadDemo) btnLoadDemo.addEventListener('click', loadDemoFn);
     if (btnEmptyDemo) btnEmptyDemo.addEventListener('click', loadDemoFn);
 
-    // Broker Tabs Switching inside Modal
+    // Broker Tabs Switching inside Modal (Delegated + Direct)
+    const brokerTabsBar = document.querySelector('.broker-tabs-bar');
+    const switchBrokerTab = (broker) => {
+      if (!broker) return;
+      if (window.tactileAudio) window.tactileAudio.playDialTick();
+
+      document.querySelectorAll('.broker-tab-btn').forEach(b => {
+        if (b.getAttribute('data-broker') === broker) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+
+      document.querySelectorAll('.broker-pane').forEach(p => {
+        p.classList.add('hidden');
+        p.classList.remove('active');
+      });
+
+      const activePane = document.getElementById(`pane-${broker}`);
+      if (activePane) {
+        activePane.classList.remove('hidden');
+        activePane.classList.add('active');
+      }
+
+      const statusEl = document.getElementById('broker-sync-status');
+      if (statusEl) statusEl.classList.add('hidden');
+    };
+
+    if (brokerTabsBar) {
+      brokerTabsBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.broker-tab-btn');
+        if (btn) {
+          const broker = btn.getAttribute('data-broker');
+          switchBrokerTab(broker);
+        }
+      });
+    }
+
     document.querySelectorAll('.broker-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
         const broker = btn.getAttribute('data-broker');
-        if (window.tactileAudio) window.tactileAudio.playDialTick();
-
-        document.querySelectorAll('.broker-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        document.querySelectorAll('.broker-pane').forEach(p => p.classList.add('hidden'));
-        const activePane = document.getElementById(`pane-${broker}`);
-        if (activePane) activePane.classList.remove('hidden');
+        switchBrokerTab(broker);
       });
     });
 
