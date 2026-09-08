@@ -2616,6 +2616,8 @@
       if (statusEl) statusEl.classList.add('hidden');
     };
 
+    window.switchBrokerTab = switchBrokerTab;
+
     if (brokerTabsBar) {
       brokerTabsBar.addEventListener('click', (e) => {
         const btn = e.target.closest('.broker-tab-btn');

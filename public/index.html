@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   
   <!-- Styles -->
-  <link rel="stylesheet" href="/styles/skeuomorphic.css">
+  <link rel="stylesheet" href="/styles/skeuomorphic.css?v=2.5">
 </head>
 <body class="skeuo-theme">
   <div id="app-container" class="terminal-shell">
@@ -1105,25 +1105,25 @@
 
         <!-- Broker Selector Tabs -->
         <div class="broker-tabs-bar">
-          <button type="button" class="broker-tab-btn active" data-broker="groww">
+          <button type="button" class="broker-tab-btn active" data-broker="groww" onclick="window.switchBrokerTab && window.switchBrokerTab('groww')">
             <span class="broker-tab-icon">🌿</span> GROWW
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="zerodha">
+          <button type="button" class="broker-tab-btn" data-broker="zerodha" onclick="window.switchBrokerTab && window.switchBrokerTab('zerodha')">
             <span class="broker-tab-icon">🪁</span> ZERODHA
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="upstox">
+          <button type="button" class="broker-tab-btn" data-broker="upstox" onclick="window.switchBrokerTab && window.switchBrokerTab('upstox')">
             <span class="broker-tab-icon">⚡</span> UPSTOX
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="angelone">
+          <button type="button" class="broker-tab-btn" data-broker="angelone" onclick="window.switchBrokerTab && window.switchBrokerTab('angelone')">
             <span class="broker-tab-icon">🛡️</span> ANGEL ONE
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="dhan">
+          <button type="button" class="broker-tab-btn" data-broker="dhan" onclick="window.switchBrokerTab && window.switchBrokerTab('dhan')">
             <span class="broker-tab-icon">🪙</span> DHAN
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="fyers">
+          <button type="button" class="broker-tab-btn" data-broker="fyers" onclick="window.switchBrokerTab && window.switchBrokerTab('fyers')">
             <span class="broker-tab-icon">🎯</span> FYERS
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="csv">
+          <button type="button" class="broker-tab-btn" data-broker="csv" onclick="window.switchBrokerTab && window.switchBrokerTab('csv')">
             <span class="broker-tab-icon">📁</span> CSV FILE
           </button>
         </div>
@@ -1360,6 +1360,6 @@
   </div>
 
   <script src="/js/audio.js"></script>
-  <script src="/js/app.js"></script>
+  <script src="/js/app.js?v=2.5"></script>
 </body>
 </html>
