@@ -2623,6 +2623,7 @@
     const brokerModal = document.getElementById('broker-connect-modal');
     const btnOpenBroker = document.getElementById('btn-open-broker-modal');
     const btnCloseBroker = document.getElementById('btn-close-broker-modal');
+    const btnLoadDemo = document.getElementById('btn-load-demo-portfolio');
     const btnEmptyConnect = document.getElementById('btn-empty-connect-broker');
     const btnEmptyDemo = document.getElementById('btn-empty-load-demo');
     const btnClearPortfolio = document.getElementById('btn-clear-portfolio');
