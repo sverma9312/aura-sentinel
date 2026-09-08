@@ -575,73 +575,82 @@
             </div>
             <div class="portfolio-top-actions">
               <button id="btn-open-broker-modal" class="btn-portfolio-action primary">
-                <span>⚡ CONNECT BROKER API</span>
+                <span>⚡ CONNECT BROKER / IMPORT</span>
               </button>
               <button id="btn-load-demo-portfolio" class="btn-portfolio-action secondary" title="Load sample portfolio for instant demo">
+                <span>🎲 LOAD SAMPLE DATA</span>
+              </button>
+              <button id="btn-clear-portfolio" class="btn-portfolio-action secondary hidden" title="Clear current portfolio">
+                <span>🗑️ CLEAR PORTFOLIO</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- UNLOADED STATE: Shown ONLY when no portfolio is loaded -->
+          <div id="portfolio-unloaded-card" class="empty-portfolio-state">
+            <div class="empty-icon">💼</div>
+            <h3 style="color: var(--phosphor-cyan); font-family: var(--font-heading); margin-bottom: 8px;">NO PORTFOLIO HOLDINGS LOADED</h3>
+            <p style="max-width: 540px; margin: 0 auto 20px; color: var(--text-muted); line-height: 1.6;">
+              Connect your broker API (<strong>Groww</strong>, <strong>Zerodha</strong>, <strong>Upstox</strong>, <strong>Dhan</strong>, <strong>Angel One</strong>, <strong>Fyers</strong>) or upload an exported statement (<strong>.xlsx / .csv</strong>) to run automated macroeconomic stress testing.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+              <button id="btn-empty-connect-broker" class="btn-portfolio-action primary">
+                <span>⚡ CONNECT BROKER / IMPORT FILE</span>
+              </button>
+              <button id="btn-empty-load-demo" class="btn-portfolio-action secondary">
                 <span>🎲 LOAD SAMPLE DATA</span>
               </button>
             </div>
           </div>
 
-          <!-- Portfolio KPI Metrics Bar -->
-          <div class="portfolio-kpi-grid">
-            <div class="portfolio-kpi-card">
-              <span class="kpi-lbl">TOTAL PORTFOLIO VALUE</span>
-              <span class="kpi-val" id="portfolio-val-total">₹0.00</span>
-              <span class="kpi-sub" id="portfolio-sub-count">0 Holdings</span>
-            </div>
-            <div class="portfolio-kpi-card">
-              <span class="kpi-lbl">INVESTED CAPITAL</span>
-              <span class="kpi-val" id="portfolio-val-invested">₹0.00</span>
-              <span class="kpi-sub">Cost Basis</span>
-            </div>
-            <div class="portfolio-kpi-card">
-              <span class="kpi-lbl">TOTAL UNREALIZED P&L</span>
-              <span class="kpi-val highlight-green" id="portfolio-val-pnl">+₹0.00 (+0.00%)</span>
-              <span class="kpi-sub" id="portfolio-sub-pnl-status">Net Return</span>
-            </div>
-            <div class="portfolio-kpi-card highlight-border">
-              <span class="kpi-lbl">MACRO RESILIENCE SCORE</span>
-              <div class="kpi-resilience-wrap">
-                <span class="kpi-val highlight-gold" id="portfolio-val-resilience">--/100</span>
-                <span class="kpi-badge-pill" id="portfolio-badge-rating">READY</span>
+          <!-- LOADED STATE: Shown ONLY when active portfolio holdings are present -->
+          <div id="portfolio-loaded-content" class="hidden">
+            <!-- Portfolio KPI Metrics Bar -->
+            <div class="portfolio-kpi-grid">
+              <div class="portfolio-kpi-card">
+                <span class="kpi-lbl">TOTAL PORTFOLIO VALUE</span>
+                <span class="kpi-val" id="portfolio-val-total">₹0.00</span>
+                <span class="kpi-sub" id="portfolio-sub-count">0 Holdings</span>
               </div>
-              <span class="kpi-sub" id="portfolio-sub-resilience">Macro Defense Rating</span>
-            </div>
-          </div>
-
-          <!-- Concentration & Shock Warnings Bar (Dynamic) -->
-          <div id="portfolio-warnings-container" class="portfolio-warnings-container hidden"></div>
-
-          <!-- Sector Allocation Breakdown Tray -->
-          <div class="portfolio-section-chassis" style="margin-top: 16px;">
-            <div class="portfolio-chassis-header">
-              <div class="chassis-title">📊 SECTORAL CAPITAL ALLOCATION</div>
-              <div class="chassis-subtitle">Distribution across strategic economic industries</div>
-            </div>
-            <div id="portfolio-sectors-container" class="portfolio-sectors-bar"></div>
-          </div>
-
-          <!-- Individual Stock Diagnostics Grid & Table -->
-          <div class="portfolio-section-chassis" style="margin-top: 16px;">
-            <div class="portfolio-chassis-header">
-              <div class="chassis-title">🔬 STOCK-BY-STOCK MACRO SUITABILITY & SENTINEL HEALTH</div>
-              <div class="chassis-subtitle">Individual equity analysis, earnings drivers, portfolio weight, and risk verdicts</div>
-            </div>
-            <div id="portfolio-stocks-container" class="portfolio-stocks-grid">
-              <div class="empty-portfolio-state">
-                <div class="empty-icon">💼</div>
-                <h3>NO PORTFOLIO HOLDINGS LOADED</h3>
-                <p>Click <strong>"Connect Broker API"</strong> to sync with Groww, Zerodha, Upstox, etc., or load sample data to run macro diagnostics.</p>
-                <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
-                  <button id="btn-empty-connect-broker" class="btn-portfolio-action primary">
-                    <span>⚡ CONNECT BROKER API</span>
-                  </button>
-                  <button id="btn-empty-load-demo" class="btn-portfolio-action secondary">
-                    <span>🎲 LOAD SAMPLE DATA</span>
-                  </button>
+              <div class="portfolio-kpi-card">
+                <span class="kpi-lbl">INVESTED CAPITAL</span>
+                <span class="kpi-val" id="portfolio-val-invested">₹0.00</span>
+                <span class="kpi-sub">Cost Basis</span>
+              </div>
+              <div class="portfolio-kpi-card">
+                <span class="kpi-lbl">TOTAL UNREALIZED P&L</span>
+                <span class="kpi-val highlight-green" id="portfolio-val-pnl">+₹0.00 (+0.00%)</span>
+                <span class="kpi-sub" id="portfolio-sub-pnl-status">Net Return</span>
+              </div>
+              <div class="portfolio-kpi-card highlight-border">
+                <span class="kpi-lbl">MACRO RESILIENCE SCORE</span>
+                <div class="kpi-resilience-wrap">
+                  <span class="kpi-val highlight-gold" id="portfolio-val-resilience">--/100</span>
+                  <span class="kpi-badge-pill" id="portfolio-badge-rating">READY</span>
                 </div>
+                <span class="kpi-sub" id="portfolio-sub-resilience">Macro Defense Rating</span>
               </div>
+            </div>
+
+            <!-- Concentration & Shock Warnings Bar (Dynamic) -->
+            <div id="portfolio-warnings-container" class="portfolio-warnings-container hidden"></div>
+
+            <!-- Sector Allocation Breakdown Tray -->
+            <div class="portfolio-section-chassis" style="margin-top: 16px;">
+              <div class="portfolio-chassis-header">
+                <div class="chassis-title">📊 SECTORAL CAPITAL ALLOCATION</div>
+                <div class="chassis-subtitle">Distribution across strategic economic industries</div>
+              </div>
+              <div id="portfolio-sectors-container" class="portfolio-sectors-bar"></div>
+            </div>
+
+            <!-- Individual Stock Diagnostics Grid & Table -->
+            <div class="portfolio-section-chassis" style="margin-top: 16px;">
+              <div class="portfolio-chassis-header">
+                <div class="chassis-title">🔬 STOCK-BY-STOCK MACRO SUITABILITY & SENTINEL HEALTH</div>
+                <div class="chassis-subtitle">Individual equity analysis, earnings drivers, portfolio weight, and risk verdicts</div>
+              </div>
+              <div id="portfolio-stocks-container" class="portfolio-stocks-grid"></div>
             </div>
           </div>
         </div>

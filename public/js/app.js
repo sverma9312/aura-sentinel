@@ -83,6 +83,7 @@
     wireFilterQuery: '',
     selectedStock: null,
     watchlist: JSON.parse(localStorage.getItem('aura_sentinel_watchlist') || '[]'),
+    currentPortfolioAnalysis: JSON.parse(localStorage.getItem('aura_sentinel_portfolio') || 'null'),
     countdownInterval: null,
     isRefreshing: false,
     currentTourStep: 0
@@ -2598,6 +2599,7 @@
     const btnCloseBroker = document.getElementById('btn-close-broker-modal');
     const btnEmptyConnect = document.getElementById('btn-empty-connect-broker');
     const btnEmptyDemo = document.getElementById('btn-empty-load-demo');
+    const btnClearPortfolio = document.getElementById('btn-clear-portfolio');
 
     const openBrokerModalFn = () => {
       if (window.tactileAudio) window.tactileAudio.playRelaySnap();
@@ -2627,6 +2629,7 @@
 
     if (btnLoadDemo) btnLoadDemo.addEventListener('click', loadDemoFn);
     if (btnEmptyDemo) btnEmptyDemo.addEventListener('click', loadDemoFn);
+    if (btnClearPortfolio) btnClearPortfolio.addEventListener('click', clearPortfolio);
 
     // Broker Tabs Switching inside Modal (Delegated + Direct)
     const brokerTabsBar = document.querySelector('.broker-tabs-bar');
@@ -2861,6 +2864,9 @@
   function renderPortfolioTab() {
     const gate = document.getElementById('portfolio-clearance-gate');
     const deck = document.getElementById('portfolio-active-deck');
+    const unloadedCard = document.getElementById('portfolio-unloaded-card');
+    const loadedContent = document.getElementById('portfolio-loaded-content');
+    const btnClear = document.getElementById('btn-clear-portfolio');
     if (!gate || !deck) return;
 
     const user = state.currentUser;
@@ -2872,10 +2878,32 @@
     } else {
       gate.classList.add('hidden');
       deck.classList.remove('hidden');
-      if (state.currentPortfolioAnalysis) {
+
+      const hasHoldings = state.currentPortfolioAnalysis && 
+                          state.currentPortfolioAnalysis.summary && 
+                          state.currentPortfolioAnalysis.stocks && 
+                          state.currentPortfolioAnalysis.stocks.length > 0;
+
+      if (hasHoldings) {
+        if (unloadedCard) unloadedCard.classList.add('hidden');
+        if (loadedContent) loadedContent.classList.remove('hidden');
+        if (btnClear) btnClear.classList.remove('hidden');
         renderPortfolioAnalysis(state.currentPortfolioAnalysis);
+      } else {
+        if (unloadedCard) unloadedCard.classList.remove('hidden');
+        if (loadedContent) loadedContent.classList.add('hidden');
+        if (btnClear) btnClear.classList.add('hidden');
       }
     }
+  }
+
+  function clearPortfolio() {
+    if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+    state.currentPortfolioAnalysis = null;
+    try {
+      localStorage.removeItem('aura_sentinel_portfolio');
+    } catch (e) {}
+    renderPortfolioTab();
   }
 
   async function requestPremiumAccess() {
@@ -2974,7 +3002,10 @@
 
       if (window.tactileAudio) window.tactileAudio.playRelaySnap();
       state.currentPortfolioAnalysis = anaData.analysis;
-      renderPortfolioAnalysis(anaData.analysis);
+      try {
+        localStorage.setItem('aura_sentinel_portfolio', JSON.stringify(anaData.analysis));
+      } catch (e) {}
+      renderPortfolioTab();
 
       if (modal) modal.classList.add('hidden');
       if (statusEl) statusEl.classList.add('hidden');
