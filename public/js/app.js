@@ -2720,7 +2720,9 @@
     };
 
     bindBrokerForm('form-connect-groww', 'groww', () => ({
-      apiAuthToken: (document.getElementById('input-groww-token')?.value || '').trim()
+      apiAuthToken: (document.getElementById('input-groww-token')?.value || '').trim(),
+      apiKey: (document.getElementById('input-groww-token')?.value || '').trim(),
+      apiSecret: (document.getElementById('input-groww-secret')?.value || '').trim()
     }));
 
     bindBrokerForm('form-connect-zerodha', 'zerodha', () => ({

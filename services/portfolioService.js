@@ -44,12 +44,13 @@ function makeHttpsRequest(options, postData = null) {
 /**
  * Fetch holdings from Groww Trade API
  */
-async function fetchGrowwHoldings(apiAuthToken) {
-  if (!apiAuthToken) throw new Error('Groww API Auth Token is required.');
+async function fetchGrowwHoldings(apiAuthToken, apiKey = '', apiSecret = '') {
+  const token = (apiAuthToken || apiKey || '').trim();
+  if (!token) throw new Error('Groww API Key or Access Token is required.');
 
   // Demo / Sample Token check
-  if (apiAuthToken.toLowerCase().startsWith('demo') || apiAuthToken.toLowerCase().startsWith('test')) {
-    return getSampleHoldings('Groww');
+  if (token.toLowerCase().startsWith('demo') || token.toLowerCase().startsWith('test')) {
+    return getSampleHoldings('Groww Trade API');
   }
 
   try {

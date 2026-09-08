@@ -1280,18 +1280,24 @@
           <!-- BROKER 1: GROWW -->
           <div class="broker-pane active" id="pane-groww">
             <div class="broker-guide-box">
-              <h4>📋 How to connect Groww Trade API</h4>
+              <h4>📋 How to Connect Groww Trade API</h4>
               <ol>
-                <li>Visit the official Groww developer console: <a href="https://groww.in/trade-api" target="_blank" rel="noopener">groww.in/trade-api</a>.</li>
-                <li>Generate your <strong>API Auth Token</strong> for portfolio holdings read access.</li>
-                <li>Paste your Auth Token below to fetch your current holdings securely.</li>
+                <li>Open your Groww Developer Console: <a href="https://groww.in/trade-api" target="_blank" rel="noopener">groww.in/trade-api</a>.</li>
+                <li>Create an App to obtain your <strong>API Key</strong> & <strong>API Secret</strong>, or generate a session <strong>Access Token</strong>.</li>
+                <li>Paste your credentials below to synchronize your live DEMAT holdings.</li>
               </ol>
             </div>
             <form id="form-connect-groww" class="broker-form">
               <div class="auth-field-group">
-                <label class="auth-label">GROWW API AUTH TOKEN</label>
+                <label class="auth-label">GROWW API KEY / ACCESS TOKEN</label>
                 <div class="auth-input-recess">
-                  <input type="password" id="input-groww-token" class="auth-input" placeholder="Paste your Groww API Auth Token (or type 'demo' to test)" required>
+                  <input type="text" id="input-groww-token" class="auth-input" placeholder="e.g. your_api_key or access_token (or 'demo' to test)" required>
+                </div>
+              </div>
+              <div class="auth-field-group" style="margin-top: 8px;">
+                <label class="auth-label">GROWW API SECRET (OPTIONAL IF USING ACCESS TOKEN)</label>
+                <div class="auth-input-recess">
+                  <input type="password" id="input-groww-secret" class="auth-input" placeholder="e.g. your_groww_api_secret">
                 </div>
               </div>
               <button type="submit" class="auth-btn-submit">

@@ -450,7 +450,7 @@ const server = http.createServer(async (req, res) => {
       let holdings = [];
 
       if (broker === 'groww') {
-        holdings = await portfolioService.fetchGrowwHoldings(body.apiAuthToken);
+        holdings = await portfolioService.fetchGrowwHoldings(body.apiAuthToken || body.accessToken, body.apiKey, body.apiSecret);
       } else if (broker === 'zerodha') {
         holdings = await portfolioService.fetchZerodhaHoldings(body.apiKey, body.accessToken);
       } else if (broker === 'upstox') {
