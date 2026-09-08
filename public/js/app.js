@@ -982,7 +982,7 @@
     if (state.isRefreshing) return;
     state.isRefreshing = true;
 
-    setLoadingState(true);
+    setLoadingState(true, isManualRefresh);
 
     try {
       const reg = state.currentRegion;
@@ -1025,19 +1025,21 @@
       console.error('Failed to fetch macro intelligence:', err);
     } finally {
       state.isRefreshing = false;
-      setLoadingState(false);
+      setLoadingState(false, isManualRefresh);
     }
   }
 
-  function setLoadingState(loading) {
+  function setLoadingState(loading, isManual = false) {
     if (loading) {
-      el.ledLive.classList.remove('active');
-      el.ledBusy.classList.add('active');
-      el.btnForceRefresh.classList.add('depressed');
+      if (isManual) {
+        if (el.ledLive) el.ledLive.classList.remove('active');
+        if (el.ledBusy) el.ledBusy.classList.add('active');
+        if (el.btnForceRefresh) el.btnForceRefresh.classList.add('depressed');
+      }
     } else {
-      el.ledLive.classList.add('active');
-      el.ledBusy.classList.remove('active');
-      el.btnForceRefresh.classList.remove('depressed');
+      if (el.ledLive) el.ledLive.classList.add('active');
+      if (el.ledBusy) el.ledBusy.classList.remove('active');
+      if (el.btnForceRefresh) el.btnForceRefresh.classList.remove('depressed');
     }
   }
 
@@ -1058,7 +1060,9 @@
         el.timerMinutes.textContent = '00';
         el.timerSeconds.textContent = '00';
         if (!state.isRefreshing) {
-          fetchAllIntelligence(true);
+          // Advance nextRefresh by 1 hour immediately to prevent recurring countdown triggers
+          state.nextRefresh = new Date(now + 60 * 60 * 1000).toISOString();
+          fetchAllIntelligence(false);
         }
         return;
       }
