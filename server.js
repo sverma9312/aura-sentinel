@@ -506,6 +506,60 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // API Route: Save Portfolio to Cloud Database (Cross-Device Sync)
+  if (pathname === '/api/portfolio/save' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      if (!requesterEmail) {
+        return sendJson(res, 401, { success: false, error: 'User email header required' });
+      }
+
+      const body = await readJsonBody(req);
+      const portfolioData = body.portfolio || body.analysis;
+      if (!portfolioData) {
+        return sendJson(res, 400, { success: false, error: 'Portfolio data required' });
+      }
+
+      await dbService.saveUserPortfolio(requesterEmail, portfolioData);
+      return sendJson(res, 200, { success: true, message: 'Portfolio synced to cloud successfully' });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Get Saved Portfolio from Cloud Database
+  if (pathname === '/api/portfolio/saved' && req.method === 'GET') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      if (!requesterEmail) {
+        return sendJson(res, 401, { success: false, error: 'User email header required' });
+      }
+
+      const savedPortfolio = await dbService.getUserPortfolio(requesterEmail);
+      return sendJson(res, 200, {
+        success: true,
+        portfolio: savedPortfolio
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Clear Saved Portfolio from Cloud Database
+  if (pathname === '/api/portfolio/clear' && (req.method === 'POST' || req.method === 'DELETE')) {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      if (!requesterEmail) {
+        return sendJson(res, 401, { success: false, error: 'User email header required' });
+      }
+
+      await dbService.clearUserPortfolio(requesterEmail);
+      return sendJson(res, 200, { success: true, message: 'Cloud portfolio cleared successfully' });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
   // API Route: Health check
   if (pathname === '/api/health' && req.method === 'GET') {
     return sendJson(res, 200, {

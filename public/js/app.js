@@ -245,6 +245,7 @@
         state.currentUser = user;
         applyTheme(user.theme || 'dark');
         updateHeaderUserUI(user);
+        loadSavedCloudPortfolio(user.email);
         if (authModal) {
           authModal.classList.add('hidden');
           authModal.style.setProperty('display', 'none', 'important');
@@ -337,6 +338,7 @@
       applyTheme(loggedInUser.theme || 'dark');
       updateHeaderUserUI(loggedInUser);
       resetBrokerModal();
+      loadSavedCloudPortfolio(loggedInUser.email);
 
       showAuthToast('ACCESS GRANTED. INITIALIZING SECURITY CLEARANCE...', 'success');
       if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
@@ -426,7 +428,11 @@
 
   function logoutUser() {
     state.currentUser = null;
+    state.currentPortfolioAnalysis = null;
     localStorage.removeItem('aura_sentinel_session');
+    try {
+      localStorage.removeItem('aura_sentinel_portfolio');
+    } catch (e) {}
     
     // Close settings modal if open
     const settingsModal = document.getElementById('settings-modal');
@@ -2927,12 +2933,44 @@
     }
   }
 
+  async function loadSavedCloudPortfolio(email) {
+    if (!email) return;
+    try {
+      const res = await fetch('/api/portfolio/saved', {
+        headers: { 'x-user-email': email }
+      });
+      const data = await res.json();
+      if (data.success && data.portfolio) {
+        state.currentPortfolioAnalysis = data.portfolio;
+        try {
+          localStorage.setItem('aura_sentinel_portfolio', JSON.stringify(data.portfolio));
+        } catch (e) {}
+        if (state.currentTab === 'tab-portfolio') {
+          renderPortfolioTab();
+        }
+      }
+    } catch (err) {
+      console.warn('[Portfolio] Could not hydrate cloud portfolio:', err);
+    }
+  }
+
   function clearPortfolio() {
     if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
     state.currentPortfolioAnalysis = null;
     try {
       localStorage.removeItem('aura_sentinel_portfolio');
     } catch (e) {}
+
+    // Cloud database clear
+    if (state.currentUser && state.currentUser.email) {
+      fetch('/api/portfolio/clear', {
+        method: 'POST',
+        headers: {
+          'x-user-email': state.currentUser.email
+        }
+      }).catch(err => console.warn('[Portfolio] Cloud clear warning:', err));
+    }
+
     renderPortfolioTab();
   }
 
@@ -3035,6 +3073,19 @@
       try {
         localStorage.setItem('aura_sentinel_portfolio', JSON.stringify(anaData.analysis));
       } catch (e) {}
+
+      // Cross-Device Cloud Sync to MongoDB Atlas User Account
+      if (state.currentUser && state.currentUser.email) {
+        fetch('/api/portfolio/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': state.currentUser.email
+          },
+          body: JSON.stringify({ portfolio: anaData.analysis })
+        }).catch(err => console.warn('[Portfolio] Cloud save warning:', err));
+      }
+
       renderPortfolioTab();
 
       if (modal) modal.classList.add('hidden');

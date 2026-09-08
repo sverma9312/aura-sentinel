@@ -421,6 +421,78 @@ async function getLatestMarketSnapshot(region) {
   return null;
 }
 
+/**
+ * Save / Update evaluated portfolio for a user (Cross-Device Cloud Sync)
+ */
+async function saveUserPortfolio(email, portfolioData) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (!cleanEmail) return false;
+
+  const update = {
+    portfolio: portfolioData,
+    portfolioUpdatedAt: new Date().toISOString()
+  };
+
+  if (isConnected && db) {
+    try {
+      await db.collection('users').updateOne(
+        { email: cleanEmail },
+        { $set: update }
+      );
+      return true;
+    } catch (e) {
+      console.error('[DB] MongoDB Portfolio Save Error:', e.message);
+    }
+  }
+
+  const uIdx = fallbackStore.users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+  if (uIdx >= 0) {
+    fallbackStore.users[uIdx].portfolio = portfolioData;
+    fallbackStore.users[uIdx].portfolioUpdatedAt = update.portfolioUpdatedAt;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Get user's saved portfolio from Cloud Database
+ */
+async function getUserPortfolio(email) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (!cleanEmail) return null;
+
+  const user = await findUserByEmail(cleanEmail);
+  return user?.portfolio || null;
+}
+
+/**
+ * Clear user's saved portfolio in Cloud Database
+ */
+async function clearUserPortfolio(email) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (!cleanEmail) return false;
+
+  if (isConnected && db) {
+    try {
+      await db.collection('users').updateOne(
+        { email: cleanEmail },
+        { $unset: { portfolio: '', portfolioUpdatedAt: '' } }
+      );
+      return true;
+    } catch (e) {
+      console.error('[DB] MongoDB Portfolio Clear Error:', e.message);
+    }
+  }
+
+  const uIdx = fallbackStore.users.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+  if (uIdx >= 0) {
+    delete fallbackStore.users[uIdx].portfolio;
+    delete fallbackStore.users[uIdx].portfolioUpdatedAt;
+    return true;
+  }
+  return false;
+}
+
 module.exports = {
   initDb,
   findUserByEmail,
@@ -433,6 +505,9 @@ module.exports = {
   getPremiumRequests,
   getUserWatchlist,
   saveUserWatchlist,
+  saveUserPortfolio,
+  getUserPortfolio,
+  clearUserPortfolio,
   saveMarketSnapshot,
   getLatestMarketSnapshot,
   isMongoConnected: () => isConnected
