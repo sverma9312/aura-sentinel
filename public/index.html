@@ -1173,6 +1173,106 @@
             if (statusEl) statusEl.classList.add('hidden');
           }
           window.switchBrokerTab = switchBrokerTab;
+
+          window._selectedHoldingPayload = '';
+
+          window.onFileSelected = function(event) {
+            var file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            var isExcel = /\.(xlsx|xls)$/i.test(file.name);
+            var rawTextarea = document.getElementById('input-csv-raw');
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              window._selectedHoldingPayload = e.target.result;
+
+              if (isExcel && window.XLSX && typeof window.XLSX.read === 'function') {
+                try {
+                  var b64 = e.target.result.split('base64,')[1];
+                  var wb = window.XLSX.read(b64, { type: 'base64' });
+                  var ws = wb.Sheets[wb.SheetNames[0]];
+                  var csv = window.XLSX.utils.sheet_to_csv(ws);
+                  if (rawTextarea) rawTextarea.value = csv;
+                } catch(err) {
+                  if (rawTextarea) rawTextarea.value = '[Excel file loaded: ' + file.name + ' (' + Math.round(file.size / 1024) + ' KB)]';
+                }
+              } else if (!isExcel) {
+                if (rawTextarea) rawTextarea.value = e.target.result;
+              } else {
+                if (rawTextarea) rawTextarea.value = '[Excel file loaded: ' + file.name + ' (' + Math.round(file.size / 1024) + ' KB)]';
+              }
+            };
+
+            if (isExcel) {
+              reader.readAsDataURL(file);
+            } else {
+              reader.readAsText(file);
+            }
+          };
+
+          window.parseAndAnalyzeCsv = async function() {
+            var btn = document.getElementById('btn-parse-csv');
+            var statusEl = document.getElementById('broker-sync-status');
+            var fileInput = document.getElementById('input-csv-file');
+            var rawTextarea = document.getElementById('input-csv-raw');
+
+            var content = window._selectedHoldingPayload || '';
+
+            if (!content && fileInput && fileInput.files && fileInput.files[0]) {
+              var file = fileInput.files[0];
+              try {
+                content = await new Promise(function(resolve, reject) {
+                  var reader = new FileReader();
+                  reader.onload = function(e) { resolve(e.target.result); };
+                  reader.onerror = reject;
+                  if (/\.(xlsx|xls)$/i.test(file.name)) {
+                    reader.readAsDataURL(file);
+                  } else {
+                    reader.readAsText(file);
+                  }
+                });
+                window._selectedHoldingPayload = content;
+              } catch (err) {
+                console.error('File read error:', err);
+              }
+            }
+
+            if (!content && rawTextarea) {
+              content = (rawTextarea.value || '').trim();
+            }
+
+            if (!content) {
+              alert('Please choose your holdings file (.xlsx or .csv) or paste holdings text.');
+              return;
+            }
+
+            if (btn) {
+              btn.disabled = true;
+              btn.innerHTML = '<span>⏳ ANALYZING HOLDINGS...</span>';
+            }
+            if (statusEl) {
+              statusEl.className = 'broker-sync-status';
+              statusEl.textContent = '🔄 Evaluating holdings with Macro Catalyst Engine...';
+              statusEl.classList.remove('hidden');
+            }
+
+            try {
+              if (typeof window.syncBrokerPortfolio === 'function') {
+                await window.syncBrokerPortfolio('csv', { csvContent: content });
+              }
+            } catch(err) {
+              if (statusEl) {
+                statusEl.className = 'broker-sync-status error';
+                statusEl.textContent = '❌ ' + (err.message || 'Error processing portfolio.');
+              }
+            } finally {
+              if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>📊 PARSE & ANALYZE PORTFOLIO</span>';
+              }
+            }
+          };
         </script>
 
         <div class="modal-content-deck broker-modal-scroll" id="broker-modal-content">
@@ -1352,13 +1452,13 @@
             <form id="form-connect-csv" class="broker-form" onsubmit="return false;">
               <div class="auth-field-group">
                 <label class="auth-label">SELECT HOLDINGS FILE (.CSV / .XLSX / .XLS)</label>
-                <input type="file" id="input-csv-file" accept=".csv,.xlsx,.xls,.tsv,.txt,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain" class="file-picker-input">
+                <input type="file" id="input-csv-file" accept=".csv,.xlsx,.xls,.tsv,.txt,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain" onchange="onFileSelected(event)" class="file-picker-input">
               </div>
               <div class="auth-field-group" style="margin-top: 10px;">
                 <label class="auth-label">OR PASTE CSV / TEXT</label>
                 <textarea id="input-csv-raw" class="csv-raw-textarea" rows="4" placeholder="Symbol,Quantity,AvgPrice&#10;HAL,25,4250.00&#10;TCS,30,3820.00&#10;BEL,120,245.50"></textarea>
               </div>
-              <button type="button" id="btn-parse-csv" class="auth-btn-submit">
+              <button type="button" id="btn-parse-csv" onclick="parseAndAnalyzeCsv()" class="auth-btn-submit">
                 <span>📊 PARSE & ANALYZE PORTFOLIO</span>
               </button>
             </form>

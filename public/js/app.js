@@ -3018,6 +3018,8 @@
     }
   }
 
+  window.syncBrokerPortfolio = syncBrokerPortfolio;
+
   function renderPortfolioAnalysis(analysis) {
     if (!analysis || !analysis.summary) return;
 

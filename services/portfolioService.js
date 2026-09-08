@@ -332,6 +332,7 @@ function parseHoldingsCsv(contentOrBuffer) {
   let qtyCol = -1;
   let priceCol = -1;
   let nameCol = -1;
+  let closeCol = -1;
 
   for (let r = 0; r < Math.min(rawRows.length, 30); r++) {
     const row = rawRows[r].map(c => String(c || '').toLowerCase().trim());
@@ -339,6 +340,7 @@ function parseHoldingsCsv(contentOrBuffer) {
     const qIdx = row.findIndex(c => c === 'qty' || c === 'quantity' || c === 'shares' || c === 'units' || c === 'total qty' || c.includes('qty') || c.includes('quantity'));
     const pIdx = row.findIndex(c => c === 'avg price' || c === 'avg cost' || c === 'avg. price' || c === 'buy price' || c === 'average buy price' || c === 'cost price' || c === 'average price' || c.includes('avg') || c.includes('buy price') || c.includes('cost'));
     const nIdx = row.findIndex(c => c === 'stock name' || c === 'company' || c === 'company name' || c === 'instrument name' || c.includes('stock name') || c.includes('company'));
+    const cIdx = row.findIndex(c => c === 'closing price' || c === 'ltp' || c === 'last price' || c === 'current price' || c.includes('closing price') || c.includes('ltp'));
 
     if ((sIdx !== -1 || nIdx !== -1) && qIdx !== -1) {
       headerRowIdx = r;
@@ -346,6 +348,7 @@ function parseHoldingsCsv(contentOrBuffer) {
       nameCol = nIdx;
       qtyCol = qIdx;
       priceCol = pIdx;
+      closeCol = cIdx;
       break;
     }
   }
@@ -360,6 +363,7 @@ function parseHoldingsCsv(contentOrBuffer) {
     let symbol = '';
     let quantity = 0;
     let buyPrice = 0;
+    let closingPrice = 0;
 
     if (headerRowIdx !== -1) {
       symbol = String(row[symCol] || '').trim();
@@ -369,6 +373,9 @@ function parseHoldingsCsv(contentOrBuffer) {
       quantity = parseFloat(String(row[qtyCol] || '').replace(/,/g, '')) || 0;
       if (priceCol !== -1) {
         buyPrice = parseFloat(String(row[priceCol] || '').replace(/[₹$,]/g, '')) || 0;
+      }
+      if (closeCol !== -1) {
+        closingPrice = parseFloat(String(row[closeCol] || '').replace(/[₹$,]/g, '')) || 0;
       }
     } else {
       symbol = String(row[0] || '').trim();
@@ -391,6 +398,7 @@ function parseHoldingsCsv(contentOrBuffer) {
       symbol: cleanSym,
       quantity,
       buyPrice: isNaN(buyPrice) ? 0 : buyPrice,
+      closingPrice: isNaN(closingPrice) ? 0 : closingPrice,
       exchange: 'NSE',
       source: 'CSV / Excel Import'
     });
@@ -460,7 +468,13 @@ async function analyzePortfolio(holdings, region = 'india') {
       console.warn(`[PortfolioAnalysis] Quote lookup failed for ${fullSymbol}:`, e.message);
     }
 
-    const currentPrice = quote && quote.regularMarketPrice ? quote.regularMarketPrice : (item.buyPrice * 1.05);
+    // Price Resolution: If statement has an official closing price, use it; otherwise check live quote
+    const statementPrice = Number(item.closingPrice || 0);
+    let currentPrice = statementPrice > 0 ? statementPrice : (item.buyPrice || 100);
+
+    if (quote && quote.regularMarketPrice && /^[A-Z0-9&-]{1,10}$/.test(baseSymbol) && statementPrice <= 0) {
+      currentPrice = quote.regularMarketPrice;
+    }
     const qty = item.quantity || 1;
     const buyPrice = item.buyPrice || currentPrice;
     const invested = Math.round(qty * buyPrice * 100) / 100;
