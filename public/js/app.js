@@ -1331,8 +1331,16 @@
     }
   }
 
-  // Draw High-Resolution Vector Oscilloscope Stock Chart
-  function drawOscilloscopeChart(points, currencySymbol = '$', currentRange = '1mo') {
+  // Helper to format chart currency values
+  function formatOscilloscopePrice(val) {
+    if (typeof val !== 'number' || isNaN(val)) return '0.00';
+    return val >= 1000
+      ? val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : val.toFixed(2);
+  }
+
+  // Draw High-Resolution Vector Oscilloscope Stock Chart with Turning-Point Value Annotations
+  function drawOscilloscopeChart(points, currencySymbol = '$', currentRange = '1mo', hoverIndex = -1) {
     const canvas = el.oscilloscopeCanvas;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1354,13 +1362,12 @@
     const gridMajor = isBright ? 'rgba(203, 213, 225, 0.5)' : 'rgba(0, 229, 255, 0.08)';
     const gridCenter = isBright ? 'rgba(148, 163, 184, 0.4)' : 'rgba(0, 229, 255, 0.16)';
     const traceColor = isBright ? '#059669' : '#00ff88';
-    const traceGlow = isBright ? 'rgba(5, 150, 105, 0.2)' : 'rgba(0, 255, 136, 0.35)';
     const fillTop = isBright ? 'rgba(5, 150, 105, 0.18)' : 'rgba(0, 255, 136, 0.22)';
     const fillBottom = isBright ? 'rgba(5, 150, 105, 0.0)' : 'rgba(0, 255, 136, 0.0)';
     const textMain = isBright ? '#0f172a' : '#ffffff';
     const textDim = isBright ? '#64748b' : '#8e99a8';
     const highColor = isBright ? '#047857' : '#00ff88';
-    const lowColor = isBright ? '#dc2626' : '#ff3344';
+    const lowColor = isBright ? '#dc2626' : '#ff4d5a';
 
     // Clear Background
     ctx.fillStyle = bgFill;
@@ -1398,16 +1405,19 @@
     const minP = Math.min(...prices);
     const maxP = Math.max(...prices);
     const range = (maxP - minP) || 1;
-    const padTop = 38;
-    const padBottom = 34;
+    const padTop = 40;
+    const padBottom = 36;
     const usableHeight = height - padTop - padBottom;
+    const padX = 24;
+    const usableWidth = width - (padX * 2);
 
     // Calculate Coordinates
     const coords = points.map((pt, idx) => ({
-      x: (idx / (points.length - 1)) * (width - 24) + 12,
+      x: padX + (idx / (points.length - 1)) * usableWidth,
       y: padTop + usableHeight - ((pt.price - minP) / range) * usableHeight,
       price: pt.price,
-      date: pt.date
+      date: pt.date,
+      idx
     }));
 
     // Draw Gradient Area Fill under Curve
@@ -1453,46 +1463,283 @@
     ctx.stroke();
     ctx.restore();
 
-    // Draw Data Point Nodes
-    const stepNodes = coords.length > 50 ? 8 : coords.length > 25 ? 4 : 2;
-    coords.forEach((pt, idx) => {
-      if (idx % stepNodes === 0 || idx === coords.length - 1) {
-        ctx.fillStyle = isBright ? '#ffffff' : '#0f172a';
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2); ctx.fill();
+    // =========================================================================
+    // IDENTIFY TURNING MOMENTS & INFLECTION POINTS WITH NUMERICAL VALUES
+    // =========================================================================
+    const turningPoints = [];
+    const n = coords.length;
 
-        ctx.strokeStyle = traceColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2); ctx.stroke();
+    // 1. Always mark Start point
+    turningPoints.push({
+      ...coords[0],
+      type: 'start',
+      labelType: coords[0].price >= (coords[1]?.price || 0) ? 'peak' : 'trough',
+      isMajor: true,
+      amplitude: Math.abs(coords[0].price - ((coords[1]?.price || coords[0].price)))
+    });
+
+    // 2. Identify Local Peaks, Local Troughs, HI & LO points
+    for (let i = 1; i < n - 1; i++) {
+      const prev = coords[i - 1].price;
+      const curr = coords[i].price;
+      const next = coords[i + 1].price;
+
+      const isPeak = (curr >= prev && curr >= next) && (curr > prev || curr > next);
+      const isTrough = (curr <= prev && curr <= next) && (curr < prev || curr < next);
+      const isGlobalHigh = Math.abs(curr - maxP) < 0.0001;
+      const isGlobalLow = Math.abs(curr - minP) < 0.0001;
+      const swing = Math.max(Math.abs(curr - prev), Math.abs(curr - next));
+
+      if (isGlobalHigh) {
+        turningPoints.push({ ...coords[i], type: 'high', labelType: 'peak', isMajor: true, amplitude: 99999 });
+      } else if (isGlobalLow) {
+        turningPoints.push({ ...coords[i], type: 'low', labelType: 'trough', isMajor: true, amplitude: 99999 });
+      } else if (isPeak) {
+        turningPoints.push({ ...coords[i], type: 'peak', labelType: 'peak', isMajor: false, amplitude: swing });
+      } else if (isTrough) {
+        turningPoints.push({ ...coords[i], type: 'trough', labelType: 'trough', isMajor: false, amplitude: swing });
+      }
+    }
+
+    // 3. Always mark End / Latest point
+    turningPoints.push({
+      ...coords[n - 1],
+      type: 'latest',
+      labelType: coords[n - 1].price >= (coords[n - 2]?.price || 0) ? 'peak' : 'trough',
+      isMajor: true,
+      amplitude: 99999
+    });
+
+    // If series is flat or monotonic with few inflections, sample equidistant milestones
+    if (turningPoints.length < 4 && n >= 6) {
+      const step = Math.floor(n / 4);
+      for (let s = step; s < n - 1; s += step) {
+        if (!turningPoints.some(tp => Math.abs(tp.x - coords[s].x) < 36)) {
+          turningPoints.push({
+            ...coords[s],
+            type: 'node',
+            labelType: coords[s].y > height / 2 ? 'trough' : 'peak',
+            isMajor: false,
+            amplitude: 1
+          });
+        }
+      }
+    }
+
+    // Sort turning points along X axis
+    turningPoints.sort((a, b) => a.x - b.x);
+
+    // Filter to prevent horizontal tag overlapping (minimum ~48px spacing)
+    const spacedPoints = [];
+    turningPoints.forEach(pt => {
+      if (spacedPoints.length === 0) {
+        spacedPoints.push(pt);
+        return;
+      }
+      const prevPt = spacedPoints[spacedPoints.length - 1];
+      const dist = pt.x - prevPt.x;
+
+      if (dist < 46) {
+        // If one is major (HI/LO/Latest), keep the major point
+        if (pt.isMajor && !prevPt.isMajor) {
+          spacedPoints[spacedPoints.length - 1] = pt;
+        } else if (!pt.isMajor && !prevPt.isMajor) {
+          if (pt.amplitude > prevPt.amplitude) {
+            spacedPoints[spacedPoints.length - 1] = pt;
+          }
+        }
+      } else {
+        spacedPoints.push(pt);
       }
     });
 
-    // Draw Latest Node with Pulsing Halo
-    const lastNode = coords[coords.length - 1];
-    ctx.fillStyle = traceColor;
-    ctx.beginPath(); ctx.arc(lastNode.x, lastNode.y, 5, 0, Math.PI * 2); ctx.fill();
+    // 4. Draw Turning Point Visual Nodes (Dots & Halos)
+    spacedPoints.forEach(pt => {
+      const isLatest = pt.type === 'latest';
+      const isHigh = pt.type === 'high' || pt.price === maxP;
+      const isLow = pt.type === 'low' || pt.price === minP;
 
-    // Price Badges (Top & Bottom High-Contrast Headers)
+      let dotColor = traceColor;
+      if (isHigh) dotColor = highColor;
+      else if (isLow) dotColor = lowColor;
+      else if (isLatest) dotColor = isBright ? '#0284c7' : '#00e5ff';
+
+      ctx.save();
+      // Outer Halo Ring
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, isLatest ? 5.5 : isHigh || isLow ? 5 : 4, 0, Math.PI * 2);
+      ctx.fillStyle = isBright ? '#ffffff' : '#080d14';
+      ctx.fill();
+
+      ctx.strokeStyle = dotColor;
+      ctx.lineWidth = isLatest ? 2.5 : 2;
+      if (!isBright) {
+        ctx.shadowColor = dotColor;
+        ctx.shadowBlur = 6;
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Inner Core Dot
+      ctx.fillStyle = dotColor;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, isLatest ? 2.5 : 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // 5. Draw Phosphor Value Badges at Turning Moments
+    ctx.font = '700 9.5px "JetBrains Mono", monospace';
+    spacedPoints.forEach(pt => {
+      const isHigh = pt.type === 'high' || pt.price === maxP;
+      const isLow = pt.type === 'low' || pt.price === minP;
+      const isLatest = pt.type === 'latest';
+
+      const priceTxt = `${currencySymbol}${formatOscilloscopePrice(pt.price)}`;
+      const textMetrics = ctx.measureText(priceTxt);
+      const pillWidth = Math.round(textMetrics.width + 10);
+      const pillHeight = 16;
+      const radius = 3;
+
+      // Position badge above or below depending on turning curve direction
+      const isAbove = pt.labelType === 'peak' || (pt.y > height * 0.45 && pt.labelType !== 'trough');
+
+      let badgeX = Math.round(pt.x - pillWidth / 2);
+      badgeX = Math.max(6, Math.min(width - pillWidth - 6, badgeX));
+
+      let badgeY = isAbove ? Math.round(pt.y - 12 - pillHeight) : Math.round(pt.y + 12);
+      badgeY = Math.max(30, Math.min(height - 24 - pillHeight, badgeY));
+
+      // Connecting Stem line
+      ctx.save();
+      ctx.beginPath();
+      ctx.strokeStyle = isBright ? 'rgba(100, 116, 139, 0.45)' : 'rgba(0, 255, 136, 0.35)';
+      ctx.lineWidth = 1;
+      if (isAbove) {
+        ctx.moveTo(pt.x, pt.y - 4);
+        ctx.lineTo(pt.x, badgeY + pillHeight);
+      } else {
+        ctx.moveTo(pt.x, pt.y + 4);
+        ctx.lineTo(pt.x, badgeY);
+      }
+      ctx.stroke();
+
+      // Pill Background Box
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(badgeX, badgeY, pillWidth, pillHeight, radius);
+      } else {
+        ctx.rect(badgeX, badgeY, pillWidth, pillHeight);
+      }
+      ctx.fillStyle = isBright ? 'rgba(241, 245, 249, 0.94)' : 'rgba(4, 10, 18, 0.92)';
+      ctx.fill();
+
+      // Pill Border & Text Tone
+      let borderColor = isBright ? 'rgba(5, 150, 105, 0.45)' : 'rgba(0, 255, 136, 0.45)';
+      let textColor = isBright ? '#047857' : '#00ff88';
+
+      if (isHigh) {
+        borderColor = isBright ? 'rgba(5, 150, 105, 0.7)' : 'rgba(0, 255, 136, 0.8)';
+        textColor = isBright ? '#047857' : '#00ff88';
+      } else if (isLow) {
+        borderColor = isBright ? 'rgba(220, 38, 38, 0.65)' : 'rgba(255, 77, 90, 0.75)';
+        textColor = isBright ? '#dc2626' : '#ff4d5a';
+      } else if (isLatest) {
+        borderColor = isBright ? 'rgba(2, 132, 199, 0.7)' : 'rgba(0, 229, 255, 0.75)';
+        textColor = isBright ? '#0284c7' : '#00e5ff';
+      }
+
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw Value Text
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(priceTxt, badgeX + pillWidth / 2, badgeY + pillHeight / 2 + 0.5);
+      ctx.restore();
+    });
+
+    // =========================================================================
+    // INTERACTIVE HOVER CROSSHAIR & LIVE HUD (WHEN USER HOVERS)
+    // =========================================================================
+    if (hoverIndex >= 0 && hoverIndex < coords.length) {
+      const hPt = coords[hoverIndex];
+      ctx.save();
+
+      // Vertical Reticle Line
+      ctx.beginPath();
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = isBright ? 'rgba(2, 132, 199, 0.6)' : 'rgba(0, 229, 255, 0.55)';
+      ctx.lineWidth = 1;
+      ctx.moveTo(hPt.x, padTop);
+      ctx.lineTo(hPt.x, height - padBottom);
+      ctx.stroke();
+
+      // Crosshair Circle on Trajectory
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(hPt.x, hPt.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = isBright ? '#ffffff' : '#040a12';
+      ctx.fill();
+      ctx.strokeStyle = isBright ? '#0284c7' : '#00e5ff';
+      ctx.lineWidth = 2.5;
+      if (!isBright) {
+        ctx.shadowColor = '#00e5ff';
+        ctx.shadowBlur = 10;
+      }
+      ctx.stroke();
+
+      // Floating Live Tooltip Pill
+      const tipText = `${hPt.date ? hPt.date + ' • ' : ''}${currencySymbol}${formatOscilloscopePrice(hPt.price)}`;
+      ctx.font = '700 10.5px "JetBrains Mono", monospace';
+      const tipMetrics = ctx.measureText(tipText);
+      const tipW = Math.round(tipMetrics.width + 16);
+      const tipH = 22;
+      let tipX = Math.round(hPt.x - tipW / 2);
+      tipX = Math.max(8, Math.min(width - tipW - 8, tipX));
+      let tipY = hPt.y > height / 2 ? Math.round(hPt.y - 32) : Math.round(hPt.y + 14);
+
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(tipX, tipY, tipW, tipH, 4);
+      else ctx.rect(tipX, tipY, tipW, tipH);
+      ctx.fillStyle = isBright ? '#0f172a' : '#02131e';
+      ctx.fill();
+      ctx.strokeStyle = isBright ? '#38bdf8' : '#00e5ff';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(tipText, tipX + tipW / 2, tipY + tipH / 2);
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // PRICE SUMMARY BADGES (TOP & BOTTOM HEADERS)
+    // =========================================================================
     ctx.font = '700 11px "JetBrains Mono", monospace';
     
     // High Price Tag
     ctx.fillStyle = highColor;
-    ctx.fillText(`▲ HI: ${currencySymbol}${maxP.toFixed(2)}`, 14, 22);
+    ctx.fillText(`▲ HI: ${currencySymbol}${formatOscilloscopePrice(maxP)}`, 14, 22);
 
     // Latest Price Tag
     ctx.fillStyle = textMain;
-    const latestStr = `LATEST: ${currencySymbol}${prices[prices.length - 1].toFixed(2)}`;
-    ctx.fillText(latestStr, width - 145, 22);
+    const latestStr = `LATEST: ${currencySymbol}${formatOscilloscopePrice(prices[prices.length - 1])}`;
+    ctx.fillText(latestStr, width - 150, 22);
 
     // Low Price Tag
     ctx.fillStyle = lowColor;
-    ctx.fillText(`▼ LO: ${currencySymbol}${minP.toFixed(2)}`, 14, height - 12);
+    ctx.fillText(`▼ LO: ${currencySymbol}${formatOscilloscopePrice(minP)}`, 14, height - 12);
 
     // Timestamps
     ctx.font = '600 10px "JetBrains Mono", monospace';
     ctx.fillStyle = textDim;
     if (coords.length > 0) {
-      if (coords[0].date) ctx.fillText(coords[0].date, 120, height - 12);
-      if (coords[coords.length - 1].date) ctx.fillText(coords[coords.length - 1].date, width - 90, height - 12);
+      if (coords[0].date) ctx.fillText(coords[0].date, 130, height - 12);
+      if (coords[coords.length - 1].date) ctx.fillText(coords[coords.length - 1].date, width - 100, height - 12);
     }
   }
 
@@ -2214,6 +2461,51 @@
         el.autocompleteDropdown.classList.add('hidden');
       }
     });
+
+    // Interactive Oscilloscope Hover & Touch Scrubbing
+    if (el.oscilloscopeCanvas) {
+      const handleOscHover = (clientX) => {
+        if (!state.selectedStock || !state.selectedStock.quote) return;
+        const pts = state.selectedStock.quote.sparkline;
+        if (!pts || pts.length < 2) return;
+
+        const rect = el.oscilloscopeCanvas.getBoundingClientRect();
+        const offsetX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        const padX = 24;
+        const usableW = Math.max(1, rect.width - (padX * 2));
+        const ratio = Math.max(0, Math.min(1, (offsetX - padX) / usableW));
+        const closestIdx = Math.round(ratio * (pts.length - 1));
+
+        const isIndia = state.selectedStock.symbol.endsWith('.NS') || state.selectedStock.quote.currency === 'INR';
+        drawOscilloscopeChart(pts, isIndia ? '₹' : '$', state.currentTimeframe.range, closestIdx);
+      };
+
+      el.oscilloscopeCanvas.addEventListener('mousemove', (e) => {
+        handleOscHover(e.clientX);
+      });
+
+      el.oscilloscopeCanvas.addEventListener('mouseleave', () => {
+        if (!state.selectedStock || !state.selectedStock.quote) return;
+        const pts = state.selectedStock.quote.sparkline;
+        if (!pts || pts.length < 2) return;
+        const isIndia = state.selectedStock.symbol.endsWith('.NS') || state.selectedStock.quote.currency === 'INR';
+        drawOscilloscopeChart(pts, isIndia ? '₹' : '$', state.currentTimeframe.range, -1);
+      });
+
+      el.oscilloscopeCanvas.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches[0]) {
+          handleOscHover(e.touches[0].clientX);
+        }
+      }, { passive: true });
+
+      el.oscilloscopeCanvas.addEventListener('touchend', () => {
+        if (!state.selectedStock || !state.selectedStock.quote) return;
+        const pts = state.selectedStock.quote.sparkline;
+        if (!pts || pts.length < 2) return;
+        const isIndia = state.selectedStock.symbol.endsWith('.NS') || state.selectedStock.quote.currency === 'INR';
+        drawOscilloscopeChart(pts, isIndia ? '₹' : '$', state.currentTimeframe.range, -1);
+      });
+    }
   }
 
   async function handleSearchAutocomplete(query, targetDropdown = el.autocompleteDropdown, targetInput = el.searchInput) {
