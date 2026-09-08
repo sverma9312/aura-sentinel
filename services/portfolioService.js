@@ -83,7 +83,9 @@ async function fetchGrowwHoldings(apiAuthToken, apiKey = '', apiSecret = '') {
       lastStatus = res.status;
 
       if (res.status === 200 && res.data) {
-        const rawList = res.data.holdings || res.data.user_holdings || res.data.data || (Array.isArray(res.data) ? res.data : []);
+        const payload = res.data.payload || res.data;
+        const rawList = payload.holdings || payload.user_holdings || payload.data || payload.results || (Array.isArray(payload) ? payload : (Array.isArray(res.data) ? res.data : []));
+
         if (Array.isArray(rawList) && rawList.length > 0) {
           return rawList.map(h => ({
             symbol: h.trading_symbol || h.tradingsymbol || h.symbol || h.isin || 'EQUITY',
@@ -92,8 +94,9 @@ async function fetchGrowwHoldings(apiAuthToken, apiKey = '', apiSecret = '') {
             closingPrice: Number(h.close_price || h.ltp || h.last_price || 0),
             exchange: h.exchange || 'NSE',
             source: 'Groww Trade API'
-          }));
+          })).filter(h => h.quantity > 0);
         } else if (Array.isArray(rawList) && rawList.length === 0) {
+          console.log('[GrowwAPI] Empty holdings list in response payload:', JSON.stringify(res.data));
           throw new Error('Connected to Groww Trade API successfully, but zero active stock holdings were returned in your account.');
         }
       } else if (res.status === 401 || res.status === 403) {
