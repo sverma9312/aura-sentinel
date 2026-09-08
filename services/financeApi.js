@@ -43,27 +43,48 @@ function normalizeSymbol(symbol, region = 'global') {
   let sym = (symbol || '').toUpperCase().trim();
 
   const nameToTickerMap = {
+    // Exact Groww Trading Symbols & Common Names
+    'ARCFIN': '540135.BO',
+    'ARCFINANCE': '540135.BO',
+    'ARC FINANCE': '540135.BO',
+    'ARC FINANCE LIMITED': '540135.BO',
+    'GVKPIL': 'GVKPIL.NS',
     'GVK POW. & INFRA LTD.': 'GVKPIL.NS',
     'GVK POWER & INFRASTRUCTURE': 'GVKPIL.NS',
     'GVK POWER': 'GVKPIL.NS',
     'GVK': 'GVKPIL.NS',
+    'JETAIRWAYS': 'JETAIRWAYS.NS',
     'JET AIRWAYS (INDIA) LTD.': 'JETAIRWAYS.NS',
     'JET AIRWAYS': 'JETAIRWAYS.NS',
-    'ARC FINANCE LIMITED': '540135.BO',
-    'ARC FINANCE': '540135.BO',
+    
+    // ISIN Code Mappings
+    'INE034L01014': '540135.BO',      // ARC Finance
+    'INE802G01018': 'JETAIRWAYS.NS',   // Jet Airways
+    'INE251H01024': 'GVKPIL.NS',       // GVK Power & Infra
+    'INE251H01016': 'GVKPIL.NS',       // GVK Power
+
+    // Major Large & Midcaps
     'TATA POWER': 'TATAPOWER.NS',
+    'TATAPOWER': 'TATAPOWER.NS',
     'TATA MOTORS': 'TATAMOTORS.NS',
+    'TATAMOTORS': 'TATAMOTORS.NS',
     'RELIANCE': 'RELIANCE.NS',
     'RELIANCE INDUSTRIES': 'RELIANCE.NS',
     'HDFC BANK': 'HDFCBANK.NS',
+    'HDFCBANK': 'HDFCBANK.NS',
     'ICICI BANK': 'ICICIBANK.NS',
+    'ICICIBANK': 'ICICIBANK.NS',
     'STATE BANK OF INDIA': 'SBIN.NS',
     'SBI': 'SBIN.NS',
+    'SBIN': 'SBIN.NS',
     'L&T': 'LT.NS',
+    'LT': 'LT.NS',
     'LARSEN & TOUBRO': 'LT.NS',
     'INFOSYS': 'INFY.NS',
+    'INFY': 'INFY.NS',
     'BHARTI AIRTEL': 'BHARTIARTL.NS',
-    'AIRTEL': 'BHARTIARTL.NS'
+    'AIRTEL': 'BHARTIARTL.NS',
+    'BHARTIARTL': 'BHARTIARTL.NS'
   };
 
   if (nameToTickerMap[sym]) {
@@ -247,6 +268,7 @@ function getSyntheticQuote(symbol, region = 'global', range = '1mo') {
     change,
     changePercent,
     selectedRange: range,
+    isSynthetic: true,
     sparkline
   };
 }

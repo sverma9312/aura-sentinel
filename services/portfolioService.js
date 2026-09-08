@@ -87,14 +87,25 @@ async function fetchGrowwHoldings(apiAuthToken, apiKey = '', apiSecret = '') {
         const rawList = payload.holdings || payload.user_holdings || payload.data || payload.results || (Array.isArray(payload) ? payload : (Array.isArray(res.data) ? res.data : []));
 
         if (Array.isArray(rawList) && rawList.length > 0) {
-          return rawList.map(h => ({
-            symbol: h.trading_symbol || h.tradingsymbol || h.symbol || h.isin || 'EQUITY',
-            quantity: Number(h.quantity || h.net_quantity || h.total_quantity || 0),
-            buyPrice: Number(h.average_price || h.buy_price || h.cost_price || h.buyPrice || 0),
-            closingPrice: Number(h.close_price || h.ltp || h.last_price || 0),
-            exchange: h.exchange || 'NSE',
-            source: 'Groww Trade API'
-          })).filter(h => h.quantity > 0);
+          return rawList.map(h => {
+            const qty = Number(h.quantity || h.net_quantity || h.total_quantity || 0);
+            let cp = Number(h.close_price || h.ltp || h.last_price || h.current_price || h.market_price || h.cmp || 0);
+            if (cp <= 0 && h.market_value && qty > 0) {
+              cp = Number(h.market_value) / qty;
+            } else if (cp <= 0 && h.current_value && qty > 0) {
+              cp = Number(h.current_value) / qty;
+            }
+
+            return {
+              symbol: h.trading_symbol || h.tradingsymbol || h.symbol || h.isin || 'EQUITY',
+              quantity: qty,
+              buyPrice: Number(h.average_price || h.buy_price || h.cost_price || h.buyPrice || 0),
+              closingPrice: cp,
+              isin: h.isin || '',
+              exchange: h.exchange || 'NSE',
+              source: 'Groww Trade API'
+            };
+          }).filter(h => h.quantity > 0);
         } else if (Array.isArray(rawList) && rawList.length === 0) {
           console.log('[GrowwAPI] Empty holdings list in response payload:', JSON.stringify(res.data));
           throw new Error('Connected to Groww Trade API successfully, but zero active stock holdings were returned in your account.');
@@ -552,25 +563,52 @@ async function analyzePortfolio(holdings, region = 'india') {
     };
   }
 
+  // ISIN to Ticker & Name mapping dictionary
+  const isinMap = {
+    'INE802G01018': { symbol: 'JETAIRWAYS', name: 'Jet Airways (India) Ltd', ticker: 'JETAIRWAYS.NS' },
+    'INE034L01014': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
+    'ARCFIN': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
+    'ARCFINANCE': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
+    'INE251H01024': { symbol: 'GVKPIL', name: 'GVK Power & Infra Ltd', ticker: 'GVKPIL.NS' },
+    'INE251H01016': { symbol: 'GVKPIL', name: 'GVK Power & Infra Ltd', ticker: 'GVKPIL.NS' },
+    'GVKPIL': { symbol: 'GVKPIL', name: 'GVK Power & Infra Ltd', ticker: 'GVKPIL.NS' }
+  };
+
   // Evaluate each holding
   for (const item of holdings) {
-    const baseSymbol = item.symbol.toUpperCase().replace(/\.(NS|BO)$/, '');
-    const fullSymbol = baseSymbol.endsWith('.NS') ? baseSymbol : `${baseSymbol}.NS`;
+    const rawSym = (item.symbol || '').toUpperCase().trim();
+    const isinInfo = isinMap[rawSym] || isinMap[item.isin];
+
+    let baseSymbol = rawSym;
+    let compDisplayName = item.companyName || '';
+    let lookupTicker = rawSym;
+
+    if (isinInfo) {
+      baseSymbol = isinInfo.symbol;
+      compDisplayName = isinInfo.name;
+      lookupTicker = isinInfo.ticker;
+    } else {
+      baseSymbol = rawSym.replace(/\.(NS|BO)$/, '');
+      lookupTicker = baseSymbol.endsWith('.NS') || baseSymbol.endsWith('.BO') ? baseSymbol : `${baseSymbol}.NS`;
+    }
 
     let quote = null;
     try {
-      quote = await financeApi.getStockQuoteAndChart(fullSymbol, '1mo', '1d', region);
+      quote = await financeApi.getStockQuoteAndChart(lookupTicker, '1mo', '1d', region);
     } catch (e) {
-      console.warn(`[PortfolioAnalysis] Quote lookup failed for ${fullSymbol}:`, e.message);
+      console.warn(`[PortfolioAnalysis] Quote lookup failed for ${lookupTicker}:`, e.message);
     }
 
-    // Price Resolution: If statement has an official closing price, use it; otherwise check live quote
+    // Price Resolution: Live market quote > statement reported price > cost basis
     const statementPrice = Number(item.closingPrice || 0);
     let currentPrice = statementPrice > 0 ? statementPrice : (item.buyPrice || 100);
 
-    if (quote && quote.regularMarketPrice && /^[A-Z0-9&-]{1,10}$/.test(baseSymbol) && statementPrice <= 0) {
+    if (quote && quote.regularMarketPrice > 0 && !quote.isSynthetic) {
       currentPrice = quote.regularMarketPrice;
+    } else if (statementPrice > 0) {
+      currentPrice = statementPrice;
     }
+
     const qty = item.quantity || 1;
     const buyPrice = item.buyPrice || currentPrice;
     const invested = Math.round(qty * buyPrice * 100) / 100;
@@ -582,7 +620,7 @@ async function analyzePortfolio(holdings, region = 'india') {
     totalCurrentValue += currVal;
 
     // Macro metadata lookup
-    const compName = quote?.shortName || item.symbol || baseSymbol;
+    const compName = compDisplayName || quote?.shortName || item.companyName || baseSymbol;
     const meta = resolveSectorMeta(baseSymbol, compName);
 
     sectorDistribution[meta.sector] = (sectorDistribution[meta.sector] || 0) + currVal;
@@ -672,8 +710,8 @@ async function analyzePortfolio(holdings, region = 'india') {
 
     analyzedStocks.push({
       symbol: baseSymbol,
-      fullSymbol,
-      companyName: quote && quote.shortName ? quote.shortName : baseSymbol,
+      fullSymbol: lookupTicker,
+      companyName: compName,
       sector: meta.sector,
       icon: meta.icon,
       quantity: qty,
