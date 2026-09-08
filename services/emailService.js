@@ -103,6 +103,7 @@ Dispatched automatically by Aura Sentinel Governance Security Gateway.
       const transporter = nodemailer.createTransport(transporterConfig);
       await transporter.sendMail({
         from: `"Aura Sentinel Governance" <${fromEmail}>`,
+        replyTo: `"${userName}" <${userEmail}>`,
         to: ADMIN_NOTIFICATION_EMAIL,
         subject,
         text: bodyText,
