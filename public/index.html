@@ -632,7 +632,15 @@
               <div class="empty-portfolio-state">
                 <div class="empty-icon">💼</div>
                 <h3>NO PORTFOLIO HOLDINGS LOADED</h3>
-                <p>Click <strong>"Connect Broker API"</strong> above or <strong>"Load Sample Data"</strong> to run real-time macro diagnostics on your stocks.</p>
+                <p>Click <strong>"Connect Broker API"</strong> to sync with Groww, Zerodha, Upstox, etc., or load sample data to run macro diagnostics.</p>
+                <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
+                  <button id="btn-empty-connect-broker" class="btn-portfolio-action primary">
+                    <span>⚡ CONNECT BROKER API</span>
+                  </button>
+                  <button id="btn-empty-load-demo" class="btn-portfolio-action secondary">
+                    <span>🎲 LOAD SAMPLE DATA</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1082,42 +1090,45 @@
     <!-- ========================================================================= -->
     <!-- BROKER SYNCHRONIZATION & CREDENTIALS MODAL                                -->
     <!-- ========================================================================= -->
-    <div id="broker-connect-modal" class="modal-backdrop hidden">
-      <div class="modal-card modal-card-lg">
+    <div id="broker-connect-modal" class="skeuo-modal-overlay hidden">
+      <div class="skeuo-modal-chassis broker-modal-chassis">
         <div class="modal-header-bezel">
-          <div class="modal-header-text">
-            <span class="modal-badge-tag gold">⚡ BROKER SYNCHRONIZATION</span>
-            <h3 class="modal-title">CONNECT LIVE TRADING PORTFOLIO</h3>
+          <div class="modal-title-group">
+            <span class="modal-icon">⚡</span>
+            <div>
+              <h3 class="modal-bezel-title">CONNECT LIVE TRADING PORTFOLIO</h3>
+              <span class="modal-bezel-sub">DIRECT BROKER API & CSV INGESTION GATEWAY</span>
+            </div>
           </div>
-          <button type="button" class="btn-modal-close" id="btn-close-broker-modal">✕</button>
+          <button type="button" class="modal-close-btn" id="btn-close-broker-modal" title="Close Modal">&times;</button>
         </div>
 
         <!-- Broker Selector Tabs -->
         <div class="broker-tabs-bar">
-          <button class="broker-tab-btn active" data-broker="groww">
+          <button type="button" class="broker-tab-btn active" data-broker="groww">
             <span class="broker-tab-icon">🌿</span> GROWW
           </button>
-          <button class="broker-tab-btn" data-broker="zerodha">
+          <button type="button" class="broker-tab-btn" data-broker="zerodha">
             <span class="broker-tab-icon">🪁</span> ZERODHA
           </button>
-          <button class="broker-tab-btn" data-broker="upstox">
+          <button type="button" class="broker-tab-btn" data-broker="upstox">
             <span class="broker-tab-icon">⚡</span> UPSTOX
           </button>
-          <button class="broker-tab-btn" data-broker="angelone">
+          <button type="button" class="broker-tab-btn" data-broker="angelone">
             <span class="broker-tab-icon">🛡️</span> ANGEL ONE
           </button>
-          <button class="broker-tab-btn" data-broker="dhan">
+          <button type="button" class="broker-tab-btn" data-broker="dhan">
             <span class="broker-tab-icon">🪙</span> DHAN
           </button>
-          <button class="broker-tab-btn" data-broker="fyers">
+          <button type="button" class="broker-tab-btn" data-broker="fyers">
             <span class="broker-tab-icon">🎯</span> FYERS
           </button>
-          <button class="broker-tab-btn" data-broker="csv">
+          <button type="button" class="broker-tab-btn" data-broker="csv">
             <span class="broker-tab-icon">📁</span> CSV FILE
           </button>
         </div>
 
-        <div class="modal-body-scroll">
+        <div class="modal-content-deck broker-modal-scroll" id="broker-modal-content">
           
           <!-- BROKER 1: GROWW -->
           <div class="broker-pane active" id="pane-groww">

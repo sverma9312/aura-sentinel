@@ -2557,15 +2557,16 @@
 
     const brokerModal = document.getElementById('broker-connect-modal');
     const btnOpenBroker = document.getElementById('btn-open-broker-modal');
-    const btnCloseBroker = document.getElementById('btn-close-broker-modal');
-    const btnLoadDemo = document.getElementById('btn-load-demo-portfolio');
+    const btnEmptyConnect = document.getElementById('btn-empty-connect-broker');
+    const btnEmptyDemo = document.getElementById('btn-empty-load-demo');
 
-    if (btnOpenBroker && brokerModal) {
-      btnOpenBroker.addEventListener('click', () => {
-        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
-        brokerModal.classList.remove('hidden');
-      });
-    }
+    const openBrokerModalFn = () => {
+      if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+      if (brokerModal) brokerModal.classList.remove('hidden');
+    };
+
+    if (btnOpenBroker) btnOpenBroker.addEventListener('click', openBrokerModalFn);
+    if (btnEmptyConnect) btnEmptyConnect.addEventListener('click', openBrokerModalFn);
 
     if (btnCloseBroker && brokerModal) {
       btnCloseBroker.addEventListener('click', () => {
@@ -2580,12 +2581,13 @@
       });
     }
 
-    if (btnLoadDemo) {
-      btnLoadDemo.addEventListener('click', () => {
-        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
-        syncBrokerPortfolio('sample', {}, 'Sample Macro Portfolio');
-      });
-    }
+    const loadDemoFn = () => {
+      if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+      syncBrokerPortfolio('sample', {}, 'Sample Macro Portfolio');
+    };
+
+    if (btnLoadDemo) btnLoadDemo.addEventListener('click', loadDemoFn);
+    if (btnEmptyDemo) btnEmptyDemo.addEventListener('click', loadDemoFn);
 
     // Broker Tabs Switching inside Modal
     document.querySelectorAll('.broker-tab-btn').forEach(btn => {

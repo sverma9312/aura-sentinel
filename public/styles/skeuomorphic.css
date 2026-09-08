@@ -5817,6 +5817,30 @@ body.theme-bright .portfolio-stock-row {
 }
 
 /* Broker Modal Tabs & Panels */
+.broker-modal-chassis {
+  max-width: 720px;
+  max-height: 85vh;
+}
+
+.broker-modal-scroll {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.broker-pane.hidden {
+  display: none !important;
+}
+
+.broker-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .broker-tabs-bar {
   display: flex;
   overflow-x: auto;
