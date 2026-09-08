@@ -1603,35 +1603,45 @@ body {
    ROCKER SELECTOR TAB BAR
    ========================================================================== */
 .rocker-selector-bar {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
   background: #0b0d11;
   padding: 6px;
   border-radius: 10px;
   box-shadow: var(--shadow-bevel-in);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
 }
 
 .rocker-tab {
+  flex: 1 1 0;
+  min-width: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   background: linear-gradient(180deg, #20252e 0%, #15181e 100%);
   border: 1px solid #2d3542;
   border-radius: 7px;
-  padding: 11px 14px;
+  padding: 10px 6px;
   color: #94a3b8;
   font-family: var(--font-heading);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.4px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.08);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
+}
+
+.rocker-tab .tab-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rocker-tab .tab-icon {
