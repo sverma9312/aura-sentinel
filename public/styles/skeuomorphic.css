@@ -1763,17 +1763,17 @@ body {
   border-radius: 3px 3px 0 0;
 }
 
-/* Tab 6: Analyze Portfolio (Amber / Warm Gold Glow) */
+/* Tab 6: Analyze Portfolio (Electric Ruby / Rose Velvet) */
 .rocker-tab.tab-portfolio:hover {
-  background: linear-gradient(180deg, #38250e 0%, #221406 100%);
-  border-color: rgba(245, 158, 11, 0.5);
-  color: #fde68a;
+  background: linear-gradient(180deg, #3d121e 0%, #240810 100%);
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #fecdd3;
 }
 .rocker-tab.tab-portfolio.active {
-  background: linear-gradient(180deg, #281704 0%, #472a09 100%);
-  color: #f59e0b;
-  border-color: #f59e0b;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 16px rgba(245, 158, 11, 0.35);
+  background: linear-gradient(180deg, #2b0b14 0%, #4c1122 100%);
+  color: #fb7185;
+  border-color: #f43f5e;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 16px rgba(244, 63, 94, 0.35);
 }
 .rocker-tab.tab-portfolio.active::after {
   content: '';
@@ -1782,8 +1782,8 @@ body {
   left: 15%;
   right: 15%;
   height: 3px;
-  background: #f59e0b;
-  box-shadow: 0 0 10px #f59e0b;
+  background: #f43f5e;
+  box-shadow: 0 0 10px #f43f5e;
   border-radius: 3px 3px 0 0;
 }
 
@@ -1842,10 +1842,10 @@ body.theme-bright .rocker-tab.tab-watchlist.active {
 }
 
 body.theme-bright .rocker-tab.tab-portfolio.active {
-  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
-  color: #b45309;
-  border-color: #f59e0b;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+  background: linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%);
+  color: #be123c;
+  border-color: #f43f5e;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.25);
 }
 
 /* ==========================================================================
