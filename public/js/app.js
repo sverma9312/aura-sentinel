@@ -3107,10 +3107,11 @@
         const isPos = st.pnl >= 0;
         return `
           <div class="portfolio-stock-row">
-            <div class="stock-sym-group">
+            <div class="stock-sym-group clickable-stock-link" data-symbol="${escapeHtml(st.symbol)}" data-name="${escapeHtml(st.companyName || st.symbol)}" title="Click to open ${escapeHtml(st.symbol)} in Stock Analyzer">
               <span class="ticker">
                 <span>${st.icon || '📈'}</span>
-                <span>${escapeHtml(st.symbol)}</span>
+                <span class="ticker-name-link">${escapeHtml(st.symbol)}</span>
+                <span class="deepdive-mini-pill">🔬 ANALYZE</span>
               </span>
               <span class="sector-tag">${escapeHtml(st.companyName || st.sector)}</span>
             </div>
@@ -3151,6 +3152,18 @@
           </div>
         `;
       }).join('');
+
+      // Attach click handlers to open in Stock Analyzer
+      stockContainer.querySelectorAll('.clickable-stock-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const sym = link.getAttribute('data-symbol') || link.getAttribute('data-name');
+          if (sym) {
+            if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+            loadStockDeepDive(sym);
+          }
+        });
+      });
     }
   }
 

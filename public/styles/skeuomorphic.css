@@ -5718,6 +5718,20 @@ body.theme-bright .portfolio-stock-row {
   gap: 2px;
 }
 
+.stock-sym-group.clickable-stock-link {
+  cursor: pointer;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.stock-sym-group.clickable-stock-link:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+}
+
 .stock-sym-group .ticker {
   font-family: var(--font-heading);
   font-size: 15px;
@@ -5725,7 +5739,32 @@ body.theme-bright .portfolio-stock-row {
   color: var(--text-main);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.stock-sym-group.clickable-stock-link:hover .ticker-name-link {
+  color: var(--phosphor-cyan);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+
+.deepdive-mini-pill {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 800;
+  padding: 1.5px 6px;
+  border-radius: 3px;
+  background: rgba(192, 132, 252, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.35);
+  letter-spacing: 0.3px;
+  transition: all 0.15s ease;
+}
+
+.stock-sym-group.clickable-stock-link:hover .deepdive-mini-pill {
+  background: #c084fc;
+  color: #050a14;
+  border-color: #c084fc;
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
 }
 
 .stock-sym-group .sector-tag {

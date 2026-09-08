@@ -40,8 +40,43 @@ function httpGetJson(url) {
  * Normalizes symbol with exchange suffix if needed.
  */
 function normalizeSymbol(symbol, region = 'global') {
-  let sym = symbol.toUpperCase().trim();
-  if (region === 'india' && !sym.includes('.') && !['AAPL', 'NVDA', 'MSFT', 'TSLA', 'AMZN', 'GOOGL', 'LMT', 'CCJ'].includes(sym)) {
+  let sym = (symbol || '').toUpperCase().trim();
+
+  const nameToTickerMap = {
+    'GVK POW. & INFRA LTD.': 'GVKPIL.NS',
+    'GVK POWER & INFRASTRUCTURE': 'GVKPIL.NS',
+    'GVK POWER': 'GVKPIL.NS',
+    'GVK': 'GVKPIL.NS',
+    'JET AIRWAYS (INDIA) LTD.': 'JETAIRWAYS.NS',
+    'JET AIRWAYS': 'JETAIRWAYS.NS',
+    'ARC FINANCE LIMITED': '540135.BO',
+    'ARC FINANCE': '540135.BO',
+    'TATA POWER': 'TATAPOWER.NS',
+    'TATA MOTORS': 'TATAMOTORS.NS',
+    'RELIANCE': 'RELIANCE.NS',
+    'RELIANCE INDUSTRIES': 'RELIANCE.NS',
+    'HDFC BANK': 'HDFCBANK.NS',
+    'ICICI BANK': 'ICICIBANK.NS',
+    'STATE BANK OF INDIA': 'SBIN.NS',
+    'SBI': 'SBIN.NS',
+    'L&T': 'LT.NS',
+    'LARSEN & TOUBRO': 'LT.NS',
+    'INFOSYS': 'INFY.NS',
+    'BHARTI AIRTEL': 'BHARTIARTL.NS',
+    'AIRTEL': 'BHARTIARTL.NS'
+  };
+
+  if (nameToTickerMap[sym]) {
+    return nameToTickerMap[sym];
+  }
+
+  // Remove trailing .NS or .BO before check
+  const baseSym = sym.replace(/\.(NS|BO)$/, '');
+  if (nameToTickerMap[baseSym]) {
+    return nameToTickerMap[baseSym];
+  }
+
+  if (region === 'india' && !sym.includes('.') && !['AAPL', 'NVDA', 'MSFT', 'TSLA', 'AMZN', 'GOOGL', 'LMT', 'CCJ', 'PLTR', 'TSM', 'XOM'].includes(sym)) {
     sym = `${sym}.NS`;
   }
   return sym;
