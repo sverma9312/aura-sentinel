@@ -456,6 +456,77 @@ async function analyzePortfolio(holdings, region = 'india') {
     'LT': { sector: 'Infrastructure & Capital Goods', icon: '⚓', beta: 1.10, macroTailwind: '₹4.5 Lakh Cr record order book powered by Middle East hydrocarbon and domestic rail/ports.' }
   };
 
+  // Dynamic sector & company classifier
+  function resolveSectorMeta(symbol, companyName = '') {
+    const sym = (symbol || '').toUpperCase();
+    const name = (companyName || '').toUpperCase();
+    const fullText = `${sym} ${name}`;
+
+    if (sectorLookup[sym]) return sectorLookup[sym];
+
+    // Aviation & Airlines
+    if (fullText.includes('AIRWAYS') || fullText.includes('AVIATION') || fullText.includes('SPICEJET') || fullText.includes('INDIGO') || fullText.includes('INTERGLOBE')) {
+      return {
+        sector: 'Aviation & Logistics',
+        icon: '✈️',
+        beta: 1.35,
+        macroTailwind: 'High sensitivity to crude oil (ATF) commodity prices, foreign exchange fluctuations, and heavy lease debt.'
+      };
+    }
+    // Power, Energy & Infrastructure
+    if (fullText.includes('GVK') || fullText.includes('POWER') || fullText.includes('ENERGY') || fullText.includes('ADANIPOWER') || fullText.includes('TATAPOWER') || fullText.includes('INFRA')) {
+      return {
+        sector: 'Power & Infrastructure',
+        icon: '⚡',
+        beta: 1.20,
+        macroTailwind: 'Capital-intensive asset base; sensitive to interest rate policy, fuel supply reliability, and state DISCOM receivables.'
+      };
+    }
+    // Financials & NBFC
+    if (fullText.includes('FINANCE') || fullText.includes('CAPITAL') || fullText.includes('HOLDINGS') || fullText.includes('SECURITIES') || fullText.includes('INVEST') || fullText.includes('BANK')) {
+      return {
+        sector: 'Financial Services & NBFC',
+        icon: '💳',
+        beta: 1.15,
+        macroTailwind: 'Monitored for credit cost of funds, liquidity headroom, and asset quality stress.'
+      };
+    }
+    // Defense / Aerospace
+    if (fullText.includes('DEFENCE') || fullText.includes('DEFENSE') || fullText.includes('AEROSPACE') || fullText.includes('DYNAMICS')) {
+      return {
+        sector: 'Defense & Aerospace',
+        icon: '🛡️',
+        beta: 1.15,
+        macroTailwind: 'Record defense modernization capex and multi-year sovereign export order book.'
+      };
+    }
+    // IT / Technology
+    if (fullText.includes('TECH') || fullText.includes('SOFTWARE') || fullText.includes('INFOSYS') || fullText.includes('WIPRO') || fullText.includes('SYSTEMS')) {
+      return {
+        sector: 'Technology & AI Services',
+        icon: '💻',
+        beta: 0.90,
+        macroTailwind: 'Enterprise generative AI cloud transformation and global IT spending recovery.'
+      };
+    }
+    // Auto & Mobility
+    if (fullText.includes('MOTORS') || fullText.includes('AUTO') || fullText.includes('VEHICLE') || fullText.includes('MAHINDRA') || fullText.includes('MARUTI')) {
+      return {
+        sector: 'Automotive & EV Mobility',
+        icon: '🚗',
+        beta: 1.10,
+        macroTailwind: 'Premiumization trends, EV battery localization, and domestic rural recovery.'
+      };
+    }
+
+    return {
+      sector: 'Diversified / Midcap',
+      icon: '📈',
+      beta: 1.0,
+      macroTailwind: 'Domestic consumer consumption and manufacturing capex cycle tailwinds.'
+    };
+  }
+
   // Evaluate each holding
   for (const item of holdings) {
     const baseSymbol = item.symbol.toUpperCase().replace(/\.(NS|BO)$/, '');
@@ -486,46 +557,92 @@ async function analyzePortfolio(holdings, region = 'india') {
     totalCurrentValue += currVal;
 
     // Macro metadata lookup
-    const meta = sectorLookup[baseSymbol] || {
-      sector: 'Diversified / Midcap',
-      icon: '📈',
-      beta: 1.0,
-      macroTailwind: 'Domestic consumer consumption and manufacturing capex cycle tailwinds.'
-    };
+    const compName = quote?.shortName || item.symbol || baseSymbol;
+    const meta = resolveSectorMeta(baseSymbol, compName);
 
     sectorDistribution[meta.sector] = (sectorDistribution[meta.sector] || 0) + currVal;
 
-    // Determine Sentinel Health Rating
-    let healthScore = 75;
-    let verdict = 'ACCUMULATE / BALANCED CORE';
-    let verdictClass = 'bullish';
-    let stars = '⭐⭐⭐⭐';
-    let riskFactor = 'Manage normal equity volatility and sector rotation cycles.';
+    // =========================================================================
+    // DYNAMIC CONTINUOUS MULTI-FACTOR MACRO HEALTH SCORING ENGINE
+    // =========================================================================
+    const baseScore = 70;
 
-    if (pnlPct >= 15 && meta.sector.includes('Defense')) {
-      healthScore = 95;
+    // Factor 1: Continuous P&L & Drawdown Curve
+    let pnlAdjustment = 0;
+    if (pnlPct >= 50) {
+      pnlAdjustment = 25;
+    } else if (pnlPct >= 20) {
+      pnlAdjustment = 15 + ((pnlPct - 20) / 30) * 10;
+    } else if (pnlPct >= 0) {
+      pnlAdjustment = (pnlPct / 20) * 15;
+    } else if (pnlPct >= -15) {
+      pnlAdjustment = (pnlPct / 15) * 10;
+    } else if (pnlPct >= -45) {
+      pnlAdjustment = -10 + ((pnlPct + 15) / 30) * 15;
+    } else if (pnlPct >= -75) {
+      pnlAdjustment = -25 + ((pnlPct + 45) / 30) * 17;
+    } else {
+      pnlAdjustment = -42 + Math.max(-15, ((pnlPct + 75) / 25) * 10);
+    }
+
+    // Factor 2: Penny Stock & Microcap Liquidity Penalty
+    let pennyPenalty = 0;
+    if (currentPrice < 2.0) {
+      pennyPenalty = -12;
+    } else if (currentPrice < 10.0) {
+      pennyPenalty = -6;
+    }
+
+    // Factor 3: Sector Macro Sensitivity
+    let sectorBonus = 0;
+    if (meta.sector.includes('Defense') || meta.sector.includes('Aerospace')) {
+      sectorBonus = 8;
+    } else if (meta.sector.includes('Technology') || meta.sector.includes('Power')) {
+      sectorBonus = 3;
+    } else if (meta.sector.includes('Aviation')) {
+      sectorBonus = -4;
+    }
+
+    // Combine into final 1-100 Score
+    const rawScore = Math.round(baseScore + pnlAdjustment + pennyPenalty + sectorBonus);
+    const healthScore = Math.max(15, Math.min(98, rawScore));
+
+    // Determine Verdict, Stars, and Actionable Risk Advisory
+    let verdict = 'HOLD / CONSOLIDATING';
+    let verdictClass = 'neutral';
+    let stars = '⭐⭐⭐';
+    let riskFactor = 'Near-term consolidation; monitor support levels and earnings catalysts.';
+
+    if (healthScore >= 90) {
       verdict = 'STRONG OUTPERFORM / HIGH CONVICTION';
       verdictClass = 'strong-bullish';
       stars = '⭐⭐⭐⭐⭐';
-      riskFactor = 'High valuations relative to historical mean; maintain trailing stop-loss.';
-    } else if (pnlPct >= 8) {
-      healthScore = 88;
+      riskFactor = 'High relative strength; maintain trailing stops to capture compounding.';
+    } else if (healthScore >= 78) {
       verdict = 'OUTPERFORM / GROWTH COMPOUNDER';
       verdictClass = 'bullish';
-      stars = '⭐⭐⭐⭐⭐';
-      riskFactor = 'Key monitorables include quarterly earnings consistency and margin discipline.';
-    } else if (pnlPct < -10) {
-      healthScore = 52;
+      stars = '⭐⭐⭐⭐';
+      riskFactor = 'Solid fundamentals; monitor quarterly earnings consistency.';
+    } else if (healthScore >= 62) {
+      verdict = 'ACCUMULATE / BALANCED CORE';
+      verdictClass = 'bullish';
+      stars = '⭐⭐⭐⭐';
+      riskFactor = 'Manage normal volatility and sector rotation cycles.';
+    } else if (healthScore >= 48) {
       verdict = 'UNDERPERFORM / MACRO HEADWIND';
-      verdictClass = 'bearish';
-      stars = '⭐⭐';
-      riskFactor = 'Negative earnings momentum; evaluate sector rebalancing or averaging at key support.';
-    } else if (pnlPct < 0) {
-      healthScore = 65;
-      verdict = 'HOLD / CONSOLIDATING';
       verdictClass = 'neutral';
       stars = '⭐⭐⭐';
-      riskFactor = 'Near-term multiple compression; look for catalyst breakout.';
+      riskFactor = 'Loss of upward momentum; evaluate rebalancing or catalyst verification.';
+    } else if (healthScore >= 30) {
+      verdict = 'HIGH RISK / CAPITAL EROSION';
+      verdictClass = 'bearish';
+      stars = '⭐⭐';
+      riskFactor = 'Elevated capital drawdown & liquidity risk; consider stop-loss or exit strategy.';
+    } else {
+      verdict = 'CRITICAL DISTRESS / SEVERE IMPAIRMENT';
+      verdictClass = 'bearish';
+      stars = '⭐';
+      riskFactor = 'Severe value erosion (>60% drop); high risk of permanent capital loss.';
     }
 
     analyzedStocks.push({
