@@ -1890,8 +1890,10 @@ body.theme-bright .rocker-tab.tab-portfolio.active {
 }
 
 .section-subtext {
-  color: var(--text-muted);
-  font-size: 13px;
+  color: #8192a6;
+  opacity: 0.7;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .banner-stats-tray {
@@ -5657,12 +5659,53 @@ body.theme-bright .portfolio-kpi-card {
   gap: 8px;
 }
 
+/* Portfolio Section Chassis & Sub-Headings */
+.portfolio-section-chassis {
+  background: rgba(11, 16, 24, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+body.theme-bright .portfolio-section-chassis {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.portfolio-chassis-header {
+  padding: 14px 16px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chassis-title {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--text-main);
+}
+
+.chassis-subtitle {
+  font-size: 11px;
+  color: #8192a6;
+  opacity: 0.65;
+  letter-spacing: 0.2px;
+  font-weight: 400;
+}
+
+body.theme-bright .chassis-subtitle {
+  color: #64748b;
+  opacity: 0.8;
+}
+
 /* Sector Allocation Bar */
 .portfolio-sectors-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 14px 16px;
+  padding: 10px 16px 14px;
 }
 
 .portfolio-sector-pill {
