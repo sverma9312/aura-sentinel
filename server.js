@@ -407,7 +407,7 @@ const server = http.createServer(async (req, res) => {
 
       return sendJson(res, 200, {
         success: true,
-        message: `Premium upgrade request for ${user.email} dispatched to Administrator at sverma9312@gmail.com.`,
+        message: `Premium upgrade request for ${user.email} dispatched to Administrator successfully.`,
         request: requestDoc
       });
     } catch (err) {

@@ -3001,7 +3001,7 @@
       if (data.success) {
         if (window.tactileAudio) window.tactileAudio.playRelaySnap();
         if (statusEl) {
-          statusEl.innerHTML = `✅ <strong>REQUEST DISPATCHED!</strong> Notification sent to <code>sverma9312@gmail.com</code>. Once approved your clearance will be elevated in the Governance Console.`;
+          statusEl.innerHTML = `✅ <strong>REQUEST DISPATCHED!</strong> Notification transmitted to Administrator. Once reviewed, your clearance will be elevated in the Governance Console.`;
         }
       } else {
         if (statusEl) statusEl.textContent = `⚠️ ${data.error || 'Failed to submit request.'}`;
