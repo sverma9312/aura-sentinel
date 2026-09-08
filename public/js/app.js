@@ -7,6 +7,44 @@
 (function () {
   'use strict';
 
+  // Global Tab Switcher for Broker Modal
+  window.switchBrokerTab = function (broker) {
+    if (!broker) return;
+    try {
+      if (window.tactileAudio && typeof window.tactileAudio.playDialTick === 'function') {
+        window.tactileAudio.playDialTick();
+      }
+    } catch (e) {}
+
+    var allButtons = document.querySelectorAll('.broker-tab-btn');
+    allButtons.forEach(function (b) {
+      if (b.getAttribute('data-broker') === broker) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+
+    var allPanes = document.querySelectorAll('.broker-pane');
+    allPanes.forEach(function (p) {
+      p.classList.add('hidden');
+      p.classList.remove('active');
+      p.style.setProperty('display', 'none', 'important');
+    });
+
+    var activePane = document.getElementById('pane-' + broker);
+    if (activePane) {
+      activePane.classList.remove('hidden');
+      activePane.classList.add('active');
+      activePane.style.setProperty('display', 'block', 'important');
+    }
+
+    var statusEl = document.getElementById('broker-sync-status');
+    if (statusEl) {
+      statusEl.classList.add('hidden');
+    }
+  };
+
   // Default System Users Database
   const DEFAULT_USERS = [
     {
