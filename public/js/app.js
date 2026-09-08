@@ -336,6 +336,7 @@
       renderWatchlist();
       applyTheme(loggedInUser.theme || 'dark');
       updateHeaderUserUI(loggedInUser);
+      resetBrokerModal();
 
       showAuthToast('ACCESS GRANTED. INITIALIZING SECURITY CLEARANCE...', 'success');
       if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
@@ -478,7 +479,32 @@
       authModal.style.removeProperty('display');
     }
 
+    resetBrokerModal();
+
     if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+  }
+
+  function resetBrokerModal() {
+    window._selectedHoldingPayload = '';
+    const fileInput = document.getElementById('input-csv-file');
+    if (fileInput) fileInput.value = '';
+    const rawTextarea = document.getElementById('input-csv-raw');
+    if (rawTextarea) rawTextarea.value = '';
+    const statusEl = document.getElementById('broker-sync-status');
+    if (statusEl) {
+      statusEl.classList.add('hidden');
+      statusEl.textContent = '';
+      statusEl.className = 'broker-sync-status hidden';
+    }
+    const btnParse = document.getElementById('btn-parse-csv');
+    if (btnParse) {
+      btnParse.disabled = false;
+      btnParse.innerHTML = '<span>📊 PARSE & ANALYZE PORTFOLIO</span>';
+    }
+    ['form-connect-groww', 'form-connect-zerodha', 'form-connect-upstox', 'form-connect-angelone', 'form-connect-dhan', 'form-connect-fyers', 'form-connect-csv'].forEach(fId => {
+      const f = document.getElementById(fId);
+      if (f && typeof f.reset === 'function') f.reset();
+    });
   }
 
   function updateHeaderUserUI(user) {
@@ -2603,6 +2629,7 @@
 
     const openBrokerModalFn = () => {
       if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+      resetBrokerModal();
       if (brokerModal) brokerModal.classList.remove('hidden');
     };
 
