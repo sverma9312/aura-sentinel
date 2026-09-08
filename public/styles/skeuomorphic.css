@@ -6193,5 +6193,49 @@ body.theme-bright .btn-support-footer .support-text {
 .select-styled {
   cursor: pointer;
   appearance: auto;
+  background-color: #0b111a !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(0, 229, 255, 0.25) !important;
+  padding: 10px 12px !important;
+  border-radius: 6px !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  outline: none;
+}
+
+.select-styled:focus {
+  border-color: var(--phosphor-cyan) !important;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3) !important;
+}
+
+.select-styled option {
+  background-color: #0b111a !important;
+  color: #f8fafc !important;
+  padding: 12px 14px !important;
+  font-size: 13px !important;
+  font-weight: 500;
+}
+
+.select-styled option:hover,
+.select-styled option:checked,
+.select-styled option:focus {
+  background-color: #0369a1 !important;
+  color: #ffffff !important;
+}
+
+body.theme-bright .select-styled {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+body.theme-bright .select-styled option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+body.theme-bright .select-styled option:checked {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
 }
 
