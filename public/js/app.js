@@ -3236,13 +3236,13 @@
     const badgeRating = document.getElementById('portfolio-badge-rating');
     const subCount = document.getElementById('portfolio-sub-count');
 
-    if (valTotal) valTotal.textContent = `${cur}${summary.totalCurrentValue.toLocaleString('en-IN')}`;
-    if (valInvested) valInvested.textContent = `${cur}${summary.totalInvested.toLocaleString('en-IN')}`;
+    if (valTotal) valTotal.textContent = `${cur}${summary.totalCurrentValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    if (valInvested) valInvested.textContent = `${cur}${summary.totalInvested.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     if (subCount) subCount.textContent = `${summary.totalHoldingsCount} Equities Loaded`;
 
     if (valPnl) {
       const isPos = summary.totalPnl >= 0;
-      valPnl.textContent = `${isPos ? '+' : ''}${cur}${summary.totalPnl.toLocaleString('en-IN')} (${isPos ? '+' : ''}${summary.totalPnlPct}%)`;
+      valPnl.textContent = `${isPos ? '+' : ''}${cur}${summary.totalPnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${isPos ? '+' : ''}${summary.totalPnlPct}%)`;
       valPnl.className = isPos ? 'kpi-val highlight-green' : 'kpi-val highlight-red';
     }
 
@@ -3291,21 +3291,24 @@
             </div>
 
             <div class="stock-price-group">
-              <span style="font-size: 10px; color: var(--text-dim);">HOLDINGS</span>
-              <span class="val">${st.quantity} Qty @ ${cur}${st.buyPrice.toLocaleString('en-IN')}</span>
-              <span style="font-size: 10px; color: var(--text-muted);">CMP: ${cur}${st.currentPrice.toLocaleString('en-IN')}</span>
+              <span style="font-size: 10px; color: var(--text-dim);">MARKET PRICE (CMP)</span>
+              <span class="val">${cur}${st.currentPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span style="font-size: 10px; color: var(--text-muted);">${st.quantity} Shares • Avg: ${cur}${st.buyPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
 
             <div class="stock-val-group">
-              <span style="font-size: 10px; color: var(--text-dim);">CURRENT VALUE</span>
-              <span class="val">${cur}${st.currentValue.toLocaleString('en-IN')}</span>
-              <span style="font-size: 10px; color: var(--phosphor-cyan); font-weight: 700;">WEIGHT: ${st.portfolioWeight}%</span>
+              <span style="font-size: 10px; color: var(--text-dim);">CURRENT (INVESTED)</span>
+              <span class="val" style="color: var(--text-main); font-weight: 800;">${cur}${st.currentValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span style="font-size: 10px; color: var(--text-muted);">Invested: ${cur}${st.investedValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • <span style="color: var(--phosphor-cyan); font-weight: 700;">${st.portfolioWeight}%</span></span>
             </div>
 
             <div class="stock-pnl-group">
-              <span style="font-size: 10px; color: var(--text-dim);">UNREALIZED P&L</span>
+              <span style="font-size: 10px; color: var(--text-dim);">TOTAL RETURNS (P&L)</span>
               <span class="val" style="color: ${isPos ? 'var(--phosphor-green)' : 'var(--phosphor-red)'};">
-                ${isPos ? '+' : ''}${cur}${st.pnl.toLocaleString('en-IN')} (${isPos ? '+' : ''}${st.pnlPct}%)
+                ${isPos ? '+' : ''}${cur}${st.pnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              <span style="font-size: 10px; font-weight: 700; color: ${isPos ? 'var(--phosphor-green)' : 'var(--phosphor-red)'};">
+                ${isPos ? '+' : ''}${st.pnlPct}%
               </span>
             </div>
 
