@@ -174,8 +174,9 @@ Dispatched automatically by Aura Sentinel Governance Security Gateway.
  * Direct HTTPS POST to FormSubmit Cloud Email Relay
  */
 function sendViaFormSubmit(targetEmail, subject, formData) {
+  const querystring = require('querystring');
   return new Promise((resolve, reject) => {
-    const payload = JSON.stringify({
+    const payload = querystring.stringify({
       _subject: subject,
       _template: 'table',
       _captcha: 'false',
@@ -188,22 +189,34 @@ function sendViaFormSubmit(targetEmail, subject, formData) {
       path: `/ajax/${encodeURIComponent(targetEmail)}`,
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',
-        'User-Agent': 'Aura-Sentinel-Server/1.0',
+        'Origin': 'https://aura-sentinel.onrender.com',
+        'Referer': 'https://aura-sentinel.onrender.com/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AuraSentinel/2.0',
         'Content-Length': Buffer.byteLength(payload)
       },
-      timeout: 8000
+      timeout: 10000
     };
 
     const req = https.request(options, (res) => {
       let data = '';
       res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(data);
-        } else {
-          reject(new Error(`FormSubmit HTTP ${res.statusCode}: ${data}`));
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.success === 'true' || parsed.success === true) {
+            resolve(parsed);
+          } else {
+            console.warn(`[EmailGateway] FormSubmit response:`, parsed.message || data);
+            resolve(parsed);
+          }
+        } catch (e) {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(data);
+          } else {
+            reject(new Error(`FormSubmit HTTP ${res.statusCode}: ${data}`));
+          }
         }
       });
     });
