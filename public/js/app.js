@@ -434,9 +434,22 @@
       localStorage.removeItem('aura_sentinel_portfolio');
     } catch (e) {}
     
-    // Close settings modal if open
+    // Close settings and support modal if open
     const settingsModal = document.getElementById('settings-modal');
     if (settingsModal) settingsModal.classList.add('hidden');
+
+    const supportModal = document.getElementById('support-modal');
+    const formSupport = document.getElementById('form-support-contact');
+    if (formSupport) formSupport.reset();
+    ['support-input-name', 'support-input-email', 'support-input-subject', 'support-input-message'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const supportCat = document.getElementById('support-input-category');
+    if (supportCat) supportCat.value = 'General Support';
+    const supportToast = document.getElementById('support-status-toast');
+    if (supportToast) supportToast.classList.add('hidden');
+    if (supportModal) supportModal.classList.add('hidden');
 
     // Reset both form fields
     const formLogin = document.getElementById('form-login');
@@ -2315,13 +2328,23 @@
       btnOpenSupport.addEventListener('click', () => {
         if (window.tactileAudio) window.tactileAudio.playRelaySnap();
         
-        // Auto-fill logged-in user details if available
+        // Dynamically auto-fill logged-in user details if available
+        const nameInput = document.getElementById('support-input-name');
+        const emailInput = document.getElementById('support-input-email');
+        const subjectInput = document.getElementById('support-input-subject');
+        const messageInput = document.getElementById('support-input-message');
+        const categoryInput = document.getElementById('support-input-category');
+
         if (state.currentUser) {
-          const nameInput = document.getElementById('support-input-name');
-          const emailInput = document.getElementById('support-input-email');
-          if (nameInput && !nameInput.value) nameInput.value = state.currentUser.name || '';
-          if (emailInput && !emailInput.value) emailInput.value = state.currentUser.email || '';
+          if (nameInput) nameInput.value = state.currentUser.name || '';
+          if (emailInput) emailInput.value = state.currentUser.email || '';
+        } else {
+          if (nameInput) nameInput.value = '';
+          if (emailInput) emailInput.value = '';
         }
+        if (subjectInput) subjectInput.value = '';
+        if (messageInput) messageInput.value = '';
+        if (categoryInput) categoryInput.value = 'General Support';
 
         if (toastSupport) toastSupport.classList.add('hidden');
         supportModal.classList.remove('hidden');
@@ -2329,6 +2352,14 @@
 
       const closeSupport = () => {
         if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        if (formSupport) formSupport.reset();
+        ['support-input-name', 'support-input-email', 'support-input-subject', 'support-input-message'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        const categoryInput = document.getElementById('support-input-category');
+        if (categoryInput) categoryInput.value = 'General Support';
+        if (toastSupport) toastSupport.classList.add('hidden');
         supportModal.classList.add('hidden');
       };
 
