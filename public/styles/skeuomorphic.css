@@ -6129,3 +6129,69 @@ body.theme-bright .portfolio-stock-row {
   }
 }
 
+/* Footer Support & Feedback Button */
+.btn-support-footer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(180deg, #182234 0%, #0d1522 100%);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+body.theme-bright .btn-support-footer {
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  border-color: rgba(2, 132, 199, 0.4);
+  color: #0f172a;
+}
+
+.btn-support-footer:hover {
+  border-color: var(--phosphor-cyan);
+  background: linear-gradient(180deg, #22324d 0%, #111c2e 100%);
+  box-shadow: 0 4px 14px rgba(0, 229, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-support-footer .support-icon {
+  font-size: 13px;
+}
+
+.btn-support-footer .support-text {
+  color: var(--text-main);
+}
+
+body.theme-bright .btn-support-footer .support-text {
+  color: #0f172a;
+}
+
+.btn-support-footer .support-badge {
+  background: rgba(0, 255, 136, 0.15);
+  color: var(--phosphor-green);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+}
+
+.support-modal-chassis {
+  max-width: 620px;
+  width: 92%;
+}
+
+.select-styled {
+  cursor: pointer;
+  appearance: auto;
+}
+

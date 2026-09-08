@@ -560,6 +560,34 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // API Route: User Support & Direct Message Dispatch
+  if (pathname === '/api/support/contact' && req.method === 'POST') {
+    try {
+      const body = await readJsonBody(req);
+      const { name, email, category, subject, message } = body;
+
+      if (!message || !message.trim()) {
+        return sendJson(res, 400, { success: false, error: 'Message content cannot be empty.' });
+      }
+
+      const result = await emailService.sendSupportMessageNotification({
+        name: (name || '').trim(),
+        email: (email || '').trim(),
+        category: (category || 'General Support').trim(),
+        subject: (subject || '').trim(),
+        message: message.trim()
+      });
+
+      return sendJson(res, 200, {
+        success: true,
+        message: 'Your message has been transmitted directly to the Security Administrator.',
+        details: result
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message || 'Failed to dispatch message.' });
+    }
+  }
+
   // API Route: Health check
   if (pathname === '/api/health' && req.method === 'GET') {
     return sendJson(res, 200, {

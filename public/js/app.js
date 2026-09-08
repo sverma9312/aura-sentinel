@@ -2290,6 +2290,114 @@
       });
     }
 
+    // Institutional Support & User Feedback Modal
+    const supportModal = document.getElementById('support-modal');
+    const btnOpenSupport = document.getElementById('btn-open-support');
+    const btnCloseSupport = document.getElementById('btn-close-support');
+    const btnCancelSupport = document.getElementById('btn-cancel-support');
+    const formSupport = document.getElementById('form-support-contact');
+    const toastSupport = document.getElementById('support-status-toast');
+    const btnSubmitSupport = document.getElementById('btn-submit-support');
+
+    if (btnOpenSupport && supportModal) {
+      btnOpenSupport.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+        
+        // Auto-fill logged-in user details if available
+        if (state.currentUser) {
+          const nameInput = document.getElementById('support-input-name');
+          const emailInput = document.getElementById('support-input-email');
+          if (nameInput && !nameInput.value) nameInput.value = state.currentUser.name || '';
+          if (emailInput && !emailInput.value) emailInput.value = state.currentUser.email || '';
+        }
+
+        if (toastSupport) toastSupport.classList.add('hidden');
+        supportModal.classList.remove('hidden');
+      });
+
+      const closeSupport = () => {
+        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        supportModal.classList.add('hidden');
+      };
+
+      if (btnCloseSupport) btnCloseSupport.addEventListener('click', closeSupport);
+      if (btnCancelSupport) btnCancelSupport.addEventListener('click', closeSupport);
+
+      supportModal.addEventListener('click', (e) => {
+        if (e.target === supportModal) closeSupport();
+      });
+    }
+
+    if (formSupport) {
+      formSupport.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = (document.getElementById('support-input-name')?.value || '').trim();
+        const email = (document.getElementById('support-input-email')?.value || '').trim();
+        const category = document.getElementById('support-input-category')?.value || 'General Support';
+        const subject = (document.getElementById('support-input-subject')?.value || '').trim();
+        const message = (document.getElementById('support-input-message')?.value || '').trim();
+
+        if (!message) {
+          if (toastSupport) {
+            toastSupport.textContent = 'Please enter your message details.';
+            toastSupport.className = 'auth-msg-toast error';
+            toastSupport.classList.remove('hidden');
+          }
+          return;
+        }
+
+        try {
+          if (btnSubmitSupport) {
+            btnSubmitSupport.disabled = true;
+            btnSubmitSupport.innerHTML = '<span>⏳ TRANSMITTING...</span>';
+          }
+          if (toastSupport) {
+            toastSupport.textContent = 'Transmitting message to Security Administrator...';
+            toastSupport.className = 'auth-msg-toast';
+            toastSupport.classList.remove('hidden');
+          }
+
+          const res = await fetch('/api/support/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, category, subject, message })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+            if (toastSupport) {
+              toastSupport.textContent = '✅ MESSAGE TRANSMITTED! Dispatched directly to Administrator.';
+              toastSupport.className = 'auth-msg-toast success';
+              toastSupport.classList.remove('hidden');
+            }
+            formSupport.reset();
+            setTimeout(() => {
+              if (supportModal) supportModal.classList.add('hidden');
+              if (toastSupport) toastSupport.classList.add('hidden');
+            }, 2000);
+          } else {
+            if (toastSupport) {
+              toastSupport.textContent = `⚠️ ${data.error || 'Failed to dispatch message.'}`;
+              toastSupport.className = 'auth-msg-toast error';
+              toastSupport.classList.remove('hidden');
+            }
+          }
+        } catch (err) {
+          if (toastSupport) {
+            toastSupport.textContent = '⚠️ Network error transmitting message.';
+            toastSupport.className = 'auth-msg-toast error';
+            toastSupport.classList.remove('hidden');
+          }
+        } finally {
+          if (btnSubmitSupport) {
+            btnSubmitSupport.disabled = false;
+            btnSubmitSupport.innerHTML = '<span>🚀 TRANSMIT MESSAGE</span>';
+          }
+        }
+      });
+    }
+
     // Admin Provision Modal & Management Handlers
     const provisionModal = document.getElementById('provision-modal');
     const btnOpenProvision = document.getElementById('btn-open-provision-modal');
@@ -2560,6 +2668,7 @@
         if (tourOverlay && !tourOverlay.classList.contains('hidden')) endTutorialTour();
         if (settingsModal && !settingsModal.classList.contains('hidden')) settingsModal.classList.add('hidden');
         if (sourceModal && !sourceModal.classList.contains('hidden')) sourceModal.classList.add('hidden');
+        if (supportModal && !supportModal.classList.contains('hidden')) supportModal.classList.add('hidden');
       }
     });
 

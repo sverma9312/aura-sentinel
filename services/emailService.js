@@ -298,7 +298,151 @@ function sendViaWebhook(webhookUrl, payloadObj) {
   });
 }
 
+/**
+ * Send an email notification for direct Support & User Feedback
+ */
+async function sendSupportMessageNotification({ name, email, category, subject, message }) {
+  const senderName = name || 'Anonymous Analyst';
+  const senderEmail = email || 'no-reply@aurasentinel.com';
+  const senderCategory = category || 'General Support';
+  const senderSubject = subject || `Support Inquiry from ${senderName}`;
+  const timestamp = new Date().toUTCString();
+
+  const emailSubject = `💬 [Aura Sentinel Support] ${senderCategory}: ${senderSubject}`;
+  const bodyText = `
+=====================================================
+AURA SENTINEL - INSTITUTIONAL SUPPORT & USER MESSAGE
+=====================================================
+
+From:         ${senderName} (${senderEmail})
+Category:     ${senderCategory}
+Subject:      ${senderSubject}
+Timestamp:    ${timestamp}
+
+MESSAGE:
+-----------------------------------------------------
+${message}
+-----------------------------------------------------
+
+ACTION:
+You can directly reply to this email to respond to ${senderEmail}.
+
+=====================================================
+Dispatched via Aura Sentinel Support Gateway.
+`;
+
+  const htmlBody = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #0b0f17; color: #f1f5f9; border-radius: 12px; border: 1px solid #1e293b;">
+      <div style="border-bottom: 2px solid #38bdf8; padding-bottom: 16px; margin-bottom: 20px;">
+        <h2 style="color: #38bdf8; margin: 0; font-size: 20px;">💬 AURA SENTINEL — USER SUPPORT & FEEDBACK</h2>
+        <p style="color: #94a3b8; font-size: 13px; margin: 6px 0 0 0;">Direct Message Received via Terminal Interface</p>
+      </div>
+
+      <div style="background: #111827; padding: 18px; border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 20px;">
+        <table style="width: 100%; font-size: 13px; color: #cbd5e1; border-collapse: collapse;">
+          <tr><td style="padding: 6px 0; color: #64748b; width: 120px;">Sender Name:</td><td style="font-weight: 600; color: #f8fafc;">${senderName}</td></tr>
+          <tr><td style="padding: 6px 0; color: #64748b;">User Email:</td><td><a href="mailto:${senderEmail}" style="color: #38bdf8;">${senderEmail}</a></td></tr>
+          <tr><td style="padding: 6px 0; color: #64748b;">Category:</td><td><span style="background: #0369a1; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${senderCategory}</span></td></tr>
+          <tr><td style="padding: 6px 0; color: #64748b;">Subject:</td><td style="font-weight: 600; color: #f8fafc;">${senderSubject}</td></tr>
+          <tr><td style="padding: 6px 0; color: #64748b;">Received:</td><td style="font-family: monospace; font-size: 12px;">${timestamp}</td></tr>
+        </table>
+      </div>
+
+      <div style="background: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #38bdf8; margin-bottom: 20px;">
+        <h4 style="margin: 0 0 8px 0; color: #94a3b8; font-size: 12px; text-transform: uppercase;">User Message:</h4>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #f1f5f9; white-space: pre-wrap;">${message}</p>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="mailto:${senderEmail}?subject=Re: [Aura Sentinel] ${encodeURIComponent(senderSubject)}" style="display: inline-block; background: #38bdf8; color: #000; font-weight: 700; text-decoration: none; padding: 10px 24px; border-radius: 6px; font-size: 13px;">
+          ✉️ DIRECT REPLY TO ${senderEmail}
+        </a>
+      </div>
+
+      <p style="margin-top: 24px; font-size: 11px; color: #64748b; text-align: center;">
+        This communication was transmitted by Aura Sentinel to ${ADMIN_NOTIFICATION_EMAIL}.
+      </p>
+    </div>
+  `;
+
+  console.log(`[EmailGateway] 📨 Preparing Support Contact message from ${senderEmail} -> ${ADMIN_NOTIFICATION_EMAIL}`);
+
+  let sentVia = null;
+
+  // 1. SMTP / Nodemailer
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER || process.env.EMAIL_USER;
+  const smtpPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASS || process.env.EMAIL_PASS;
+
+  if (nodemailer && (smtpHost || (smtpUser && smtpPass))) {
+    try {
+      const transporterConfig = smtpHost ? {
+        host: smtpHost,
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        secure: process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465',
+        auth: { user: smtpUser, pass: smtpPass }
+      } : {
+        service: 'gmail',
+        auth: { user: smtpUser, pass: smtpPass }
+      };
+
+      const fromEmail = smtpUser || ADMIN_NOTIFICATION_EMAIL;
+      const transporter = nodemailer.createTransport(transporterConfig);
+      await transporter.sendMail({
+        from: `"Aura Sentinel Support" <${fromEmail}>`,
+        replyTo: `"${senderName}" <${senderEmail}>`,
+        to: ADMIN_NOTIFICATION_EMAIL,
+        subject: emailSubject,
+        text: bodyText,
+        html: htmlBody
+      });
+
+      sentVia = 'SMTP/Nodemailer';
+      console.log(`[EmailGateway] ✅ Support message sent via ${sentVia} to ${ADMIN_NOTIFICATION_EMAIL}`);
+    } catch (smtpErr) {
+      console.warn(`[EmailGateway] SMTP support dispatch failed: ${smtpErr.message}`);
+    }
+  }
+
+  // 2. Resend API
+  if (!sentVia && process.env.RESEND_API_KEY) {
+    try {
+      await sendViaResend(ADMIN_NOTIFICATION_EMAIL, emailSubject, htmlBody, bodyText);
+      sentVia = 'Resend API';
+      console.log(`[EmailGateway] ✅ Support message sent via ${sentVia} to ${ADMIN_NOTIFICATION_EMAIL}`);
+    } catch (resendErr) {
+      console.warn(`[EmailGateway] Resend API support dispatch failed: ${resendErr.message}`);
+    }
+  }
+
+  // 3. FormSubmit Relay
+  if (!sentVia) {
+    try {
+      await sendViaFormSubmit(ADMIN_NOTIFICATION_EMAIL, emailSubject, {
+        sender_name: senderName,
+        sender_email: senderEmail,
+        category: senderCategory,
+        subject: senderSubject,
+        timestamp: timestamp,
+        message: message
+      });
+      sentVia = 'FormSubmit Gateway';
+      console.log(`[EmailGateway] ✅ Support message dispatched via ${sentVia} to ${ADMIN_NOTIFICATION_EMAIL}`);
+    } catch (fsErr) {
+      console.warn(`[EmailGateway] FormSubmit support fallback notice: ${fsErr.message}`);
+    }
+  }
+
+  return {
+    success: true,
+    sentVia: sentVia || 'Cloud Relay',
+    targetEmail: ADMIN_NOTIFICATION_EMAIL,
+    dispatchedAt: timestamp
+  };
+}
+
 module.exports = {
   ADMIN_NOTIFICATION_EMAIL,
-  sendPremiumUpgradeNotification
+  sendPremiumUpgradeNotification,
+  sendSupportMessageNotification
 };

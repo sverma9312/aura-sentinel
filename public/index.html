@@ -681,8 +681,86 @@
         <div class="meta-item" id="footer-architecture">ARCHITECTURE: SENTINEL MK-V</div>
         <div class="meta-item" id="footer-location">MARKETS: INDIA (NSE/BSE) & GLOBAL (US)</div>
         <div class="meta-item" id="footer-station">STATUS: LIVE CLOUD</div>
+        <button id="btn-open-support" class="btn-support-footer" title="Open Support & User Feedback Channel">
+          <span class="support-icon">💬</span>
+          <span class="support-text">CONTACT SUPPORT & FEEDBACK</span>
+          <span class="support-badge">ONLINE</span>
+        </button>
       </div>
     </footer>
+
+    <!-- SKEUOMORPHIC SUPPORT & USER FEEDBACK MODAL -->
+    <div id="support-modal" class="skeuo-modal-overlay hidden">
+      <div class="skeuo-modal-chassis support-modal-chassis">
+        <div class="modal-header-bezel">
+          <div class="modal-title-group">
+            <span class="modal-icon">💬</span>
+            <div>
+              <h3 class="modal-title">INSTITUTIONAL SUPPORT & FEEDBACK RELAY</h3>
+              <p class="modal-subtitle">Direct communication channel to the Lead Systems Architect & Administrator.</p>
+            </div>
+          </div>
+          <button id="btn-close-support" class="modal-close-btn" title="Close Support Dialog">&times;</button>
+        </div>
+
+        <div class="modal-content-deck" style="padding: 20px;">
+          <form id="form-support-contact" class="support-form" onsubmit="return false;">
+            <div class="auth-grid-2col">
+              <div class="auth-field-group">
+                <label class="auth-label">YOUR NAME</label>
+                <div class="auth-input-recess">
+                  <input type="text" id="support-input-name" class="auth-input" placeholder="e.g. Senior Analyst" required>
+                </div>
+              </div>
+              <div class="auth-field-group">
+                <label class="auth-label">YOUR EMAIL ADDRESS</label>
+                <div class="auth-input-recess">
+                  <input type="email" id="support-input-email" class="auth-input" placeholder="e.g. analyst@domain.com" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="auth-grid-2col" style="margin-top: 12px;">
+              <div class="auth-field-group">
+                <label class="auth-label">MESSAGE CATEGORY</label>
+                <div class="auth-input-recess">
+                  <select id="support-input-category" class="auth-input select-styled">
+                    <option value="General Support">💬 General Support & Inquiry</option>
+                    <option value="Feature Request">💡 Feature Request / Improvement</option>
+                    <option value="Data & Catalyst Feedback">📊 Market Data / Catalyst Feedback</option>
+                    <option value="Broker Sync Help">⚡ Broker Connection Assistance</option>
+                    <option value="Bug / Error Report">🐛 Bug / System Error Report</option>
+                    <option value="Institutional Clearance">👑 Institutional Clearance Elevation</option>
+                  </select>
+                </div>
+              </div>
+              <div class="auth-field-group">
+                <label class="auth-label">SUBJECT</label>
+                <div class="auth-input-recess">
+                  <input type="text" id="support-input-subject" class="auth-input" placeholder="e.g. Query regarding Groww sync..." required>
+                </div>
+              </div>
+            </div>
+
+            <div class="auth-field-group" style="margin-top: 12px;">
+              <label class="auth-label">MESSAGE DETAILS</label>
+              <textarea id="support-input-message" class="csv-raw-textarea" rows="5" placeholder="Type your message, query, or feedback here in detail..." required style="min-height: 110px;"></textarea>
+            </div>
+
+            <div id="support-status-toast" class="auth-msg-toast hidden" style="margin-top: 12px;"></div>
+
+            <div class="support-actions-row" style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 12px;">
+              <button type="button" id="btn-cancel-support" class="btn-card-deepdive" style="background: rgba(255,255,255,0.06); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.15); padding: 8px 18px;">
+                CANCEL
+              </button>
+              <button type="submit" id="btn-submit-support" class="btn-request-premium-glow" style="padding: 10px 24px; font-size: 13px;">
+                <span>🚀 TRANSMIT MESSAGE</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <!-- SKEUOMORPHIC SOURCE OF TRUTH AUDIT MODAL -->
     <div id="source-modal" class="skeuo-modal-overlay hidden">
