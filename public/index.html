@@ -1104,29 +1104,67 @@
         </div>
 
         <!-- Broker Selector Tabs -->
-        <div class="broker-tabs-bar">
-          <button type="button" class="broker-tab-btn active" data-broker="groww" onclick="window.switchBrokerTab && window.switchBrokerTab('groww')">
+        <div class="broker-tabs-bar" id="broker-tabs-bar">
+          <button type="button" class="broker-tab-btn active" data-broker="groww" onclick="switchBrokerTab('groww')">
             <span class="broker-tab-icon">🌿</span> GROWW
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="zerodha" onclick="window.switchBrokerTab && window.switchBrokerTab('zerodha')">
+          <button type="button" class="broker-tab-btn" data-broker="zerodha" onclick="switchBrokerTab('zerodha')">
             <span class="broker-tab-icon">🪁</span> ZERODHA
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="upstox" onclick="window.switchBrokerTab && window.switchBrokerTab('upstox')">
+          <button type="button" class="broker-tab-btn" data-broker="upstox" onclick="switchBrokerTab('upstox')">
             <span class="broker-tab-icon">⚡</span> UPSTOX
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="angelone" onclick="window.switchBrokerTab && window.switchBrokerTab('angelone')">
+          <button type="button" class="broker-tab-btn" data-broker="angelone" onclick="switchBrokerTab('angelone')">
             <span class="broker-tab-icon">🛡️</span> ANGEL ONE
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="dhan" onclick="window.switchBrokerTab && window.switchBrokerTab('dhan')">
+          <button type="button" class="broker-tab-btn" data-broker="dhan" onclick="switchBrokerTab('dhan')">
             <span class="broker-tab-icon">🪙</span> DHAN
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="fyers" onclick="window.switchBrokerTab && window.switchBrokerTab('fyers')">
+          <button type="button" class="broker-tab-btn" data-broker="fyers" onclick="switchBrokerTab('fyers')">
             <span class="broker-tab-icon">🎯</span> FYERS
           </button>
-          <button type="button" class="broker-tab-btn" data-broker="csv" onclick="window.switchBrokerTab && window.switchBrokerTab('csv')">
+          <button type="button" class="broker-tab-btn" data-broker="csv" onclick="switchBrokerTab('csv')">
             <span class="broker-tab-icon">📁</span> CSV FILE
           </button>
         </div>
+
+        <script>
+          function switchBrokerTab(broker) {
+            if (!broker) return;
+            try {
+              if (window.tactileAudio && typeof window.tactileAudio.playDialTick === 'function') {
+                window.tactileAudio.playDialTick();
+              }
+            } catch(e) {}
+
+            var btns = document.querySelectorAll('.broker-tab-btn');
+            for (var i = 0; i < btns.length; i++) {
+              if (btns[i].getAttribute('data-broker') === broker) {
+                btns[i].classList.add('active');
+              } else {
+                btns[i].classList.remove('active');
+              }
+            }
+
+            var panes = document.querySelectorAll('.broker-pane');
+            for (var j = 0; j < panes.length; j++) {
+              panes[j].classList.add('hidden');
+              panes[j].classList.remove('active');
+              panes[j].style.setProperty('display', 'none', 'important');
+            }
+
+            var target = document.getElementById('pane-' + broker);
+            if (target) {
+              target.classList.remove('hidden');
+              target.classList.add('active');
+              target.style.setProperty('display', 'block', 'important');
+            }
+
+            var statusEl = document.getElementById('broker-sync-status');
+            if (statusEl) statusEl.classList.add('hidden');
+          }
+          window.switchBrokerTab = switchBrokerTab;
+        </script>
 
         <div class="modal-content-deck broker-modal-scroll" id="broker-modal-content">
           
@@ -1359,7 +1397,7 @@
     </div>
   </div>
 
-  <script src="/js/audio.js"></script>
-  <script src="/js/app.js?v=2.6"></script>
+  <script src="/js/audio.js?v=2.7.2"></script>
+  <script src="/js/app.js?v=2.7.2"></script>
 </body>
 </html>
