@@ -468,10 +468,14 @@
 
     // Show/Hide Admin Console tab and settings block based on Role
     const isAdmin = user.role === 'ADMIN';
+    const isPremium = user.role === 'PREMIUM';
     if (profRole) {
       if (isAdmin) {
         profRole.textContent = '👑 MASTER ROOT ADMINISTRATOR';
         profRole.style.color = '#fcd34d';
+      } else if (isPremium) {
+        profRole.textContent = '👑 TIER-1 PREMIUM STRATEGIST';
+        profRole.style.color = '#fbbf24';
       } else {
         profRole.textContent = '⚡ TIER-1 MACRO ANALYST';
         profRole.style.color = 'var(--phosphor-green)';
@@ -524,11 +528,12 @@
 
     const total = data.totalUsers || data.users.length;
     const admins = data.users.filter(u => u.role === 'ADMIN').length;
-    const analysts = total - admins;
+    const premiums = data.users.filter(u => u.role === 'PREMIUM').length;
+    const analysts = total - admins - premiums;
 
     if (totalEl) totalEl.textContent = total;
     if (adminsEl) adminsEl.textContent = admins;
-    if (analystsEl) analystsEl.textContent = analysts;
+    if (analystsEl) analystsEl.textContent = `${premiums} Prem / ${analysts} Std`;
     if (counterEl) counterEl.textContent = total;
 
     if (dbInd) {
@@ -555,14 +560,53 @@
     users.forEach(u => {
       const tr = document.createElement('tr');
       const isAdmin = u.role === 'ADMIN';
+      const isPremium = u.role === 'PREMIUM';
       const isSelf = state.currentUser && state.currentUser.email.toLowerCase() === u.email.toLowerCase();
       const isRootAdmin = u.email.toLowerCase() === 'admin@aura.capital';
       const dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'Preset';
 
+      let roleBadgeHtml = '';
+      if (isAdmin) {
+        roleBadgeHtml = '<span class="role-badge role-admin">👑 ADMIN</span>';
+      } else if (isPremium) {
+        roleBadgeHtml = '<span class="role-badge role-premium">👑 PREMIUM</span>';
+      } else {
+        roleBadgeHtml = '<span class="role-badge role-analyst">⚡ ANALYST</span>';
+      }
+
+      let roleActionHtml = '';
+      if (!isRootAdmin && !isSelf) {
+        if (u.role === 'ANALYST') {
+          roleActionHtml = `
+            <button class="btn-table-action btn-role-toggle" data-email="${escapeHtml(u.email)}" data-target-role="PREMIUM" title="Promote to Premium">
+              ★ SET PREMIUM
+            </button>
+            <button class="btn-table-action btn-role-toggle" data-email="${escapeHtml(u.email)}" data-target-role="ADMIN" title="Elevate to Admin">
+              👑 ADMIN
+            </button>
+          `;
+        } else if (u.role === 'PREMIUM') {
+          roleActionHtml = `
+            <button class="btn-table-action btn-role-toggle" data-email="${escapeHtml(u.email)}" data-target-role="ANALYST" title="Demote to Analyst">
+              ▼ ANALYST
+            </button>
+            <button class="btn-table-action btn-role-toggle" data-email="${escapeHtml(u.email)}" data-target-role="ADMIN" title="Elevate to Admin">
+              👑 ADMIN
+            </button>
+          `;
+        } else if (u.role === 'ADMIN') {
+          roleActionHtml = `
+            <button class="btn-table-action btn-role-toggle" data-email="${escapeHtml(u.email)}" data-target-role="PREMIUM" title="Demote to Premium">
+              ▼ PREMIUM
+            </button>
+          `;
+        }
+      }
+
       tr.innerHTML = `
         <td>
           <div class="analyst-name-cell">
-            <span class="user-avatar-mini ${isAdmin ? 'admin-avatar' : ''}">${isAdmin ? '👑' : '👤'}</span>
+            <span class="user-avatar-mini ${isAdmin ? 'admin-avatar' : ''}">${isAdmin ? '👑' : isPremium ? '⭐' : '👤'}</span>
             <div>
               <strong class="user-display-name">${escapeHtml(u.name)}</strong>
               ${isSelf ? '<span class="self-pill">YOU</span>' : ''}
@@ -571,18 +615,12 @@
         </td>
         <td><span class="user-email-tag">${escapeHtml(u.email)}</span></td>
         <td><span class="user-org-text">${escapeHtml(u.org || 'Aura Capital')}</span></td>
-        <td>
-          <span class="role-badge ${isAdmin ? 'role-admin' : 'role-analyst'}">
-            ${isAdmin ? '👑 ADMIN' : '⚡ ANALYST'}
-          </span>
-        </td>
+        <td>${roleBadgeHtml}</td>
         <td><span class="date-text">${dateStr}</span></td>
         <td style="text-align: right;">
           <div class="admin-actions-cell">
+            ${roleActionHtml}
             ${!isRootAdmin && !isSelf ? `
-              <button class="btn-table-action btn-role-toggle" data-email="${escapeHtml(u.email)}" data-current-role="${u.role}" title="Toggle Role">
-                ${isAdmin ? 'DEMOTE' : 'PROMOTE'}
-              </button>
               <button class="btn-table-action btn-delete-user" data-email="${escapeHtml(u.email)}" title="Delete user from MongoDB">
                 🗑️ REVOKE
               </button>
@@ -608,11 +646,10 @@
     tbody.querySelectorAll('.btn-role-toggle').forEach(btn => {
       btn.addEventListener('click', () => {
         const email = btn.getAttribute('data-email');
-        const currentRole = btn.getAttribute('data-current-role');
-        const newRole = currentRole === 'ADMIN' ? 'ANALYST' : 'ADMIN';
-        if (confirm(`Change security clearance for [${email}] to [${newRole}]?`)) {
+        const targetRole = btn.getAttribute('data-target-role');
+        if (confirm(`Change security clearance for [${email}] to [${targetRole}]?`)) {
           if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
-          toggleAdminUserRole(email, newRole);
+          toggleAdminUserRole(email, targetRole);
         }
       });
     });
@@ -2506,6 +2543,137 @@
         drawOscilloscopeChart(pts, isIndia ? '₹' : '$', state.currentTimeframe.range, -1);
       });
     }
+
+    // =========================================================================
+    // PORTFOLIO ANALYTICS TERMINAL & BROKER SYNC CONTROLS
+    // =========================================================================
+    const btnRequestPrem = document.getElementById('btn-request-premium');
+    if (btnRequestPrem) {
+      btnRequestPrem.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+        requestPremiumAccess();
+      });
+    }
+
+    const brokerModal = document.getElementById('broker-connect-modal');
+    const btnOpenBroker = document.getElementById('btn-open-broker-modal');
+    const btnCloseBroker = document.getElementById('btn-close-broker-modal');
+    const btnLoadDemo = document.getElementById('btn-load-demo-portfolio');
+
+    if (btnOpenBroker && brokerModal) {
+      btnOpenBroker.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+        brokerModal.classList.remove('hidden');
+      });
+    }
+
+    if (btnCloseBroker && brokerModal) {
+      btnCloseBroker.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        brokerModal.classList.add('hidden');
+      });
+    }
+
+    if (brokerModal) {
+      brokerModal.addEventListener('click', (e) => {
+        if (e.target === brokerModal) brokerModal.classList.add('hidden');
+      });
+    }
+
+    if (btnLoadDemo) {
+      btnLoadDemo.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+        syncBrokerPortfolio('sample', {}, 'Sample Macro Portfolio');
+      });
+    }
+
+    // Broker Tabs Switching inside Modal
+    document.querySelectorAll('.broker-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const broker = btn.getAttribute('data-broker');
+        if (window.tactileAudio) window.tactileAudio.playDialTick();
+
+        document.querySelectorAll('.broker-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.broker-pane').forEach(p => p.classList.add('hidden'));
+        const activePane = document.getElementById(`pane-${broker}`);
+        if (activePane) activePane.classList.remove('hidden');
+      });
+    });
+
+    // Wire Form Submissions for Each Broker
+    const bindBrokerForm = (formId, brokerName, getPayload) => {
+      const form = document.getElementById(formId);
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+          const payload = getPayload();
+          syncBrokerPortfolio(brokerName, payload);
+        });
+      }
+    };
+
+    bindBrokerForm('form-connect-groww', 'groww', () => ({
+      apiAuthToken: (document.getElementById('input-groww-token')?.value || '').trim()
+    }));
+
+    bindBrokerForm('form-connect-zerodha', 'zerodha', () => ({
+      apiKey: (document.getElementById('input-zerodha-key')?.value || '').trim(),
+      accessToken: (document.getElementById('input-zerodha-token')?.value || '').trim()
+    }));
+
+    bindBrokerForm('form-connect-upstox', 'upstox', () => ({
+      accessToken: (document.getElementById('input-upstox-token')?.value || '').trim()
+    }));
+
+    bindBrokerForm('form-connect-angelone', 'angelone', () => ({
+      apiKey: (document.getElementById('input-angel-key')?.value || '').trim(),
+      clientCode: (document.getElementById('input-angel-client')?.value || '').trim(),
+      jwtToken: (document.getElementById('input-angel-jwt')?.value || '').trim()
+    }));
+
+    bindBrokerForm('form-connect-dhan', 'dhan', () => ({
+      clientId: (document.getElementById('input-dhan-client')?.value || '').trim(),
+      accessToken: (document.getElementById('input-dhan-token')?.value || '').trim()
+    }));
+
+    bindBrokerForm('form-connect-fyers', 'fyers', () => ({
+      appId: (document.getElementById('input-fyers-appid')?.value || '').trim(),
+      accessToken: (document.getElementById('input-fyers-token')?.value || '').trim()
+    }));
+
+    // CSV Form
+    const formCsv = document.getElementById('form-connect-csv');
+    const inputCsvFile = document.getElementById('input-csv-file');
+    const inputCsvRaw = document.getElementById('input-csv-raw');
+
+    if (inputCsvFile && inputCsvRaw) {
+      inputCsvFile.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            inputCsvRaw.value = evt.target.result;
+          };
+          reader.readAsText(file);
+        }
+      });
+    }
+
+    if (formCsv) {
+      formCsv.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        const csvContent = (inputCsvRaw?.value || '').trim();
+        if (!csvContent) {
+          alert('Please choose a CSV file or paste holdings text.');
+          return;
+        }
+        syncBrokerPortfolio('csv', { csvContent });
+      });
+    }
   }
 
   async function handleSearchAutocomplete(query, targetDropdown = el.autocompleteDropdown, targetInput = el.searchInput) {
@@ -2564,8 +2732,244 @@
       setTimeout(() => drawOscilloscopeChart(state.selectedStock.quote.sparkline || [], isIndia ? '₹' : '$'), 50);
     }
 
+    if (tabId === 'tab-portfolio') {
+      renderPortfolioTab();
+    }
+
     if (tabId === 'tab-admin') {
       fetchAdminUsers();
+    }
+  }
+
+  // =========================================================================
+  // PORTFOLIO CONTROLLER & MACRO DIAGNOSTICS ENGINE
+  // =========================================================================
+  function renderPortfolioTab() {
+    const gate = document.getElementById('portfolio-clearance-gate');
+    const deck = document.getElementById('portfolio-active-deck');
+    if (!gate || !deck) return;
+
+    const user = state.currentUser;
+    const isCleared = user && (user.role === 'PREMIUM' || user.role === 'ADMIN');
+
+    if (!isCleared) {
+      gate.classList.remove('hidden');
+      deck.classList.add('hidden');
+    } else {
+      gate.classList.add('hidden');
+      deck.classList.remove('hidden');
+      if (state.currentPortfolioAnalysis) {
+        renderPortfolioAnalysis(state.currentPortfolioAnalysis);
+      }
+    }
+  }
+
+  async function requestPremiumAccess() {
+    const statusEl = document.getElementById('premium-request-status');
+    const btn = document.getElementById('btn-request-premium');
+    if (!state.currentUser) {
+      alert('Please log in or register to request Premium Portfolio clearance.');
+      return;
+    }
+
+    try {
+      if (btn) btn.disabled = true;
+      if (statusEl) {
+        statusEl.textContent = '⏳ Dispatching upgrade request to Administrator...';
+        statusEl.classList.remove('hidden');
+      }
+
+      const res = await fetch('/api/portfolio/request-premium', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': state.currentUser.email
+        }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+        if (statusEl) {
+          statusEl.innerHTML = `✅ <strong>REQUEST DISPATCHED!</strong> Notification sent to <code>sverma9312@gmail.com</code>. Your clearance will be elevated in the Governance Console shortly.`;
+        }
+      } else {
+        if (statusEl) statusEl.textContent = `⚠️ ${data.error || 'Failed to submit request.'}`;
+      }
+    } catch (err) {
+      if (statusEl) statusEl.textContent = '⚠️ Network error submitting request.';
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function syncBrokerPortfolio(broker, payload, brokerLabel = '') {
+    const statusEl = document.getElementById('broker-sync-status');
+    const modal = document.getElementById('broker-connect-modal');
+
+    if (statusEl) {
+      statusEl.className = 'broker-sync-status';
+      statusEl.textContent = `🔄 Connecting to ${broker.toUpperCase()} API & fetching holdings...`;
+      statusEl.classList.remove('hidden');
+    }
+
+    try {
+      const res = await fetch('/api/portfolio/fetch-holdings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': state.currentUser ? state.currentUser.email : ''
+        },
+        body: JSON.stringify({ broker, ...payload, brokerLabel })
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        if (statusEl) {
+          statusEl.className = 'broker-sync-status error';
+          statusEl.textContent = `❌ ${data.error || 'Failed to sync broker holdings.'}`;
+        }
+        return;
+      }
+
+      // Analyze fetched holdings
+      if (statusEl) {
+        statusEl.textContent = `📊 Evaluating ${data.count} holdings through Macro Catalyst Engine...`;
+      }
+
+      const anaRes = await fetch('/api/portfolio/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': state.currentUser ? state.currentUser.email : ''
+        },
+        body: JSON.stringify({
+          holdings: data.holdings,
+          region: state.currentRegion || 'india'
+        })
+      });
+      const anaData = await anaRes.json();
+
+      if (!anaData.success) {
+        if (statusEl) {
+          statusEl.className = 'broker-sync-status error';
+          statusEl.textContent = `❌ ${anaData.error || 'Analysis failed.'}`;
+        }
+        return;
+      }
+
+      if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+      state.currentPortfolioAnalysis = anaData.analysis;
+      renderPortfolioAnalysis(anaData.analysis);
+
+      if (modal) modal.classList.add('hidden');
+      if (statusEl) statusEl.classList.add('hidden');
+
+    } catch (err) {
+      if (statusEl) {
+        statusEl.className = 'broker-sync-status error';
+        statusEl.textContent = `❌ Error: ${err.message}`;
+      }
+    }
+  }
+
+  function renderPortfolioAnalysis(analysis) {
+    if (!analysis || !analysis.summary) return;
+
+    const summary = analysis.summary;
+    const cur = summary.currency || '₹';
+
+    // Summary KPIs
+    const valTotal = document.getElementById('portfolio-val-total');
+    const valInvested = document.getElementById('portfolio-val-invested');
+    const valPnl = document.getElementById('portfolio-val-pnl');
+    const valResilience = document.getElementById('portfolio-val-resilience');
+    const badgeRating = document.getElementById('portfolio-badge-rating');
+    const subCount = document.getElementById('portfolio-sub-count');
+
+    if (valTotal) valTotal.textContent = `${cur}${summary.totalCurrentValue.toLocaleString('en-IN')}`;
+    if (valInvested) valInvested.textContent = `${cur}${summary.totalInvested.toLocaleString('en-IN')}`;
+    if (subCount) subCount.textContent = `${summary.totalHoldingsCount} Equities Loaded`;
+
+    if (valPnl) {
+      const isPos = summary.totalPnl >= 0;
+      valPnl.textContent = `${isPos ? '+' : ''}${cur}${summary.totalPnl.toLocaleString('en-IN')} (${isPos ? '+' : ''}${summary.totalPnlPct}%)`;
+      valPnl.className = isPos ? 'kpi-val highlight-green' : 'kpi-val highlight-red';
+    }
+
+    if (valResilience) valResilience.textContent = `${summary.macroResilienceScore}/100`;
+    if (badgeRating) badgeRating.textContent = summary.resilienceRating;
+
+    // Warnings
+    const warnContainer = document.getElementById('portfolio-warnings-container');
+    if (warnContainer) {
+      if (analysis.warnings && analysis.warnings.length > 0) {
+        warnContainer.innerHTML = analysis.warnings.map(w => `
+          <div class="portfolio-warning-item">${escapeHtml(w)}</div>
+        `).join('');
+        warnContainer.classList.remove('hidden');
+      } else {
+        warnContainer.classList.add('hidden');
+      }
+    }
+
+    // Sector breakdown
+    const sectorContainer = document.getElementById('portfolio-sectors-container');
+    if (sectorContainer && analysis.sectorBreakdown) {
+      sectorContainer.innerHTML = analysis.sectorBreakdown.map(s => `
+        <div class="portfolio-sector-pill">
+          <span>${escapeHtml(s.sector)}</span>
+          <span class="pct">${s.percentage}%</span>
+          <span style="font-size: 10px; color: var(--text-dim);">(${cur}${s.value.toLocaleString('en-IN')})</span>
+        </div>
+      `).join('');
+    }
+
+    // Stocks Grid
+    const stockContainer = document.getElementById('portfolio-stocks-container');
+    if (stockContainer && analysis.stocks) {
+      stockContainer.innerHTML = analysis.stocks.map(st => {
+        const isPos = st.pnl >= 0;
+        return `
+          <div class="portfolio-stock-row">
+            <div class="stock-sym-group">
+              <span class="ticker">
+                <span>${st.icon || '📈'}</span>
+                <span>${escapeHtml(st.symbol)}</span>
+              </span>
+              <span class="sector-tag">${escapeHtml(st.companyName || st.sector)}</span>
+            </div>
+
+            <div class="stock-price-group">
+              <span style="font-size: 10px; color: var(--text-dim);">HOLDINGS</span>
+              <span class="val">${st.quantity} Qty @ ${cur}${st.buyPrice.toLocaleString('en-IN')}</span>
+              <span style="font-size: 10px; color: var(--text-muted);">CMP: ${cur}${st.currentPrice.toLocaleString('en-IN')}</span>
+            </div>
+
+            <div class="stock-val-group">
+              <span style="font-size: 10px; color: var(--text-dim);">CURRENT VALUE</span>
+              <span class="val">${cur}${st.currentValue.toLocaleString('en-IN')}</span>
+              <span style="font-size: 10px; color: var(--phosphor-cyan); font-weight: 700;">WEIGHT: ${st.portfolioWeight}%</span>
+            </div>
+
+            <div class="stock-pnl-group">
+              <span style="font-size: 10px; color: var(--text-dim);">UNREALIZED P&L</span>
+              <span class="val" style="color: ${isPos ? 'var(--phosphor-green)' : 'var(--phosphor-red)'};">
+                ${isPos ? '+' : ''}${cur}${st.pnl.toLocaleString('en-IN')} (${isPos ? '+' : ''}${st.pnlPct}%)
+              </span>
+            </div>
+
+            <div class="stock-rating-group">
+              <div class="verdict-badge ${st.verdictClass}">
+                ${st.stars} ${escapeHtml(st.verdict)}
+              </div>
+              <p class="stock-driver-text">
+                <strong>Macro:</strong> ${escapeHtml(st.macroTailwind)}
+              </p>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
   }
 

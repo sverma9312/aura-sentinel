@@ -155,6 +155,11 @@
           <span class="tab-title">LIVE NEWS FEED</span>
           <span class="tab-counter" id="wire-counter">0</span>
         </button>
+        <button class="rocker-tab tab-portfolio" id="tab-btn-portfolio" data-tab="tab-portfolio" title="Analyze My Portfolio (Premium Diagnostics)">
+          <span class="tab-icon">💼</span>
+          <span class="tab-title">ANALYZE PORTFOLIO</span>
+          <span class="tab-premium-pill">PREMIUM</span>
+        </button>
         <button class="rocker-tab tab-watchlist" data-tab="tab-watchlist">
           <span class="tab-icon">⭐</span>
           <span class="tab-title">MY WATCHLIST</span>
@@ -516,6 +521,121 @@
             </table>
           </div>
         </div>
+      <!-- TAB: ANALYZE MY PORTFOLIO (PREMIUM ONLY) -->
+      <section id="tab-portfolio" class="tab-content">
+        
+        <!-- STATE A: CLEARANCE GATE (Shown to ANALYST users) -->
+        <div id="portfolio-clearance-gate" class="portfolio-gate-chassis">
+          <div class="gate-emblem-wrap">
+            <div class="gate-crown-glow">👑</div>
+            <div class="gate-lock-icon">🔒</div>
+          </div>
+          <h2 class="gate-title">PREMIUM SECURITY CLEARANCE REQUIRED</h2>
+          <p class="gate-desc">
+            The <strong>Portfolio Macro Analytics Terminal</strong> is an exclusive tier-1 feature that continuously connects your personal stock holdings to live geopolitical catalysts, macroeconomic cycle shifts, and sectoral tailwinds.
+          </p>
+
+          <div class="gate-perks-grid">
+            <div class="gate-perk-card">
+              <div class="perk-icon">⚡</div>
+              <h4>Direct Broker Synchronization</h4>
+              <p>Connect instantly with <strong>Groww Trade API</strong>, <strong>Zerodha Kite</strong>, <strong>Upstox</strong>, <strong>Angel One</strong>, <strong>Dhan</strong>, <strong>Fyers</strong>, or direct CSV upload.</p>
+            </div>
+            <div class="gate-perk-card">
+              <div class="perk-icon">🛡️</div>
+              <h4>Stock-by-Stock Macro Rating</h4>
+              <p>Receive 5-star Sentinel health grades, earnings momentum checks, and custom suitability verdicts for every holding.</p>
+            </div>
+            <div class="gate-perk-card">
+              <div class="perk-icon">🎯</div>
+              <h4>Concentration & Shock Radar</h4>
+              <p>Automated detection of single-stock (>25%) and sector (>40%) concentration vulnerabilities and macro headwinds.</p>
+            </div>
+          </div>
+
+          <div class="gate-action-bezel">
+            <button id="btn-request-premium" class="btn-request-premium-glow">
+              <span>✨ REQUEST PREMIUM ACCESS</span>
+            </button>
+            <div id="premium-request-status" class="premium-request-status hidden"></div>
+            <div class="gate-footnote">
+              Your request will be dispatched directly to Administrator at <code>sverma9312@gmail.com</code> for instant elevation.
+            </div>
+          </div>
+        </div>
+
+        <!-- STATE B: ACTIVE PORTFOLIO TERMINAL (Unlocked for PREMIUM and ADMIN) -->
+        <div id="portfolio-active-deck" class="portfolio-active-deck hidden">
+          <div class="section-banner">
+            <div class="banner-title-group">
+              <h1 class="section-heading">PORTFOLIO MACRO ANALYTICS TERMINAL</h1>
+              <p class="section-subtext">Live broker synchronized portfolio holding diagnostics, macro catalyst correlation, and resilience ratings.</p>
+            </div>
+            <div class="portfolio-top-actions">
+              <button id="btn-open-broker-modal" class="btn-portfolio-action primary">
+                <span>⚡ CONNECT BROKER API</span>
+              </button>
+              <button id="btn-load-demo-portfolio" class="btn-portfolio-action secondary" title="Load sample portfolio for instant demo">
+                <span>🎲 LOAD SAMPLE DATA</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Portfolio KPI Metrics Bar -->
+          <div class="portfolio-kpi-grid">
+            <div class="portfolio-kpi-card">
+              <span class="kpi-lbl">TOTAL PORTFOLIO VALUE</span>
+              <span class="kpi-val" id="portfolio-val-total">₹0.00</span>
+              <span class="kpi-sub" id="portfolio-sub-count">0 Holdings</span>
+            </div>
+            <div class="portfolio-kpi-card">
+              <span class="kpi-lbl">INVESTED CAPITAL</span>
+              <span class="kpi-val" id="portfolio-val-invested">₹0.00</span>
+              <span class="kpi-sub">Cost Basis</span>
+            </div>
+            <div class="portfolio-kpi-card">
+              <span class="kpi-lbl">TOTAL UNREALIZED P&L</span>
+              <span class="kpi-val highlight-green" id="portfolio-val-pnl">+₹0.00 (+0.00%)</span>
+              <span class="kpi-sub" id="portfolio-sub-pnl-status">Net Return</span>
+            </div>
+            <div class="portfolio-kpi-card highlight-border">
+              <span class="kpi-lbl">MACRO RESILIENCE SCORE</span>
+              <div class="kpi-resilience-wrap">
+                <span class="kpi-val highlight-gold" id="portfolio-val-resilience">--/100</span>
+                <span class="kpi-badge-pill" id="portfolio-badge-rating">READY</span>
+              </div>
+              <span class="kpi-sub" id="portfolio-sub-resilience">Macro Defense Rating</span>
+            </div>
+          </div>
+
+          <!-- Concentration & Shock Warnings Bar (Dynamic) -->
+          <div id="portfolio-warnings-container" class="portfolio-warnings-container hidden"></div>
+
+          <!-- Sector Allocation Breakdown Tray -->
+          <div class="portfolio-section-chassis" style="margin-top: 16px;">
+            <div class="portfolio-chassis-header">
+              <div class="chassis-title">📊 SECTORAL CAPITAL ALLOCATION</div>
+              <div class="chassis-subtitle">Distribution across strategic economic industries</div>
+            </div>
+            <div id="portfolio-sectors-container" class="portfolio-sectors-bar"></div>
+          </div>
+
+          <!-- Individual Stock Diagnostics Grid & Table -->
+          <div class="portfolio-section-chassis" style="margin-top: 16px;">
+            <div class="portfolio-chassis-header">
+              <div class="chassis-title">🔬 STOCK-BY-STOCK MACRO SUITABILITY & SENTINEL HEALTH</div>
+              <div class="chassis-subtitle">Individual equity analysis, earnings drivers, portfolio weight, and risk verdicts</div>
+            </div>
+            <div id="portfolio-stocks-container" class="portfolio-stocks-grid">
+              <div class="empty-portfolio-state">
+                <div class="empty-icon">💼</div>
+                <h3>NO PORTFOLIO HOLDINGS LOADED</h3>
+                <p>Click <strong>"Connect Broker API"</strong> above or <strong>"Load Sample Data"</strong> to run real-time macro diagnostics on your stocks.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
     </main>
@@ -941,6 +1061,7 @@
             <div class="auth-input-recess">
               <select id="prov-role" class="admin-select-input">
                 <option value="ANALYST">ANALYST (STANDARD ACCESS)</option>
+                <option value="PREMIUM">PREMIUM (PORTFOLIO TERMINAL CLEARANCE)</option>
                 <option value="ADMIN">ADMIN (ELEVATED ROOT PRIVILEGES)</option>
               </select>
             </div>
@@ -953,6 +1074,239 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BROKER SYNCHRONIZATION & CREDENTIALS MODAL                                -->
+    <!-- ========================================================================= -->
+    <div id="broker-connect-modal" class="modal-backdrop hidden">
+      <div class="modal-card modal-card-lg">
+        <div class="modal-header-bezel">
+          <div class="modal-header-text">
+            <span class="modal-badge-tag gold">⚡ BROKER SYNCHRONIZATION</span>
+            <h3 class="modal-title">CONNECT LIVE TRADING PORTFOLIO</h3>
+          </div>
+          <button type="button" class="btn-modal-close" id="btn-close-broker-modal">✕</button>
+        </div>
+
+        <!-- Broker Selector Tabs -->
+        <div class="broker-tabs-bar">
+          <button class="broker-tab-btn active" data-broker="groww">
+            <span class="broker-tab-icon">🌿</span> GROWW
+          </button>
+          <button class="broker-tab-btn" data-broker="zerodha">
+            <span class="broker-tab-icon">🪁</span> ZERODHA
+          </button>
+          <button class="broker-tab-btn" data-broker="upstox">
+            <span class="broker-tab-icon">⚡</span> UPSTOX
+          </button>
+          <button class="broker-tab-btn" data-broker="angelone">
+            <span class="broker-tab-icon">🛡️</span> ANGEL ONE
+          </button>
+          <button class="broker-tab-btn" data-broker="dhan">
+            <span class="broker-tab-icon">🪙</span> DHAN
+          </button>
+          <button class="broker-tab-btn" data-broker="fyers">
+            <span class="broker-tab-icon">🎯</span> FYERS
+          </button>
+          <button class="broker-tab-btn" data-broker="csv">
+            <span class="broker-tab-icon">📁</span> CSV FILE
+          </button>
+        </div>
+
+        <div class="modal-body-scroll">
+          
+          <!-- BROKER 1: GROWW -->
+          <div class="broker-pane active" id="pane-groww">
+            <div class="broker-guide-box">
+              <h4>📋 How to connect Groww Trade API</h4>
+              <ol>
+                <li>Visit the official Groww developer console: <a href="https://groww.in/trade-api" target="_blank" rel="noopener">groww.in/trade-api</a>.</li>
+                <li>Generate your <strong>API Auth Token</strong> for portfolio holdings read access.</li>
+                <li>Paste your Auth Token below to fetch your current holdings securely.</li>
+              </ol>
+            </div>
+            <form id="form-connect-groww" class="broker-form">
+              <div class="auth-field-group">
+                <label class="auth-label">GROWW API AUTH TOKEN</label>
+                <div class="auth-input-recess">
+                  <input type="password" id="input-groww-token" class="auth-input" placeholder="Paste your Groww API Auth Token (or type 'demo' to test)" required>
+                </div>
+              </div>
+              <button type="submit" class="auth-btn-submit">
+                <span>🔄 SYNC GROWW HOLDINGS</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- BROKER 2: ZERODHA -->
+          <div class="broker-pane hidden" id="pane-zerodha">
+            <div class="broker-guide-box">
+              <h4>📋 How to connect Zerodha Kite Connect</h4>
+              <ol>
+                <li>Open your Kite developer portal: <a href="https://developers.kite.trade" target="_blank" rel="noopener">developers.kite.trade</a>.</li>
+                <li>Create an app and copy your <strong>API Key</strong> and active session <strong>Access Token</strong>.</li>
+                <li>Paste credentials below to sync your DEMAT equity portfolio.</li>
+              </ol>
+            </div>
+            <form id="form-connect-zerodha" class="broker-form">
+              <div class="auth-field-group">
+                <label class="auth-label">KITE API KEY</label>
+                <div class="auth-input-recess">
+                  <input type="text" id="input-zerodha-key" class="auth-input" placeholder="e.g. your_kite_api_key (or type 'demo')" required>
+                </div>
+              </div>
+              <div class="auth-field-group" style="margin-top: 8px;">
+                <label class="auth-label">ACCESS TOKEN</label>
+                <div class="auth-input-recess">
+                  <input type="password" id="input-zerodha-token" class="auth-input" placeholder="e.g. your_kite_access_token" required>
+                </div>
+              </div>
+              <button type="submit" class="auth-btn-submit">
+                <span>🔄 SYNC ZERODHA HOLDINGS</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- BROKER 3: UPSTOX -->
+          <div class="broker-pane hidden" id="pane-upstox">
+            <div class="broker-guide-box">
+              <h4>📋 How to connect Upstox API v2</h4>
+              <ol>
+                <li>Log in to Upstox Developer Console: <a href="https://developer.upstox.com" target="_blank" rel="noopener">developer.upstox.com</a>.</li>
+                <li>Generate your <strong>Bearer Access Token</strong> for portfolio holdings.</li>
+                <li>Paste the token below.</li>
+              </ol>
+            </div>
+            <form id="form-connect-upstox" class="broker-form">
+              <div class="auth-field-group">
+                <label class="auth-label">UPSTOX ACCESS TOKEN (BEARER)</label>
+                <div class="auth-input-recess">
+                  <input type="password" id="input-upstox-token" class="auth-input" placeholder="Paste your Upstox Bearer Token (or type 'demo')" required>
+                </div>
+              </div>
+              <button type="submit" class="auth-btn-submit">
+                <span>🔄 SYNC UPSTOX HOLDINGS</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- BROKER 4: ANGEL ONE -->
+          <div class="broker-pane hidden" id="pane-angelone">
+            <div class="broker-guide-box">
+              <h4>📋 How to connect Angel One SmartAPI</h4>
+              <ol>
+                <li>Access SmartAPI console: <a href="https://smartapi.angelbroking.com" target="_blank" rel="noopener">smartapi.angelbroking.com</a>.</li>
+                <li>Enter your <strong>API Key</strong>, <strong>Client Code</strong>, and session <strong>JWT Token</strong>.</li>
+              </ol>
+            </div>
+            <form id="form-connect-angelone" class="broker-form">
+              <div class="auth-field-group">
+                <label class="auth-label">SMARTAPI KEY</label>
+                <div class="auth-input-recess">
+                  <input type="text" id="input-angel-key" class="auth-input" placeholder="SmartAPI Key (or type 'demo')" required>
+                </div>
+              </div>
+              <div class="auth-field-group" style="margin-top: 8px;">
+                <label class="auth-label">CLIENT CODE</label>
+                <div class="auth-input-recess">
+                  <input type="text" id="input-angel-client" class="auth-input" placeholder="Your Client Code (e.g. A12345)" required>
+                </div>
+              </div>
+              <div class="auth-field-group" style="margin-top: 8px;">
+                <label class="auth-label">SESSION JWT TOKEN</label>
+                <div class="auth-input-recess">
+                  <input type="password" id="input-angel-jwt" class="auth-input" placeholder="Your Session JWT Token" required>
+                </div>
+              </div>
+              <button type="submit" class="auth-btn-submit">
+                <span>🔄 SYNC ANGEL ONE HOLDINGS</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- BROKER 5: DHAN -->
+          <div class="broker-pane hidden" id="pane-dhan">
+            <div class="broker-guide-box">
+              <h4>📋 How to connect DhanHQ API</h4>
+              <ol>
+                <li>Visit Dhan Developer Console: <a href="https://api.dhan.co" target="_blank" rel="noopener">api.dhan.co</a>.</li>
+                <li>Generate your <strong>Client ID</strong> and <strong>Access Token</strong>.</li>
+              </ol>
+            </div>
+            <form id="form-connect-dhan" class="broker-form">
+              <div class="auth-field-group">
+                <label class="auth-label">DHAN CLIENT ID</label>
+                <div class="auth-input-recess">
+                  <input type="text" id="input-dhan-client" class="auth-input" placeholder="Client ID (or type 'demo')" required>
+                </div>
+              </div>
+              <div class="auth-field-group" style="margin-top: 8px;">
+                <label class="auth-label">ACCESS TOKEN</label>
+                <div class="auth-input-recess">
+                  <input type="password" id="input-dhan-token" class="auth-input" placeholder="Dhan Access Token" required>
+                </div>
+              </div>
+              <button type="submit" class="auth-btn-submit">
+                <span>🔄 SYNC DHAN HOLDINGS</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- BROKER 6: FYERS -->
+          <div class="broker-pane hidden" id="pane-fyers">
+            <div class="broker-guide-box">
+              <h4>📋 How to connect Fyers Data API</h4>
+              <ol>
+                <li>Log in to Fyers API portal: <a href="https://myapi.fyers.in" target="_blank" rel="noopener">myapi.fyers.in</a>.</li>
+                <li>Enter your <strong>App ID</strong> and <strong>Access Token</strong>.</li>
+              </ol>
+            </div>
+            <form id="form-connect-fyers" class="broker-form">
+              <div class="auth-field-group">
+                <label class="auth-label">FYERS APP ID</label>
+                <div class="auth-input-recess">
+                  <input type="text" id="input-fyers-appid" class="auth-input" placeholder="App ID (or type 'demo')" required>
+                </div>
+              </div>
+              <div class="auth-field-group" style="margin-top: 8px;">
+                <label class="auth-label">ACCESS TOKEN</label>
+                <div class="auth-input-recess">
+                  <input type="password" id="input-fyers-token" class="auth-input" placeholder="Fyers Access Token" required>
+                </div>
+              </div>
+              <button type="submit" class="auth-btn-submit">
+                <span>🔄 SYNC FYERS HOLDINGS</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- BROKER 7: UNIVERSAL CSV FILE IMPORT -->
+          <div class="broker-pane hidden" id="pane-csv">
+            <div class="broker-guide-box">
+              <h4>📁 Universal CSV / Excel Import</h4>
+              <p>Upload any exported holdings CSV file from <strong>Groww</strong>, <strong>Zerodha</strong>, <strong>Upstox</strong>, <strong>ICICI Direct</strong>, or <strong>HDFC Sky</strong>.</p>
+              <p style="font-size: 10.5px; margin-top: 4px; color: var(--text-dim);">Required columns: <code>Symbol/Stock</code>, <code>Quantity/Qty</code>, <code>Avg Buy Price/Cost</code>.</p>
+            </div>
+            <form id="form-connect-csv" class="broker-form">
+              <div class="auth-field-group">
+                <label class="auth-label">SELECT HOLDINGS CSV FILE</label>
+                <input type="file" id="input-csv-file" accept=".csv,text/csv" class="file-picker-input">
+              </div>
+              <div class="auth-field-group" style="margin-top: 10px;">
+                <label class="auth-label">OR PASTE CSV RAW TEXT</label>
+                <textarea id="input-csv-raw" class="csv-raw-textarea" rows="4" placeholder="Symbol,Quantity,AvgPrice&#10;HAL,25,4250.00&#10;TCS,30,3820.00&#10;BEL,120,245.50"></textarea>
+              </div>
+              <button type="submit" class="auth-btn-submit">
+                <span>📊 PARSE & ANALYZE CSV PORTFOLIO</span>
+              </button>
+            </form>
+          </div>
+
+          <div id="broker-sync-status" class="broker-sync-status hidden"></div>
+
+        </div>
       </div>
     </div>
 

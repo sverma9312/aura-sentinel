@@ -13,6 +13,8 @@ const fs = require('fs');
 const macroEngine = require('./services/macroEngine');
 const { searchTickers } = require('./services/financeApi');
 const dbService = require('./services/db');
+const portfolioService = require('./services/portfolioService');
+const emailService = require('./services/emailService');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -375,6 +377,129 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, {
         success: true,
         message: `User ${body.email} role updated to [${body.role}].`
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // =========================================================================
+  // PORTFOLIO TERMINAL & BROKER INTEGRATION API ROUTES
+  // =========================================================================
+
+  // API Route: Analyst Requests Premium Upgrade
+  if (pathname === '/api/portfolio/request-premium' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const user = await dbService.findUserByEmail(requesterEmail);
+      if (!user) {
+        return sendJson(res, 401, { success: false, error: 'Authentication required to submit upgrade request.' });
+      }
+
+      // Record request in MongoDB database
+      const requestDoc = await dbService.createPremiumRequest(user.email, {
+        name: user.name,
+        org: user.org
+      });
+
+      // Dispatch alert email to sverma9312@gmail.com
+      await emailService.sendPremiumUpgradeNotification(user);
+
+      return sendJson(res, 200, {
+        success: true,
+        message: `Premium upgrade request for ${user.email} dispatched to Administrator at sverma9312@gmail.com.`,
+        request: requestDoc
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Admin View Pending Upgrade Requests
+  if (pathname === '/api/portfolio/requests' && req.method === 'GET') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const requester = await dbService.findUserByEmail(requesterEmail);
+      if (!requester || requester.role !== 'ADMIN') {
+        return sendJson(res, 403, { success: false, error: 'ELEVATED SECURITY CLEARANCE REQUIRED (ADMIN ONLY).' });
+      }
+
+      const requests = await dbService.getPremiumRequests();
+      return sendJson(res, 200, { success: true, requests });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Fetch Holdings from Selected Broker / CSV (Premium & Admin Only)
+  if (pathname === '/api/portfolio/fetch-holdings' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const requester = await dbService.findUserByEmail(requesterEmail);
+      
+      // Role enforcement
+      if (!requester || (requester.role !== 'PREMIUM' && requester.role !== 'ADMIN')) {
+        return sendJson(res, 403, {
+          success: false,
+          error: 'PREMIUM CLEARANCE REQUIRED: Portfolio Analytics Terminal is available exclusively for Premium members.'
+        });
+      }
+
+      const body = await readJsonBody(req);
+      const broker = (body.broker || 'sample').toLowerCase();
+      let holdings = [];
+
+      if (broker === 'groww') {
+        holdings = await portfolioService.fetchGrowwHoldings(body.apiAuthToken);
+      } else if (broker === 'zerodha') {
+        holdings = await portfolioService.fetchZerodhaHoldings(body.apiKey, body.accessToken);
+      } else if (broker === 'upstox') {
+        holdings = await portfolioService.fetchUpstoxHoldings(body.accessToken);
+      } else if (broker === 'angelone') {
+        holdings = await portfolioService.fetchAngelOneHoldings(body.apiKey, body.clientCode, body.jwtToken);
+      } else if (broker === 'dhan') {
+        holdings = await portfolioService.fetchDhanHoldings(body.clientId, body.accessToken);
+      } else if (broker === 'fyers') {
+        holdings = await portfolioService.fetchFyersHoldings(body.appId, body.accessToken);
+      } else if (broker === 'csv') {
+        holdings = portfolioService.parseHoldingsCsv(body.csvContent);
+      } else {
+        // Sample / Demo
+        holdings = portfolioService.getSampleHoldings(body.brokerLabel || 'Demo Portfolio');
+      }
+
+      return sendJson(res, 200, {
+        success: true,
+        broker,
+        count: holdings.length,
+        holdings
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Analyze Portfolio Holdings (Compute stock-by-stock macro health)
+  if (pathname === '/api/portfolio/analyze' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const requester = await dbService.findUserByEmail(requesterEmail);
+      
+      if (!requester || (requester.role !== 'PREMIUM' && requester.role !== 'ADMIN')) {
+        return sendJson(res, 403, {
+          success: false,
+          error: 'PREMIUM CLEARANCE REQUIRED: Portfolio Analytics Terminal is available exclusively for Premium members.'
+        });
+      }
+
+      const body = await readJsonBody(req);
+      const holdings = body.holdings || [];
+      const region = body.region || 'india';
+
+      const analysis = await portfolioService.analyzePortfolio(holdings, region);
+      return sendJson(res, 200, {
+        success: true,
+        analysis
       });
     } catch (err) {
       return sendJson(res, 400, { success: false, error: err.message });

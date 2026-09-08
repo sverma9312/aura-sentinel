@@ -35,7 +35,8 @@ const DEFAULT_ADMIN_USER = {
 
 // In-Memory fallback store
 const fallbackStore = {
-  users: [DEFAULT_ADMIN_USER, DEFAULT_DEMO_USER]
+  users: [DEFAULT_ADMIN_USER, DEFAULT_DEMO_USER],
+  premiumRequests: []
 };
 
 /**
@@ -142,7 +143,7 @@ async function registerUser(userData, allowOverwrite = false) {
     throw new Error('AN ACCOUNT WITH THIS EMAIL ALREADY EXISTS. PLEASE LOG IN.');
   }
 
-  const role = userData.role === 'ADMIN' ? 'ADMIN' : 'ANALYST';
+  const role = (userData.role === 'ADMIN' || userData.role === 'PREMIUM') ? userData.role : 'ANALYST';
 
   const userDoc = {
     name: (userData.name || '').trim() || 'Macro Analyst',
@@ -214,11 +215,11 @@ async function deleteUser(email) {
 }
 
 /**
- * Update user role (Admin only)
+ * Update user role (Admin only - supports ADMIN, PREMIUM, ANALYST)
  */
 async function updateUserRole(email, newRole) {
   const cleanEmail = (email || '').trim().toLowerCase();
-  const role = newRole === 'ADMIN' ? 'ADMIN' : 'ANALYST';
+  const role = (newRole === 'ADMIN' || newRole === 'PREMIUM') ? newRole : 'ANALYST';
 
   if (isConnected && db) {
     try {
@@ -239,6 +240,56 @@ async function updateUserRole(email, newRole) {
     return true;
   }
   return false;
+}
+
+/**
+ * Create or record a Premium Access upgrade request
+ */
+async function createPremiumRequest(userEmail, details = {}) {
+  const cleanEmail = (userEmail || '').trim().toLowerCase();
+  const requestDoc = {
+    email: cleanEmail,
+    name: details.name || 'Analyst',
+    org: details.org || 'Aura Capital Markets',
+    requestedAt: new Date().toISOString(),
+    status: 'PENDING',
+    targetEmail: 'sverma9312@gmail.com'
+  };
+
+  if (isConnected && db) {
+    try {
+      await db.collection('premium_requests').updateOne(
+        { email: cleanEmail },
+        { $set: requestDoc },
+        { upsert: true }
+      );
+      return requestDoc;
+    } catch (e) {
+      console.error('[DB] MongoDB Premium Request Save Error:', e.message);
+    }
+  }
+
+  const existingIdx = fallbackStore.premiumRequests.findIndex(r => r.email === cleanEmail);
+  if (existingIdx >= 0) {
+    fallbackStore.premiumRequests[existingIdx] = requestDoc;
+  } else {
+    fallbackStore.premiumRequests.push(requestDoc);
+  }
+  return requestDoc;
+}
+
+/**
+ * Retrieve all pending Premium Access upgrade requests
+ */
+async function getPremiumRequests() {
+  if (isConnected && db) {
+    try {
+      return await db.collection('premium_requests').find({}).sort({ requestedAt: -1 }).toArray();
+    } catch (e) {
+      console.error('[DB] MongoDB Get Premium Requests Error:', e.message);
+    }
+  }
+  return fallbackStore.premiumRequests || [];
 }
 
 /**
@@ -378,6 +429,8 @@ module.exports = {
   deleteUser,
   updateUserRole,
   authenticateUser,
+  createPremiumRequest,
+  getPremiumRequests,
   getUserWatchlist,
   saveUserWatchlist,
   saveMarketSnapshot,
