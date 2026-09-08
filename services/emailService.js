@@ -99,9 +99,10 @@ Dispatched automatically by Aura Sentinel Governance Security Gateway.
         auth: { user: smtpUser, pass: smtpPass }
       };
 
+      const fromEmail = smtpUser || ADMIN_NOTIFICATION_EMAIL;
       const transporter = nodemailer.createTransport(transporterConfig);
       await transporter.sendMail({
-        from: `"Aura Sentinel Governance" <${smtpUser || 'no-reply@aura-sentinel.com'}>`,
+        from: `"Aura Sentinel Governance" <${fromEmail}>`,
         to: ADMIN_NOTIFICATION_EMAIL,
         subject,
         text: bodyText,
