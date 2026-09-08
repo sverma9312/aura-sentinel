@@ -53,42 +53,63 @@ async function fetchGrowwHoldings(apiAuthToken, apiKey = '', apiSecret = '') {
     return getSampleHoldings('Groww Trade API');
   }
 
-  try {
-    const options = {
-      hostname: 'groww.in',
-      path: '/trade-api/v1/portfolio/holdings',
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${apiAuthToken.trim()}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'AuraSentinel/2.0'
-      },
-      timeout: 8000
-    };
+  const endpoints = [
+    { hostname: 'api.groww.in', path: '/v1/holdings/user' },
+    { hostname: 'api.groww.in', path: '/v1/holdings' },
+    { hostname: 'groww.in', path: '/v1/holdings/user' },
+    { hostname: 'groww.in', path: '/trade-api/v1/holdings/user' }
+  ];
 
-    const res = await makeHttpsRequest(options);
-    if (res.status === 200 && res.data && Array.isArray(res.data.holdings)) {
-      return res.data.holdings.map(h => ({
-        symbol: h.trading_symbol || h.symbol || h.isin,
-        quantity: Number(h.quantity || 0),
-        buyPrice: Number(h.average_price || h.buyPrice || 0),
-        exchange: h.exchange || 'NSE',
-        source: 'Groww Trade API'
-      }));
-    } else if (res.status === 200 && Array.isArray(res.data)) {
-      return res.data.map(h => ({
-        symbol: h.trading_symbol || h.symbol,
-        quantity: Number(h.quantity || 0),
-        buyPrice: Number(h.average_price || 0),
-        exchange: 'NSE',
-        source: 'Groww Trade API'
-      }));
+  let lastStatus = 404;
+  let lastMessage = '';
+
+  for (const ep of endpoints) {
+    try {
+      const options = {
+        hostname: ep.hostname,
+        path: ep.path,
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-API-VERSION': '1.0',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'AuraSentinel/2.0'
+        },
+        timeout: 9000
+      };
+
+      const res = await makeHttpsRequest(options);
+      lastStatus = res.status;
+
+      if (res.status === 200 && res.data) {
+        const rawList = res.data.holdings || res.data.user_holdings || res.data.data || (Array.isArray(res.data) ? res.data : []);
+        if (Array.isArray(rawList) && rawList.length > 0) {
+          return rawList.map(h => ({
+            symbol: h.trading_symbol || h.tradingsymbol || h.symbol || h.isin || 'EQUITY',
+            quantity: Number(h.quantity || h.net_quantity || h.total_quantity || 0),
+            buyPrice: Number(h.average_price || h.buy_price || h.cost_price || h.buyPrice || 0),
+            closingPrice: Number(h.close_price || h.ltp || h.last_price || 0),
+            exchange: h.exchange || 'NSE',
+            source: 'Groww Trade API'
+          }));
+        } else if (Array.isArray(rawList) && rawList.length === 0) {
+          throw new Error('Connected to Groww Trade API successfully, but zero active stock holdings were returned in your account.');
+        }
+      } else if (res.status === 401 || res.status === 403) {
+        throw new Error('Groww authentication failed. Your access token may have expired or is invalid.');
+      } else if (res.data?.message) {
+        lastMessage = res.data.message;
+      }
+    } catch (e) {
+      if (e.message.includes('authentication failed') || e.message.includes('zero active stock holdings')) {
+        throw e;
+      }
+      console.warn(`[GrowwAPI] Attempt on ${ep.hostname}${ep.path} failed:`, e.message);
     }
-    throw new Error(res.data?.message || `Groww API responded with status ${res.status}`);
-  } catch (err) {
-    console.warn('[GrowwAPI] Live call fallback:', err.message);
-    throw new Error(`Groww API Connection Error: ${err.message}`);
   }
+
+  throw new Error(lastMessage || `Groww Trade API responded with status ${lastStatus}. Please verify your Access Token permissions.`);
 }
 
 /**
