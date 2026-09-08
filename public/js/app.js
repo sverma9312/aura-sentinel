@@ -3376,7 +3376,7 @@
     {
       selector: '.rocker-selector-bar',
       title: '5. Navigation Rocker Switch Rack',
-      desc: 'Switch between Market Pulse, Top Stock Picks, Stock Analyzer, Breaking News Wire, and your Watchlist Vault.',
+      desc: 'Switch between Market Pulse, Top Stock Picks, Stock Analyzer, Breaking News Wire, Analyze Portfolio, and your Watchlist Vault.',
       icon: '🎛️',
       tab: 'tab-macro'
     },
@@ -3388,8 +3388,15 @@
       tab: 'tab-stocks'
     },
     {
+      selector: '.tab-portfolio',
+      title: '7. Analyze My Portfolio & Broker Sync',
+      desc: 'Synchronize your Groww, Zerodha, Upstox accounts or upload CSV to evaluate full portfolio macro health scores, risk concentration, and real-time P&L.',
+      icon: '💼',
+      tab: 'tab-portfolio'
+    },
+    {
       selector: '.tab-watchlist',
-      title: '7. Watchlist Vault & Cloud Sync',
+      title: '8. Watchlist Vault & Cloud Sync',
       desc: 'Pin your favorite stocks to your MongoDB Atlas Cloud Vault, synchronized permanently across all your devices.',
       icon: '★',
       tab: 'tab-watchlist'
