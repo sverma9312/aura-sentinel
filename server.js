@@ -290,6 +290,22 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // API Route: User Theme Preference Update (Cloud Sync)
+  if (pathname === '/api/auth/theme' && req.method === 'POST') {
+    try {
+      const body = await readJsonBody(req);
+      const userEmail = body.email || req.headers['x-user-email'];
+      if (!userEmail) {
+        return sendJson(res, 401, { success: false, error: 'User email required' });
+      }
+
+      await dbService.updateUserTheme(userEmail, body.theme);
+      return sendJson(res, 200, { success: true, theme: body.theme, message: 'Theme preference saved in cloud database.' });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
   // API Route: Admin Get All Users
   if (pathname === '/api/admin/users' && req.method === 'GET') {
     try {

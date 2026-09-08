@@ -301,34 +301,9 @@ async function authenticateUser(email, password) {
 
   if (!cleanEmail || !cleanPass) return null;
 
-  // 1. Direct master admin credential check
-  if (cleanEmail === DEFAULT_ADMIN_USER.email && cleanPass === DEFAULT_ADMIN_USER.password) {
-    return {
-      name: DEFAULT_ADMIN_USER.name,
-      org: DEFAULT_ADMIN_USER.org,
-      email: DEFAULT_ADMIN_USER.email,
-      role: 'ADMIN',
-      theme: 'dark',
-      watchlist: DEFAULT_ADMIN_USER.watchlist || []
-    };
-  }
-
-  // 2. Direct default demo analyst credential check
-  if (cleanEmail === DEFAULT_DEMO_USER.email && cleanPass === DEFAULT_DEMO_USER.password) {
-    return {
-      name: DEFAULT_DEMO_USER.name,
-      org: DEFAULT_DEMO_USER.org,
-      email: DEFAULT_DEMO_USER.email,
-      role: 'ANALYST',
-      theme: 'dark',
-      watchlist: DEFAULT_DEMO_USER.watchlist || []
-    };
-  }
-
+  // 1. Check if user exists in database with saved preferences (Theme, Watchlist, Role)
   const user = await findUserByEmail(cleanEmail);
-  if (!user) return null;
-
-  if (String(user.password || '').trim() === cleanPass) {
+  if (user && String(user.password || '').trim() === cleanPass) {
     return {
       name: user.name,
       org: user.org,
@@ -336,6 +311,30 @@ async function authenticateUser(email, password) {
       role: user.role || 'ANALYST',
       theme: user.theme || 'dark',
       watchlist: user.watchlist || []
+    };
+  }
+
+  // 2. Direct fallback for default master admin
+  if (cleanEmail === DEFAULT_ADMIN_USER.email && cleanPass === DEFAULT_ADMIN_USER.password) {
+    return {
+      name: DEFAULT_ADMIN_USER.name,
+      org: DEFAULT_ADMIN_USER.org,
+      email: DEFAULT_ADMIN_USER.email,
+      role: 'ADMIN',
+      theme: DEFAULT_ADMIN_USER.theme || 'dark',
+      watchlist: DEFAULT_ADMIN_USER.watchlist || []
+    };
+  }
+
+  // 3. Direct fallback for default demo analyst
+  if (cleanEmail === DEFAULT_DEMO_USER.email && cleanPass === DEFAULT_DEMO_USER.password) {
+    return {
+      name: DEFAULT_DEMO_USER.name,
+      org: DEFAULT_DEMO_USER.org,
+      email: DEFAULT_DEMO_USER.email,
+      role: 'ANALYST',
+      theme: DEFAULT_DEMO_USER.theme || 'dark',
+      watchlist: DEFAULT_DEMO_USER.watchlist || []
     };
   }
 
@@ -373,6 +372,33 @@ async function saveUserWatchlist(email, watchlistArray) {
   const user = fallbackStore.users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail);
   if (user) {
     user.watchlist = watchlistArray;
+  }
+  return true;
+}
+
+/**
+ * Save / Update user theme preference in MongoDB Atlas
+ */
+async function updateUserTheme(email, theme) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (!cleanEmail) return false;
+  const cleanTheme = theme === 'bright' ? 'bright' : 'dark';
+
+  if (isConnected && db) {
+    try {
+      await db.collection('users').updateOne(
+        { email: cleanEmail },
+        { $set: { theme: cleanTheme, updatedAt: new Date().toISOString() } }
+      );
+      return true;
+    } catch (e) {
+      console.error('[DB] User Theme Save Error:', e.message);
+    }
+  }
+
+  const user = fallbackStore.users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+  if (user) {
+    user.theme = cleanTheme;
   }
   return true;
 }
@@ -505,6 +531,7 @@ module.exports = {
   getPremiumRequests,
   getUserWatchlist,
   saveUserWatchlist,
+  updateUserTheme,
   saveUserPortfolio,
   getUserPortfolio,
   clearUserPortfolio,

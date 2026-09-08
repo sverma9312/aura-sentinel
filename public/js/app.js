@@ -802,10 +802,22 @@
 
       // Update in users database
       const users = getUsers();
-      const uIdx = users.findIndex(u => u.email === state.currentUser.email);
+      const uIdx = users.findIndex(u => (u.email || '').toLowerCase() === (state.currentUser.email || '').toLowerCase());
       if (uIdx > -1) {
         users[uIdx].theme = themeName;
         localStorage.setItem('aura_sentinel_users', JSON.stringify(users));
+      }
+
+      // Persist theme preference to MongoDB Atlas cloud database
+      if (state.currentUser.email) {
+        fetch('/api/auth/theme', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': state.currentUser.email
+          },
+          body: JSON.stringify({ email: state.currentUser.email, theme: themeName })
+        }).catch(e => console.warn('[Theme] Cloud sync notice:', e));
       }
     }
 
