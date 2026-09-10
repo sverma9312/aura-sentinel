@@ -1031,10 +1031,10 @@
 
   function setLoadingState(loading, isManual = false) {
     if (loading) {
-      if (isManual) {
-        if (el.ledLive) el.ledLive.classList.remove('active');
-        if (el.ledBusy) el.ledBusy.classList.add('active');
-        if (el.btnForceRefresh) el.btnForceRefresh.classList.add('depressed');
+      if (el.ledLive) el.ledLive.classList.remove('active');
+      if (el.ledBusy) el.ledBusy.classList.add('active');
+      if (isManual && el.btnForceRefresh) {
+        el.btnForceRefresh.classList.add('depressed');
       }
     } else {
       if (el.ledLive) el.ledLive.classList.add('active');
@@ -1103,6 +1103,15 @@
     if (state.nextRefresh) {
       const d = new Date(state.nextRefresh);
       el.nextRefreshLabel.textContent = `NEXT: ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+      const now = new Date().getTime();
+      const target = d.getTime();
+      const diffMs = Math.max(0, target - now);
+      const totalSec = Math.floor(diffMs / 1000);
+      const minutes = Math.floor(totalSec / 60);
+      const seconds = totalSec % 60;
+      if (el.timerMinutes) el.timerMinutes.textContent = String(minutes).padStart(2, '0');
+      if (el.timerSeconds) el.timerSeconds.textContent = String(seconds).padStart(2, '0');
     }
 
     el.statArticles.textContent = state.macroOverview.totalArticlesAnalyzed || '--';
