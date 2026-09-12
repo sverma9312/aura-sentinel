@@ -543,7 +543,7 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // API Route: Get Saved Portfolio from Cloud Database
+  // API Route: Get Saved Portfolio from Cloud Database (with automatic live exchange repricing)
   if (pathname === '/api/portfolio/saved' && req.method === 'GET') {
     try {
       const requesterEmail = req.headers['x-user-email'];
@@ -552,9 +552,60 @@ const server = http.createServer(async (req, res) => {
       }
 
       const savedPortfolio = await dbService.getUserPortfolio(requesterEmail);
+      if (!savedPortfolio) {
+        return sendJson(res, 200, { success: true, portfolio: null });
+      }
+
+      // Automatically reprice with live exchange CMP unless explicitly disabled
+      const shouldRefresh = parsedUrl.query.refresh !== 'false';
+      let finalPortfolio = savedPortfolio;
+
+      if (shouldRefresh && savedPortfolio.stocks && savedPortfolio.stocks.length > 0) {
+        try {
+          const region = parsedUrl.query.region || 'india';
+          finalPortfolio = await portfolioService.repricePortfolioLive(savedPortfolio, region);
+          // Persist updated prices in background
+          dbService.saveUserPortfolio(requesterEmail, finalPortfolio).catch(e => console.warn('[DB] Portfolio live save async warning:', e.message));
+        } catch (repriceErr) {
+          console.warn('[Portfolio] Reprice warning, returning existing snapshot:', repriceErr.message);
+          finalPortfolio = savedPortfolio;
+        }
+      }
+
       return sendJson(res, 200, {
         success: true,
-        portfolio: savedPortfolio
+        portfolio: finalPortfolio
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: Live Reprice Active Portfolio on Demand
+  if (pathname === '/api/portfolio/refresh-live' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const body = await readJsonBody(req);
+      const portfolioData = body.portfolio || body.analysis;
+      const region = body.region || 'india';
+
+      let repriced = null;
+      if (portfolioData) {
+        repriced = await portfolioService.repricePortfolioLive(portfolioData, region);
+      } else if (requesterEmail) {
+        const saved = await dbService.getUserPortfolio(requesterEmail);
+        if (saved) {
+          repriced = await portfolioService.repricePortfolioLive(saved, region);
+        }
+      }
+
+      if (repriced && requesterEmail) {
+        dbService.saveUserPortfolio(requesterEmail, repriced).catch(e => console.warn('[DB] Live refresh save warning:', e.message));
+      }
+
+      return sendJson(res, 200, {
+        success: true,
+        portfolio: repriced
       });
     } catch (err) {
       return sendJson(res, 500, { success: false, error: err.message });

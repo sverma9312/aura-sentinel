@@ -615,16 +615,16 @@ async function analyzePortfolio(holdings, region = 'india') {
     }
 
     // Price Resolution Priority:
-    // 1. Broker Reported Statement / API Closing Price (Ground Truth)
-    // 2. Live Market Quote from Exchange
+    // 1. Live Market Quote from Exchange (Real-time CMP)
+    // 2. Broker Reported Statement / API Closing Price
     // 3. Cost Basis / Buy Price (Fallback)
     const statementPrice = Number(item.closingPrice || 0);
     let currentPrice = statementPrice > 0 ? statementPrice : (item.buyPrice || 100);
 
-    if (statementPrice > 0) {
-      currentPrice = statementPrice;
-    } else if (quote && quote.regularMarketPrice > 0 && !quote.isSynthetic) {
+    if (quote && quote.regularMarketPrice > 0 && !quote.isSynthetic) {
       currentPrice = quote.regularMarketPrice;
+    } else if (statementPrice > 0) {
+      currentPrice = statementPrice;
     }
 
     const qty = item.quantity || 1;
@@ -781,19 +781,48 @@ async function analyzePortfolio(holdings, region = 'india') {
   return {
     summary: {
       totalHoldingsCount: analyzedStocks.length,
-      totalInvested: Math.round(totalInvested),
-      totalCurrentValue: Math.round(totalCurrentValue),
+      totalInvested: Math.round(totalInvested * 100) / 100,
+      totalCurrentValue: Math.round(totalCurrentValue * 100) / 100,
       totalPnl,
       totalPnlPct,
       macroResilienceScore: Math.min(100, Math.max(10, avgHealth)),
       resilienceRating: avgHealth >= 85 ? 'AAA DEFENSIVE & COMPOUNDING' : avgHealth >= 70 ? 'AA BALANCED ALPHA' : 'BBB CYCLICAL VULNERABILITY',
       currency: region === 'india' ? '₹' : '$',
-      analyzedAt: new Date().toISOString()
+      analyzedAt: new Date().toISOString(),
+      lastLivePriceSync: new Date().toISOString()
     },
     stocks: analyzedStocks.sort((a, b) => b.currentValue - a.currentValue),
     sectorBreakdown,
     warnings
   };
+}
+
+/**
+ * Reprice an existing analyzed portfolio with latest live exchange market prices (CMP)
+ */
+async function repricePortfolioLive(portfolio, region = 'india') {
+  if (!portfolio) return null;
+
+  if (Array.isArray(portfolio)) {
+    return analyzePortfolio(portfolio, region);
+  }
+
+  const rawList = portfolio.stocks || [];
+  if (!Array.isArray(rawList) || rawList.length === 0) {
+    return portfolio;
+  }
+
+  const holdings = rawList.map(s => ({
+    symbol: s.fullSymbol || s.symbol,
+    quantity: s.quantity,
+    buyPrice: s.buyPrice,
+    closingPrice: s.currentPrice,
+    companyName: s.companyName,
+    isin: s.isin,
+    exchange: s.exchange || 'NSE'
+  }));
+
+  return analyzePortfolio(holdings, region);
 }
 
 module.exports = {
@@ -805,5 +834,6 @@ module.exports = {
   fetchFyersHoldings,
   parseHoldingsCsv,
   getSampleHoldings,
-  analyzePortfolio
+  analyzePortfolio,
+  repricePortfolioLive
 };

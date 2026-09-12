@@ -3052,6 +3052,10 @@
 
     if (tabId === 'tab-portfolio') {
       renderPortfolioTab();
+      // Auto-fetch latest live CMP quotes every time the user opens the Analyze Portfolio tab
+      if (state.currentUser && state.currentUser.email) {
+        loadSavedCloudPortfolio(state.currentUser.email, true);
+      }
     }
 
     if (tabId === 'tab-admin') {
@@ -3098,10 +3102,12 @@
     }
   }
 
-  async function loadSavedCloudPortfolio(email) {
+  async function loadSavedCloudPortfolio(email, refresh = false) {
     if (!email) return;
     try {
-      const res = await fetch('/api/portfolio/saved', {
+      const region = state.currentRegion || 'india';
+      const url = `/api/portfolio/saved?refresh=${refresh ? 'true' : 'false'}&region=${region}`;
+      const res = await fetch(url, {
         headers: { 'x-user-email': email }
       });
       const data = await res.json();
@@ -3292,6 +3298,14 @@
 
     if (valResilience) valResilience.textContent = `${summary.macroResilienceScore}/100`;
     if (badgeRating) badgeRating.textContent = summary.resilienceRating;
+
+    // Live Sync Indicator
+    const livePill = document.getElementById('portfolio-live-sync-pill');
+    if (livePill) {
+      const syncTs = summary.lastLivePriceSync || summary.analyzedAt || new Date().toISOString();
+      const dt = new Date(syncTs);
+      livePill.innerHTML = `<span>🟢</span> <span>LIVE CMP SYNCED (${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })})</span>`;
+    }
 
     // Warnings
     const warnContainer = document.getElementById('portfolio-warnings-container');

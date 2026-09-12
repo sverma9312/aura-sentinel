@@ -646,9 +646,14 @@
 
             <!-- Individual Stock Diagnostics Grid & Table -->
             <div class="portfolio-section-chassis" style="margin-top: 16px;">
-              <div class="portfolio-chassis-header">
-                <div class="chassis-title">🔬 STOCK-BY-STOCK MACRO SUITABILITY & SENTINEL HEALTH</div>
-                <div class="chassis-subtitle">Individual equity analysis, earnings drivers, portfolio weight, and risk verdicts</div>
+              <div class="portfolio-chassis-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <div class="chassis-title">🔬 STOCK-BY-STOCK MACRO SUITABILITY & SENTINEL HEALTH</div>
+                  <div class="chassis-subtitle">Individual equity analysis, earnings drivers, portfolio weight, and risk verdicts</div>
+                </div>
+                <div id="portfolio-live-sync-pill" class="pill" style="font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; color: var(--phosphor-green); background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                  <span>🟢</span> <span>LIVE CMP SYNCED</span>
+                </div>
               </div>
               <div id="portfolio-stocks-container" class="portfolio-stocks-grid"></div>
             </div>
