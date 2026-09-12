@@ -581,9 +581,13 @@ async function analyzePortfolio(holdings, region = 'india') {
   // ISIN to Ticker & Name mapping dictionary
   const isinMap = {
     'INE802G01018': { symbol: 'JETAIRWAYS', name: 'Jet Airways (India) Ltd', ticker: 'JETAIRWAYS.NS' },
+    'JETAIRWAYS': { symbol: 'JETAIRWAYS', name: 'Jet Airways (India) Ltd', ticker: 'JETAIRWAYS.NS' },
     'INE034L01014': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
     'ARCFIN': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
     'ARCFINANCE': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
+    'ARC FINANCE': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
+    '540135': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
+    '540135.BO': { symbol: 'ARCFIN', name: 'ARC Finance Limited', ticker: '540135.BO' },
     'INE251H01024': { symbol: 'GVKPIL', name: 'GVK Power & Infra Ltd', ticker: 'GVKPIL.NS' },
     'INE251H01016': { symbol: 'GVKPIL', name: 'GVK Power & Infra Ltd', ticker: 'GVKPIL.NS' },
     'GVKPIL': { symbol: 'GVKPIL', name: 'GVK Power & Infra Ltd', ticker: 'GVKPIL.NS' }
@@ -813,7 +817,7 @@ async function repricePortfolioLive(portfolio, region = 'india') {
   }
 
   const holdings = rawList.map(s => ({
-    symbol: s.fullSymbol || s.symbol,
+    symbol: s.symbol || s.fullSymbol,
     quantity: s.quantity,
     buyPrice: s.buyPrice,
     closingPrice: s.currentPrice,
