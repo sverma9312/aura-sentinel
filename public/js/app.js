@@ -3678,8 +3678,8 @@
     },
     {
       selector: '.tab-portfolio',
-      title: '7. Analyze My Portfolio & Broker Sync',
-      desc: 'Synchronize your Groww, Zerodha, Upstox accounts or upload CSV to evaluate full portfolio macro health scores, risk concentration, and real-time P&L.',
+      title: '7. Analyze Portfolio & AI Assistant',
+      desc: 'Sync Groww, Zerodha, Upstox accounts or upload CSV to evaluate macro health scores, risk concentration, real-time P&L, and query the built-in AI Assistant for stock forecasts, turnaround catalysts & sector guidance.',
       icon: '💼',
       tab: 'tab-portfolio'
     },
