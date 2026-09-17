@@ -25,7 +25,7 @@ const PRIMARY_MODELS = [
  */
 function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
   return new Promise((resolve, reject) => {
-    const rawKey = process.env.GEMINI_API_KEY;
+    const rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY;
     const apiKey = (rawKey || '').trim();
     if (!apiKey || apiKey === 'PASTE_YOUR_KEY_HERE') {
       return reject(new Error('GEMINI_API_KEY not configured in environment'));
@@ -45,15 +45,24 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
     };
 
     const body = JSON.stringify(payload);
+    const headers = {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(body)
+    };
+
+    let path = `/v1beta/models/${model}:generateContent`;
+    if (apiKey.startsWith('AQ.') || apiKey.startsWith('ya29.')) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    } else {
+      headers['x-goog-api-key'] = apiKey;
+      path += `?key=${apiKey}`;
+    }
+
     const options = {
       hostname: GEMINI_API_HOST,
-      path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      path,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
-        'Content-Length': Buffer.byteLength(body)
-      }
+      headers
     };
 
     const req = https.request(options, (res) => {
@@ -62,8 +71,9 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          if (parsed.error) {
-            return reject(new Error(`Gemini API error (${model}): ${parsed.error.message}`));
+          if (res.statusCode >= 400 || parsed.error) {
+            const errMsg = parsed.error ? parsed.error.message : `HTTP ${res.statusCode}`;
+            return reject(new Error(`Gemini API error (${model}, HTTP ${res.statusCode}): ${errMsg}`));
           }
           const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (!text) {
@@ -71,7 +81,7 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
           }
           resolve(text.trim());
         } catch (e) {
-          reject(new Error(`Failed to parse Gemini response: ${e.message}`));
+          reject(new Error(`Failed to parse Gemini response (${res.statusCode}): ${e.message}`));
         }
       });
     });

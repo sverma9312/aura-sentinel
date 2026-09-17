@@ -15,7 +15,7 @@ const GEMINI_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-2.
  */
 function callGeminiSingleModel(prompt, model = 'gemini-1.5-flash') {
   return new Promise((resolve, reject) => {
-    const rawKey = process.env.GEMINI_API_KEY;
+    const rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY;
     const apiKey = (rawKey || '').trim();
 
     if (!apiKey || apiKey === 'PASTE_YOUR_KEY_HERE') {
@@ -35,15 +35,24 @@ function callGeminiSingleModel(prompt, model = 'gemini-1.5-flash') {
       }
     });
 
+    const headers = {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(body)
+    };
+
+    let path = `/v1beta/models/${model}:generateContent`;
+    if (apiKey.startsWith('AQ.') || apiKey.startsWith('ya29.')) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    } else {
+      headers['x-goog-api-key'] = apiKey;
+      path += `?key=${apiKey}`;
+    }
+
     const options = {
       hostname: GEMINI_API_URL,
-      path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      path,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
-        'Content-Length': Buffer.byteLength(body)
-      }
+      headers
     };
 
     const req = https.request(options, (res) => {
