@@ -129,6 +129,22 @@ class MacroEngine {
   }
 
   /**
+   * Fast synchronous accessor for cached macroOverview of a region ('india' or 'global')
+   */
+  getOverview(region = 'india') {
+    const reg = region === 'global' ? 'global' : 'india';
+    return this.caches[reg]?.macroOverview || null;
+  }
+
+  /**
+   * Fast synchronous accessor for entire cached market snapshot of a region
+   */
+  getSnapshot(region = 'india') {
+    const reg = region === 'global' ? 'global' : 'india';
+    return this.caches[reg] || null;
+  }
+
+  /**
    * Initializes or gets cached intelligence for specific region ('india' or 'global').
    */
   async getOrUpdateData(region = 'india', forceRefresh = false) {

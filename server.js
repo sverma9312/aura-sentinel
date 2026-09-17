@@ -631,7 +631,9 @@ const server = http.createServer(async (req, res) => {
       }
 
       // 2. Resolve Active Macro Overview
-      const macroOverview = macroEngine.getOverview(region);
+      const macroOverview = typeof macroEngine.getOverview === 'function'
+        ? macroEngine.getOverview(region)
+        : (macroEngine.caches?.[region]?.macroOverview || null);
 
       // 3. Dispatch to LLM & RAG Chatbot Service
       const chatResult = await portfolioChatbot.handlePortfolioChatMessage({
