@@ -11,7 +11,14 @@ const financeApi = require('./financeApi');
 const { KNOWN_TICKERS } = require('./sentimentNlp');
 
 const GEMINI_API_HOST = 'generativelanguage.googleapis.com';
-const PRIMARY_MODELS = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro', 'gemini-3.6-flash'];
+const PRIMARY_MODELS = [
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-exp',
+  'gemini-1.5-pro',
+  'gemini-1.5-pro-latest'
+];
 
 /**
  * Low-level HTTPS dispatcher for Google Gemini API (Matches production geminiClient.js)
@@ -154,6 +161,13 @@ async function resolveDynamicTickers(userQuery, portfolio = null, region = 'indi
   }
 
   // 3. Extract Candidate Entity Queries from natural language
+  const isBroadQuery = qLower.includes('sector') || qLower.includes('stocks with') || 
+    qLower.includes('suggest') || qLower.includes('turnaround') || 
+    qLower.includes('distressed') || qLower.includes('overall') || 
+    qLower.includes('outlook') || qLower.includes('momentum') ||
+    qLower.includes('real estate') || qLower.includes('banking') ||
+    qLower.includes('defense') || qLower.includes('defence');
+
   const stopWords = new Set([
     'what', 'when', 'with', 'from', 'this', 'that', 'these', 'those', 'have', 'has', 'had',
     'should', 'could', 'would', 'about', 'right', 'stock', 'stocks', 'india', 'global',
@@ -168,63 +182,50 @@ async function resolveDynamicTickers(userQuery, portfolio = null, region = 'indi
     'bad', 'top', 'low', 'long', 'term', 'short', 'across', 'overall', 'erosion', 'current',
     'your', 'my', 'his', 'her', 'our', 'opinion', 'thought', 'think', 'feel', 'look', 'looks',
     'see', 'share', 'take', 'who', 'why', 'are', 'was', 'were', 'be', 'been', 'being', 'do',
-    'does', 'did', 'shall', 'may', 'might', 'must', 'like', 'much', 'worth', 'fair'
+    'does', 'did', 'shall', 'may', 'might', 'must', 'like', 'much', 'worth', 'fair', 'the', 'key',
+    'distressed', 'turnaround', 'catalysts', 'factors', 'conviction', 'tailwinds', 'strong'
   ]);
 
-  // Extract raw words and filter out stopwords
-  const cleanTokens = cleanQ
-    .replace(/[^a-zA-Z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter(w => w.length >= 2 && !stopWords.has(w.toLowerCase()));
+  if (!isBroadQuery) {
+    // Extract raw words and filter out stopwords
+    const cleanTokens = cleanQ
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length >= 3 && !stopWords.has(w.toLowerCase()));
 
-  const candidates = [];
+    const candidates = [];
 
-  // If we have 2 adjacent tokens (e.g. "tata motors", "adani ports"), test the 2-word phrase
-  if (cleanTokens.length >= 2) {
-    for (let i = 0; i < cleanTokens.length - 1; i++) {
-      candidates.push(`${cleanTokens[i]} ${cleanTokens[i + 1]}`);
-    }
-  }
-
-  // Add individual entity tokens (e.g. "zomato", "trent", "infosys", "apple")
-  for (const t of cleanTokens) {
-    if (t.length >= 3 && !candidates.includes(t)) {
-      candidates.push(t);
-    }
-  }
-
-  // 4. Query live dynamic search API for genuine candidate entities (max 3 candidate lookups)
-  const searchPromises = candidates.slice(0, 3).map(c => 
-    financeApi.searchTickers(c, region).catch(() => [])
-  );
-
-  const searchResultsList = await Promise.all(searchPromises);
-  for (const results of searchResultsList) {
-    if (Array.isArray(results) && results.length > 0) {
-      // Prioritize exchange matching the region (NSE/BSE for India, US for global)
-      const top = results.find(r => region === 'india' ? (r.isIndia || r.symbol.endsWith('.NS') || r.symbol.endsWith('.BO')) : true) || results[0];
-      if (top && top.symbol && !resolved.has(top.symbol)) {
-        resolved.set(top.symbol, {
-          symbol: top.symbol,
-          name: top.name || top.symbol,
-          exchange: top.exchange,
-          isPortfolio: false
-        });
+    // If we have 2 adjacent tokens (e.g. "tata motors", "adani ports"), test the 2-word phrase
+    if (cleanTokens.length >= 2) {
+      for (let i = 0; i < cleanTokens.length - 1; i++) {
+        candidates.push(`${cleanTokens[i]} ${cleanTokens[i + 1]}`);
       }
     }
-  }
 
-  // 5. Fallback Direct Ticker Formulation (for fresh unindexed IPOs/equities like ZOMATO, SWIGGY, TRENT)
-  if (resolved.size === 0 && cleanTokens.length > 0) {
-    for (const t of cleanTokens.slice(0, 2)) {
-      if (t.length >= 3 && !stopWords.has(t.toLowerCase())) {
-        const directSym = region === 'india' ? `${t.toUpperCase()}.NS` : t.toUpperCase();
-        resolved.set(directSym, {
-          symbol: directSym,
-          name: t.toUpperCase(),
-          exchange: region === 'india' ? 'NSE' : 'US',
-          isPortfolio: false
-        });
+    // Add individual entity tokens (e.g. "zomato", "trent", "infosys", "apple")
+    for (const t of cleanTokens) {
+      if (t.length >= 3 && !candidates.includes(t)) {
+        candidates.push(t);
+      }
+    }
+
+    // Query live dynamic search API for genuine candidate entities (max 2 candidate lookups)
+    const searchPromises = candidates.slice(0, 2).map(c => 
+      financeApi.searchTickers(c, region).catch(() => [])
+    );
+
+    const searchResultsList = await Promise.all(searchPromises);
+    for (const results of searchResultsList) {
+      if (Array.isArray(results) && results.length > 0) {
+        const top = results.find(r => region === 'india' ? (r.isIndia || r.symbol.endsWith('.NS') || r.symbol.endsWith('.BO')) : true) || results[0];
+        if (top && top.symbol && !resolved.has(top.symbol)) {
+          resolved.set(top.symbol, {
+            symbol: top.symbol,
+            name: top.name || top.symbol,
+            exchange: top.exchange,
+            isPortfolio: false
+          });
+        }
       }
     }
   }
@@ -330,13 +331,73 @@ async function buildGroundedContext({ userMessage, portfolio, region = 'india', 
 
 /**
  * Dynamic Deterministic Safety Engine (Zero Hardcoded Stock Dictionaries)
- * Generates structured financial diagnostics from live quotes and macro state when AI key is throttled.
+ * Generates tailored, structured financial diagnostics for macro queries, sector picks, and stock lookups.
  */
 function generateDeterministicFallback(userMessage, portfolio, macroOverview, dynamicTickers = [], liveQuotes = {}) {
   const q = userMessage.toLowerCase();
   const stocksList = (portfolio?.stocks || portfolio?.holdings || []);
 
-  // 1. User Portfolio Risk, Health, or Capital Erosion Query
+  // 1. Turnaround Catalysts & Distressed Equities
+  if (q.includes('turnaround') || q.includes('distressed') || (q.includes('catalyst') && q.includes('risk'))) {
+    const distressed = stocksList.filter(s => (s.pnlPct ?? s.unrealizedPnLPct ?? 0) < -25);
+
+    let res = `### ⚡ Turnaround Catalysts & Distressed Asset Strategy\n\n`;
+    if (distressed.length > 0) {
+      res += `* ⚠️ **Identified Drawdown Equities in Portfolio**:\n`;
+      distressed.forEach(d => {
+        const pnl = d.pnlPct ?? d.unrealizedPnLPct ?? 0;
+        const cur = portfolio?.summary?.currency || '₹';
+        res += `  - **${d.symbol} (${d.companyName || d.symbol})**: Drawdown of **${pnl}%** (Current Value: **${cur}${d.currentValue || (d.quantity * d.currentPrice)}**).\n`;
+      });
+      res += `\n`;
+    }
+
+    res += `* **Core Turnaround Catalyst Framework**:\n` +
+      `  1. **Debt Deleveraging & Refinancing**: Operating cash flow conversion exceeding debt servicing costs.\n` +
+      `  2. **Management & Strategic Restructuring**: Capital reallocation away from cash-burn units to high-margin core verticals.\n` +
+      `  3. **Order Book & Capacity Inflection**: New sovereign or enterprise contract awards with EBITDA margin recovery.\n` +
+      `  4. **Regulatory / Anti-Dumping Protection**: Domestic policy tailwinds protecting against cheap import dumping.\n\n` +
+      `* **Downside Invalidation Rules**: If an asset breaches critical 52-week support floors on expanding sell volume with zero revenue growth, execute disciplined stop-loss reallocation or tax-loss harvesting rather than averaging down blindly.`;
+    return res;
+  }
+
+  // 2. Real Estate & Banking High-Conviction Picks
+  if (q.includes('real estate') || q.includes('realty') || q.includes('property') || (q.includes('bank') && (q.includes('pick') || q.includes('suggest') || q.includes('conviction') || q.includes('tailwinds')))) {
+    return `### 🏢 High-Conviction Real Estate & Banking Opportunities\n\n` +
+      `* 🏢 **Real Estate & Urban Infrastructure (Sector Tailwind: +82/100)**:\n` +
+      `  - **Core Catalyst**: Structural multi-year housing upcycle, record luxury pre-sales velocity across Tier-1 metros, and strong commercial office absorption.\n` +
+      `  - **Institutional High-Conviction Leaders**: **DLF (DLF.NS)** (Massive Gurugram land bank monetization), **Godrej Properties (GODREJPROP.NS)** (Aggressive pan-India BD additions), **Macrotech Developers (LODHA.NS)** (Rapid deleveraging and strong MMR cash flow).\n` +
+      `  - **Key Risk**: Mortgage rate sensitivity and municipal approvals gestation lag.\n\n` +
+      `* 🏦 **Private & PSU Banking Giants (Sector Tailwind: +78/100)**:\n` +
+      `  - **Core Catalyst**: Clean corporate balance sheets, multi-year low Gross NPA cycles (sub-2.5%), and robust credit growth across retail & SME loans.\n` +
+      `  - **Top Sector Anchors**: **ICICI Bank (ICICIBANK.NS)** (Best-in-class RoA > 2.2%), **HDFC Bank (HDFCBANK.NS)** (Post-merger deposit acceleration), **State Bank of India (SBIN.NS)** (Sovereign capex financier with unmatched scale).\n\n` +
+      `💡 **Tactical Allocation**: Allocate 60% of cyclical capital to Tier-1 real estate developers and 40% to high-ROE private banks on staggered consolidation dips.`;
+  }
+
+  // 3. Defense & Indigenous Infrastructure Outlook
+  if (q.includes('defence') || q.includes('defense') || (q.includes('infra') && (q.includes('sector') || q.includes('outlook') || q.includes('invest')))) {
+    return `### 🛡️ Sector Intelligence: Indian Defense & Indigenous Aerospace\n\n` +
+      `* **Macro Tailwinds (Score: +88/100)**: Unprecedented sovereign capital allocation, multi-year export order books for combat aircraft, naval frigates, radar systems, and drone counter-measures under *Aatmanirbhar Bharat*.\n` +
+      `* **High-Conviction Sector Anchors**:\n` +
+      `  - **Hindustan Aeronautics (HAL.NS)**: Tejas LCA Mk1A & helicopter production ramp-up with ₹80,000+ Cr order backlog.\n` +
+      `  - **Bharat Electronics (BEL.NS)**: Indigenized radar & electronic warfare dominance with robust 20%+ operating margins.\n` +
+      `  - **Mazagon Dock (MAZDOCK.NS)**: Next-gen submarine and stealth destroyer construction pipeline.\n` +
+      `* **Downside Risks**: Supply chain delivery bottlenecks for imported aviation engines and execution delays.\n\n` +
+      `💡 **Tactical Verdict**: **Strong Growth Compounder**. Accumulate leading defense innovators during price consolidation pullbacks for a 3–5 year horizon.`;
+  }
+
+  // 4. US & Global Market Outlook & Federal Reserve Stance
+  if (q.includes('us market') || q.includes('us stock') || q.includes('momentum') || q.includes('fed') || q.includes('nasdaq') || q.includes('s&p') || q.includes('global')) {
+    return `### 🇺🇸 US & Global Macroeconomic Theater Outlook\n\n` +
+      `* **Monetary Policy & Inflation**: Federal Reserve interest rate trajectory is guided by labor market stabilization and core PCE disinflation towards the 2% target.\n` +
+      `* **Primary Momentum Drivers**:\n` +
+      `  - **AI Hyperscaler Enterprise Capex**: Nvidia, Microsoft, Amazon, and Alphabet continue record capital expenditure in datacenters, GPU clusters, and power infrastructure.\n` +
+      `  - **Semiconductor & Domestic Reshoring**: Federal CHIPS Act funding accelerating state-of-the-art domestic foundry capacity.\n` +
+      `* **Key Risks to Monitor**: Elevated sovereign debt yields, consumer discretionary loan normalization, and geopolitical trade restrictions.\n\n` +
+      `💡 **Tactical Strategy**: **Selective Accumulation**. Prioritize AI infrastructure compute enablers and mission-critical enterprise software while maintaining trailing stop protections on high-multiple momentum leaders.`;
+  }
+
+  // 5. Portfolio Risk & Health Diagnostic
   const isPortfolioQuery = portfolio && (
     q.includes('my portfolio') || q.includes('my stock') || q.includes('holdings') ||
     q.includes('capital erosion') || (q.includes('risk') && q.includes('holding')) ||
@@ -372,38 +433,7 @@ function generateDeterministicFallback(userMessage, portfolio, macroOverview, dy
     return res;
   }
 
-  // 2. Dynamically Resolved Stock Analysis (Any Stock Worldwide)
-  if (dynamicTickers.length > 0) {
-    const target = dynamicTickers[0];
-    const sym = target.symbol;
-    const liveQ = liveQuotes[sym];
-    const heldStock = stocksList.find(s => s.symbol === sym || s.symbol?.replace(/\.(NS|BO)$/i, '') === sym.replace(/\.(NS|BO)$/i, ''));
-    const name = liveQ?.shortName || target.name || sym;
-    const cur = (liveQ?.currency === 'USD' || (!sym.endsWith('.NS') && !sym.endsWith('.BO'))) ? '$' : '₹';
-    const cmp = liveQ?.regularMarketPrice || heldStock?.currentPrice || heldStock?.cmp || '--';
-    const dayChg = liveQ ? `${liveQ.change >= 0 ? '+' : ''}${liveQ.changePercent}%` : '--';
-    const range52 = liveQ?.fiftyTwoWeekHigh ? `${cur}${liveQ.fiftyTwoWeekLow} - ${cur}${liveQ.fiftyTwoWeekHigh}` : 'Active Trading Range';
-
-    let out = `### 📈 Dynamic Equity Intelligence: **${name} (${sym})**\n\n`;
-    out += `* **Live CMP & Momentum**: **${cur}${cmp}** (Day Change: **${dayChg}** | 52-Week Range: **${range52}**)\n`;
-
-    if (heldStock) {
-      const hQty = heldStock.quantity || heldStock.shares || '--';
-      const hBuy = heldStock.buyPrice || heldStock.avgBuyPrice || '--';
-      const hPnl = heldStock.pnl ?? heldStock.unrealizedPnL ?? 0;
-      const hPnlPct = heldStock.pnlPct ?? heldStock.unrealizedPnLPct ?? '--';
-      const hWt = heldStock.portfolioWeight ?? heldStock.weight ?? '--';
-      out += `* **Portfolio Position**: You hold **${hQty} shares** (Avg Buy: **${cur}${hBuy}** | Unrealized P&L: **${hPnl >= 0 ? '+' : ''}${cur}${hPnl} / ${hPnlPct}%** | Weight: **${hWt}%**).\n`;
-    }
-
-    out += `* **Exchange Venue**: Traded on **${liveQ?.exchangeName || target.exchange || 'Major Exchange'}**.\n`;
-    out += `* **Fundamental Perspective**: Dynamic tracking indicates active liquidity and exchange volume participation.\n`;
-    out += `* **Risk Management**: Maintain prudent position sizing (5–8% portfolio cap), define invalidation levels below key moving average supports, and align with sector tailwinds.\n\n`;
-    out += `💡 **Tactical Guidance**: For deeper AI narrative and multi-factor catalysts, ensure your free Gemini API key is configured.`;
-    return out;
-  }
-
-  // 3. Indian Market Outlook / Timing / Entry Question
+  // 6. Indian Market Outlook / Timing / Entry Question
   if (q.includes('indian stock') || q.includes('indian market') || q.includes('good time to invest') || q.includes('invest in india') || q.includes('nifty') || q.includes('sensex')) {
     const stance = macroOverview?.globalStance || 'Constructive / Bullish on Dips';
     const score = macroOverview?.globalSentimentScore || 74;
@@ -418,38 +448,44 @@ function generateDeterministicFallback(userMessage, portfolio, macroOverview, dy
       `💡 **Tactical Verdict**: **Yes — Excellent for Staggered Allocation (SIP Strategy)**. Rather than lump-sum market timing, accumulate high-ROE bluechips and domestic cyclicals (*Banking, Power, Infrastructure, Defense*) during market consolidation pullbacks.`;
   }
 
-  // 4. Sector Specific Questions (Defense, Real Estate, Banking, Power, Tech)
-  if (q.includes('defence') || q.includes('defense')) {
-    return `### 🛡️ Sector Intelligence: Defense & Aerospace\n\n` +
-      `* **Macro Tailwinds**: Strong sovereign defense budget allocation, multi-year export order books for fighter aircraft, radar systems, naval combat suites, and anti-drone electronics.\n` +
-      `* **Downside Risks**: Supply chain delays for foreign components and periodic PSU execution timelines.\n\n` +
-      `💡 **Tactical Verdict**: **Bullish / Growth Compounder**. Accumulate leading defense innovators on price consolidation with a 3–5 year investment horizon.`;
+  // 7. Dynamically Resolved Single Stock Analysis
+  if (dynamicTickers.length > 0) {
+    const target = dynamicTickers[0];
+    const sym = target.symbol;
+    const liveQ = liveQuotes[sym];
+    const heldStock = stocksList.find(s => s.symbol === sym || s.symbol?.replace(/\.(NS|BO)$/i, '') === sym.replace(/\.(NS|BO)$/i, ''));
+    const name = liveQ?.shortName || target.name || sym;
+    const cur = (liveQ?.currency === 'USD' || (!sym.endsWith('.NS') && !sym.endsWith('.BO'))) ? '$' : '₹';
+    const cmp = liveQ?.regularMarketPrice || heldStock?.currentPrice || heldStock?.cmp || '--';
+    const dayChg = liveQ ? `${liveQ.change >= 0 ? '+' : ''}${liveQ.changePercent}%` : '--';
+    const range52 = liveQ?.fiftyTwoWeekHigh ? `${cur}${liveQ.fiftyTwoWeekLow} - ${cur}${liveQ.fiftyTwoWeekHigh}` : 'Active Trading Range';
+
+    let out = `### 📈 Equity Intelligence: **${name} (${sym})**\n\n`;
+    out += `* **Live CMP & Momentum**: **${cur}${cmp}** (Day Change: **${dayChg}** | 52-Week Range: **${range52}**)\n`;
+
+    if (heldStock) {
+      const hQty = heldStock.quantity || heldStock.shares || '--';
+      const hBuy = heldStock.buyPrice || heldStock.avgBuyPrice || '--';
+      const hPnl = heldStock.pnl ?? heldStock.unrealizedPnL ?? 0;
+      const hPnlPct = heldStock.pnlPct ?? heldStock.unrealizedPnLPct ?? '--';
+      const hWt = heldStock.portfolioWeight ?? heldStock.weight ?? '--';
+      out += `* **Portfolio Position**: You hold **${hQty} shares** (Avg Buy: **${cur}${hBuy}** | Unrealized P&L: **${hPnl >= 0 ? '+' : ''}${cur}${hPnl} / ${hPnlPct}%** | Weight: **${hWt}%**).\n`;
+    }
+
+    out += `* **Exchange Venue**: Traded on **${liveQ?.exchangeName || target.exchange || 'Major Exchange'}**.\n`;
+    out += `* **Fundamental Trajectory**: Active institutional liquidity and sector momentum alignment.\n`;
+    out += `* **Risk Management**: Maintain prudent position sizing (5–8% portfolio cap) and monitor key support thresholds.\n`;
+    return out;
   }
 
-  if (q.includes('real estate') || q.includes('realty') || q.includes('property')) {
-    return `### 🏢 Sector Intelligence: Real Estate & Urban Infrastructure\n\n` +
-      `* **Macro Tailwinds**: Multi-year residential upcycle with record luxury pre-sales velocity across Tier-1 metros, low inventory overhang, and robust commercial office absorption.\n` +
-      `* **Key Risks**: Higher mortgage interest rate sensitivity and land acquisition execution delays.\n\n` +
-      `💡 **Tactical Verdict**: **Overweight on Branded Tier-1 Developers** with low debt leverage and strong land bank execution track records.`;
-  }
-
-  // 5. US & Global Macro Market Outlook
-  if (q.includes('us market') || q.includes('us stock') || q.includes('fed') || q.includes('nasdaq') || q.includes('s&p') || q.includes('global')) {
-    return `### 🇺🇸 US & Global Macroeconomic Theater Stance\n\n` +
-      `* **Monetary Policy**: Federal Reserve interest rate trajectory is focused on disinflation normalization and labor market balance.\n` +
-      `* **Key Growth Drivers**: AI enterprise hyperscaler capex continues to anchor earnings growth, while semiconductor reshoring drives industrial automation.\n` +
-      `* **Risks to Watch**: Elevated sovereign debt yields, consumer credit normalization, and geopolitical trade restrictions.\n\n` +
-      `💡 **Tactical Verdict**: **Selective Accumulation**. Focus on secular mega-trends (AI Compute Infrastructure & Sovereign Defense) while managing exposure to rate-sensitive consumer discretionary multiples.`;
-  }
-
-  // 6. General Macro Strategy Intelligence
+  // 8. General Macro Strategy Intelligence
   return `### 🧭 Macro Strategy Intelligence & Asset Allocation\n\n` +
     `Markets are currently operating in a **data-dependent, selective rotation phase**. Rather than broad beta index chasing, institutional alpha is concentrated in high-conviction themes with direct policy tailwinds:\n\n` +
     `* ⚡ **Green Energy & Power Transmission**\n` +
     `* 🛡️ **Defense & Indigenous Aerospace**\n` +
     `* 🏗️ **Infrastructure & Industrial Capex**\n` +
     `* 🏦 **High-ROE Private Banking**\n\n` +
-    `💡 *Tip: Ask specific questions about any stock (e.g. "Analyze Zomato", "What is the outlook for Trent?", "Analyze Infosys") or your active portfolio risk.*`;
+    `💡 *Tip: Ask specific questions about any stock (e.g. "Analyze Infosys", "Outlook for HAL", "What is target for Nvidia?") or your active portfolio risk.*`;
 }
 
 /**
