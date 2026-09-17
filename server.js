@@ -14,6 +14,7 @@ const macroEngine = require('./services/macroEngine');
 const { searchTickers } = require('./services/financeApi');
 const dbService = require('./services/db');
 const portfolioService = require('./services/portfolioService');
+const portfolioChatbot = require('./services/portfolioChatbot');
 const emailService = require('./services/emailService');
 
 const PORT = process.env.PORT || 3000;
@@ -608,6 +609,45 @@ const server = http.createServer(async (req, res) => {
         portfolio: repriced
       });
     } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // API Route: AI Portfolio Copilot & Macro Strategy Chatbot (Free Tier Gemini Grounding)
+  if (pathname === '/api/portfolio/ai-chat' && req.method === 'POST') {
+    try {
+      const requesterEmail = req.headers['x-user-email'];
+      const body = await readJsonBody(req);
+      const { message, history, region = 'india', portfolio: bodyPortfolio } = body;
+
+      if (!message || !message.trim()) {
+        return sendJson(res, 400, { success: false, error: 'Query message is required.' });
+      }
+
+      // 1. Resolve Active Portfolio Context
+      let activePortfolio = bodyPortfolio || null;
+      if (!activePortfolio && requesterEmail) {
+        activePortfolio = await dbService.getUserPortfolio(requesterEmail);
+      }
+
+      // 2. Resolve Active Macro Overview
+      const macroOverview = macroEngine.getOverview(region);
+
+      // 3. Dispatch to LLM & RAG Chatbot Service
+      const chatResult = await portfolioChatbot.handlePortfolioChatMessage({
+        userMessage: message,
+        history: Array.isArray(history) ? history : [],
+        portfolio: activePortfolio,
+        region,
+        macroOverview
+      });
+
+      return sendJson(res, 200, {
+        success: true,
+        ...chatResult
+      });
+    } catch (err) {
+      console.error('[API] /api/portfolio/ai-chat error:', err);
       return sendJson(res, 500, { success: false, error: err.message });
     }
   }

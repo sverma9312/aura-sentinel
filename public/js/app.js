@@ -84,6 +84,7 @@
     selectedStock: null,
     watchlist: JSON.parse(localStorage.getItem('aura_sentinel_watchlist') || '[]'),
     currentPortfolioAnalysis: JSON.parse(localStorage.getItem('aura_sentinel_portfolio') || 'null'),
+    portfolioChatHistory: [],
     countdownInterval: null,
     isRefreshing: false,
     currentTourStep: 0
@@ -216,6 +217,8 @@
       await fetchAllIntelligence();
       startCountdownEngine();
     }
+
+    initPortfolioChat();
   }
 
   // =========================================================================
@@ -3400,6 +3403,175 @@
         });
       });
     }
+  }
+
+  // =========================================================================
+  // AI PORTFOLIO COPILOT & MACRO CHATBOT CLIENT
+  // =========================================================================
+  function formatChatMarkdown(raw) {
+    if (!raw) return '';
+    let html = escapeHtml(raw);
+
+    // Bold **text**
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italic *text*
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Headers ### Title
+    html = html.replace(/^### (.*$)/gim, '<h4>$1</h4>');
+    html = html.replace(/^## (.*$)/gim, '<h3>$1</h3>');
+
+    // Bullet points * or -
+    html = html.replace(/^\s*[\*\-]\s+(.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gis, '<ul>$1</ul>');
+
+    // Paragraph breaks
+    html = html.replace(/\n\n/g, '<br><br>');
+    html = html.replace(/\n/g, '<br>');
+
+    return html;
+  }
+
+  function initPortfolioChat() {
+    const chatForm = document.getElementById('portfolio-chat-form');
+    const chatInput = document.getElementById('portfolio-chat-input');
+    const chatStream = document.getElementById('portfolio-chat-stream');
+    const btnSend = document.getElementById('btn-portfolio-chat-send');
+    const btnClear = document.getElementById('btn-portfolio-chat-clear');
+    const suggestionsBox = document.getElementById('portfolio-chat-suggestions');
+
+    if (!chatForm || !chatInput || !chatStream) return;
+
+    // Quick suggestion chips handler
+    if (suggestionsBox) {
+      suggestionsBox.querySelectorAll('.chat-chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const q = btn.getAttribute('data-query');
+          if (q) {
+            if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+            chatInput.value = q;
+            chatForm.dispatchEvent(new Event('submit'));
+          }
+        });
+      });
+    }
+
+    // Clear Chat History
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+        state.portfolioChatHistory = [];
+        chatStream.innerHTML = `
+          <div class="chat-msg chat-msg-bot">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-bubble">
+              <div class="chat-bubble-header">
+                <span class="author">AURA SENTINEL AI COPILOT</span>
+                <span class="badge-pill">ACTIVE INTEL</span>
+              </div>
+              <div class="chat-bubble-body">
+                Conversation reset. How may I assist your portfolio diagnostics or market strategy today?
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Submit Chat Query
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = (chatInput.value || '').trim();
+      if (!message) return;
+
+      chatInput.value = '';
+      if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+
+      // Append User Message to Stream
+      const userMsgDiv = document.createElement('div');
+      userMsgDiv.className = 'chat-msg chat-msg-user';
+      userMsgDiv.innerHTML = `
+        <div class="chat-avatar">👤</div>
+        <div class="chat-bubble">
+          <div class="chat-bubble-header">
+            <span class="author">${escapeHtml(state.currentUser?.name || 'ANALYST')}</span>
+            <span class="badge-pill">TRANSMITTED</span>
+          </div>
+          <div class="chat-bubble-body">${escapeHtml(message)}</div>
+        </div>
+      `;
+      chatStream.appendChild(userMsgDiv);
+
+      // Append Typing Pulse Indicator
+      const botMsgDiv = document.createElement('div');
+      botMsgDiv.className = 'chat-msg chat-msg-bot';
+      botMsgDiv.innerHTML = `
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-bubble">
+          <div class="chat-bubble-header">
+            <span class="author">AURA SENTINEL AI COPILOT</span>
+            <span class="badge-pill">SYNTHESIZING...</span>
+          </div>
+          <div class="chat-bubble-body">
+            <div class="typing-pulse-indicator">
+              <span>🧠 Gemini Neural Engine Analyzing Trajectories</span>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      chatStream.appendChild(botMsgDiv);
+      chatStream.scrollTop = chatStream.scrollHeight;
+
+      if (btnSend) btnSend.disabled = true;
+
+      try {
+        const res = await fetch('/api/portfolio/ai-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': state.currentUser?.email || ''
+          },
+          body: JSON.stringify({
+            message,
+            history: state.portfolioChatHistory,
+            region: state.currentRegion || 'india',
+            portfolio: state.currentPortfolioAnalysis
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.reply) {
+          if (window.tactileAudio) window.tactileAudio.playRelaySnap();
+
+          // Update Bot Bubble with Answer
+          const bubbleBody = botMsgDiv.querySelector('.chat-bubble-body');
+          const badgePill = botMsgDiv.querySelector('.badge-pill');
+          if (bubbleBody) bubbleBody.innerHTML = formatChatMarkdown(data.reply);
+          if (badgePill) badgePill.textContent = data.isFallback ? 'DETERMINISTIC INTEL' : 'AI SYNTHESIS';
+
+          // Record in multi-turn history
+          state.portfolioChatHistory.push({ role: 'user', text: message });
+          state.portfolioChatHistory.push({ role: 'model', text: data.reply });
+        } else {
+          const bubbleBody = botMsgDiv.querySelector('.chat-bubble-body');
+          if (bubbleBody) {
+            bubbleBody.innerHTML = `⚠️ <em>Unable to complete synthesis: ${escapeHtml(data.error || 'Server dispatch failed')}</em>`;
+          }
+        }
+      } catch (err) {
+        const bubbleBody = botMsgDiv.querySelector('.chat-bubble-body');
+        if (bubbleBody) {
+          bubbleBody.innerHTML = `⚠️ <em>Network communication error. Please try again.</em>`;
+        }
+      } finally {
+        if (btnSend) btnSend.disabled = false;
+        chatStream.scrollTop = chatStream.scrollHeight;
+      }
+    });
   }
 
   // =========================================================================
