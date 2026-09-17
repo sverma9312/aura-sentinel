@@ -80,7 +80,7 @@ function callGeminiSingleModel(prompt, model = 'gemini-1.5-flash') {
       reject(new Error(`Gemini network error: ${err.message}`));
     });
 
-    req.setTimeout(25000, () => {
+    req.setTimeout(45000, () => {
       req.destroy();
       reject(new Error(`Gemini request timed out on model ${model}`));
     });

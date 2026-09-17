@@ -75,9 +75,9 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
     });
 
     req.on('error', err => reject(new Error(`[${model} Network Error]: ${err.message}`)));
-    req.setTimeout(25000, () => {
+    req.setTimeout(45000, () => {
       req.destroy();
-      reject(new Error(`[${model} Timeout 25s]`));
+      reject(new Error(`[${model} Timeout 45s]`));
     });
 
     req.write(body);
