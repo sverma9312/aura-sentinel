@@ -25,7 +25,8 @@ const PRIMARY_MODELS = [
  */
 function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
   return new Promise((resolve, reject) => {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const rawKey = process.env.GEMINI_API_KEY;
+    const apiKey = (rawKey || '').trim();
     if (!apiKey || apiKey === 'PASTE_YOUR_KEY_HERE') {
       return reject(new Error('GEMINI_API_KEY not configured in environment'));
     }
@@ -50,6 +51,7 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
         'Content-Length': Buffer.byteLength(body)
       }
     };

@@ -8,7 +8,7 @@
 const https = require('https');
 
 const GEMINI_API_URL = 'generativelanguage.googleapis.com';
-const GEMINI_MODEL = 'gemini-3.6-flash'; // Google Gemini 3.6 Flash model
+const GEMINI_MODEL = 'gemini-1.5-flash'; // Google Gemini 1.5 Flash model
 
 /**
  * Makes a POST request to Gemini API.
@@ -17,7 +17,8 @@ const GEMINI_MODEL = 'gemini-3.6-flash'; // Google Gemini 3.6 Flash model
  */
 function callGeminiApi(prompt) {
   return new Promise((resolve, reject) => {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const rawKey = process.env.GEMINI_API_KEY;
+    const apiKey = (rawKey || '').trim();
 
     if (!apiKey || apiKey === 'PASTE_YOUR_KEY_HERE') {
       return reject(new Error('GEMINI_API_KEY not configured in .env file'));
@@ -42,6 +43,7 @@ function callGeminiApi(prompt) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
         'Content-Length': Buffer.byteLength(body)
       }
     };
