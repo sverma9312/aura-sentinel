@@ -13,10 +13,7 @@ const { KNOWN_TICKERS } = require('./sentimentNlp');
 const GEMINI_API_HOST = 'generativelanguage.googleapis.com';
 const PRIMARY_MODELS = [
   'gemini-3.6-flash',
-  'gemini-3.8-flash',
-  'gemini-3.1-flash',
-  'gemini-2.5-flash',
-  'gemini-2.0-flash'
+  'gemini-3.8-flash'
 ];
 
 /**

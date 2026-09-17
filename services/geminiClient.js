@@ -10,10 +10,7 @@ const https = require('https');
 const GEMINI_API_URL = 'generativelanguage.googleapis.com';
 const GEMINI_MODELS = [
   'gemini-3.6-flash',
-  'gemini-3.8-flash',
-  'gemini-3.1-flash',
-  'gemini-2.5-flash',
-  'gemini-2.0-flash'
+  'gemini-3.8-flash'
 ];
 
 /**
