@@ -657,58 +657,70 @@
               </div>
               <div id="portfolio-stocks-container" class="portfolio-stocks-grid"></div>
             </div>
+          </div>
 
-            <!-- Section 4: AI Assistant & Strategy Advisor -->
-            <div id="portfolio-chat-backdrop" class="portfolio-chat-backdrop"></div>
-            <div class="portfolio-section-chassis portfolio-ai-chat-chassis" id="portfolio-ai-chat-chassis" style="margin-top: 20px;">
-              <div class="portfolio-chassis-header chat-chassis-header-centered">
-                <div class="chat-header-center-block">
-                  <div class="chat-main-ai-title">
-                    <span class="chat-ai-icon">🤖</span>
-                    <span class="chat-ai-title-text">AI ASSISTANT</span>
+          <!-- Section 4: AI Assistant & Strategy Advisor (Always accessible to Premium users) -->
+          <div id="portfolio-chat-backdrop" class="portfolio-chat-backdrop"></div>
+          <div class="portfolio-section-chassis portfolio-ai-chat-chassis" id="portfolio-ai-chat-chassis" style="margin-top: 20px;">
+            <div class="portfolio-chassis-header chat-chassis-header-centered">
+              <div class="chat-header-center-block">
+                <div class="chat-main-ai-title">
+                  <span class="chat-ai-icon">🤖</span>
+                  <span class="chat-ai-title-text">AI ASSISTANT</span>
+                </div>
+                <div class="chassis-subtitle chat-chassis-subtitle-centered">Real-time conversational macro intelligence, stock forecasts, sector allocation, and portfolio queries</div>
+              </div>
+              <div class="chat-header-controls">
+                <button type="button" id="btn-portfolio-chat-clear-header" class="btn-chat-restart" title="Clear chat and restart conversation">
+                  <span class="restart-icon">🔄</span> <span>CLEAR & RESTART</span>
+                </button>
+                <button type="button" id="btn-portfolio-chat-maximize" class="btn-chat-maximize" title="Maximize chat window into popup mode">
+                  <span id="chat-maximize-icon">⛶</span> <span id="chat-maximize-label">MAXIMIZE</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Pre-Canned Tactical Query Pills -->
+            <div class="portfolio-chat-quick-queries">
+              <span class="quick-queries-label">⚡ QUICK QUERIES:</span>
+              <button type="button" class="quick-query-pill" data-query="Assess my current active portfolio risk and highlight any capital erosion dangers.">
+                <span>🛡️</span> <span>Assess portfolio risk</span>
+              </button>
+              <button type="button" class="quick-query-pill" data-query="How is the US and Global stock market momentum right now?">
+                <span>🇺🇸</span> <span>US Market Outlook</span>
+              </button>
+              <button type="button" class="quick-query-pill" data-query="What is the current macro outlook for Indian Defense and Infrastructure sectors?">
+                <span>🛡️</span> <span>Indian Defense Outlook</span>
+              </button>
+              <button type="button" class="quick-query-pill" data-query="Which turnaround stocks have high catalyst conviction right now?">
+                <span>⚡</span> <span>Turnaround Catalysts</span>
+              </button>
+              <button type="button" class="quick-query-pill" data-query="What are the top high-conviction picks in Indian real estate and banking?">
+                <span>🏢</span> <span>Real Estate & Banking Picks</span>
+              </button>
+            </div>
+
+            <!-- Chat Stream Message History -->
+            <div class="portfolio-chat-stream" id="portfolio-ai-chat-stream">
+              <div class="chat-msg chat-msg-bot">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-bubble">
+                  <div class="chat-bubble-header">
+                    <span class="author">AI ASSISTANT</span>
+                    <span class="badge-pill">ACTIVE INTEL</span>
                   </div>
-                  <div class="chassis-subtitle chat-chassis-subtitle-centered">Real-time conversational macro intelligence, stock forecasts, sector allocation, and portfolio queries</div>
-                </div>
-                <div class="chat-header-controls">
-                  <button type="button" id="btn-portfolio-chat-clear-header" class="btn-chat-restart" title="Clear chat and restart conversation">
-                    <span class="restart-icon">🔄</span> <span>CLEAR & RESTART</span>
-                  </button>
-                  <button type="button" id="btn-portfolio-chat-maximize" class="btn-chat-maximize" title="Maximize chat window into popup mode">
-                    <span id="chat-maximize-icon">⛶</span> <span id="chat-maximize-label">MAXIMIZE</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Quick Catalyst Prompt Suggestions -->
-              <div class="chat-quick-suggestions" id="portfolio-chat-suggestions">
-                <span class="suggestion-lbl">⚡ QUICK QUERIES:</span>
-                <button type="button" class="chat-chip-btn" data-query="Assess overall macroeconomic risk and capital erosion across my current holdings.">🧭 Assess portfolio risk</button>
-                <button type="button" class="chat-chip-btn" data-query="How is the US and Global stock market momentum right now?">🇺🇸 US Market Outlook</button>
-                <button type="button" class="chat-chip-btn" data-query="Is Indian Defense & Infrastructure sector favorable for new allocation?">🛡️ Indian Defense Outlook</button>
-                <button type="button" class="chat-chip-btn" data-query="What are the key turnaround catalysts and risk factors for my distressed stocks?">⚡ Turnaround Catalysts</button>
-                <button type="button" class="chat-chip-btn" data-query="Suggest high-conviction real estate and banking stocks with strong tailwinds.">🏢 Real Estate & Banking Picks</button>
-              </div>
-
-              <!-- Chat Messages Deck -->
-              <div class="portfolio-chat-stream" id="portfolio-chat-stream">
-                <div class="chat-msg chat-msg-bot">
-                  <div class="chat-avatar">🤖</div>
-                  <div class="chat-bubble">
-                    <div class="chat-bubble-header">
-                      <span class="author">AI ASSISTANT</span>
-                      <span class="badge-pill">ACTIVE INTEL</span>
-                    </div>
-                    <div class="chat-bubble-body">
-                      Greetings, Analyst. I am your real-time <strong>AI Assistant</strong> powered by advanced quantitative models and live market feeds. You can ask me any question regarding your loaded equities, sector rotation, turnaround catalysts, Indian & US market trajectories, or specific stock forecasts.
-                    </div>
+                  <div class="chat-bubble-body">
+                    Greetings, Analyst. I am your real-time <strong>AI Assistant</strong> powered by advanced quantitative models and live market feeds. You can ask me any question regarding your loaded equities, sector rotation, turnaround catalysts, Indian & US market trajectories, or specific stock forecasts.
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Chat Input Bay -->
-              <form id="portfolio-chat-form" class="portfolio-chat-input-bay" onsubmit="return false;">
+            <!-- Chat Interactive Input Bay -->
+            <div class="portfolio-chat-input-bay">
+              <form id="portfolio-ai-chat-form" class="portfolio-chat-form" onsubmit="return false;">
                 <div class="chat-input-wrapper">
-                  <span class="terminal-prefix">></span>
+                  <span class="terminal-prefix">&gt;</span>
                   <input type="text" id="portfolio-chat-input" class="chat-text-input" placeholder="Ask any question regarding your portfolio, Indian/US stocks, sector outlooks..." autocomplete="off" />
                   <button type="button" id="btn-portfolio-chat-clear" class="btn-chat-action" title="Clear Chat History">🗑️</button>
                 </div>
