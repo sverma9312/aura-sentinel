@@ -13,11 +13,8 @@ const { KNOWN_TICKERS } = require('./sentimentNlp');
 const GEMINI_API_HOST = 'generativelanguage.googleapis.com';
 const PRIMARY_MODELS = [
   'gemini-1.5-flash',
-  'gemini-1.5-flash-latest',
   'gemini-2.0-flash',
-  'gemini-2.0-flash-exp',
-  'gemini-1.5-pro',
-  'gemini-1.5-pro-latest'
+  'gemini-1.5-pro'
 ];
 
 /**
@@ -47,15 +44,12 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
     const body = JSON.stringify(payload);
     const headers = {
       'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
       'Content-Length': Buffer.byteLength(body)
     };
 
-    const path = `/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-
     const options = {
       hostname: GEMINI_API_HOST,
-      path,
+      path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
       method: 'POST',
       headers
     };
@@ -68,23 +62,23 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
           const parsed = JSON.parse(data);
           if (res.statusCode >= 400 || parsed.error) {
             const errMsg = parsed.error ? parsed.error.message : `HTTP ${res.statusCode}`;
-            return reject(new Error(`Gemini API error (${model}, HTTP ${res.statusCode}): ${errMsg}`));
+            return reject(new Error(`[${model} HTTP ${res.statusCode}]: ${errMsg}`));
           }
           const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (!text) {
-            return reject(new Error(`Gemini returned empty text from model ${model}`));
+            return reject(new Error(`[${model}]: Empty candidates response`));
           }
           resolve(text.trim());
         } catch (e) {
-          reject(new Error(`Failed to parse Gemini response (${res.statusCode}): ${e.message}`));
+          reject(new Error(`[${model} Parse Error HTTP ${res.statusCode}]: ${e.message} (Raw: ${data.slice(0, 120)})`));
         }
       });
     });
 
-    req.on('error', err => reject(new Error(`Gemini network error: ${err.message}`)));
+    req.on('error', err => reject(new Error(`[${model} Network Error]: ${err.message}`)));
     req.setTimeout(25000, () => {
       req.destroy();
-      reject(new Error(`Gemini request timed out on model ${model}`));
+      reject(new Error(`[${model} Timeout 25s]`));
     });
 
     req.write(body);
@@ -96,17 +90,17 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
  * Invoke Gemini with cascading model fallbacks
  */
 async function invokeGeminiWithFallback(fullPrompt) {
-  let lastErr = null;
+  const errors = [];
   for (const model of PRIMARY_MODELS) {
     try {
       const reply = await callGeminiRaw(fullPrompt, model);
       return { reply, modelUsed: model };
     } catch (err) {
-      console.warn(`[PortfolioChatbot] Model ${model} failed (${err.message}). Trying fallback...`);
-      lastErr = err;
+      console.warn(`[AIAssistant] Model ${model} attempt failed: ${err.message}`);
+      errors.push(err.message);
     }
   }
-  throw lastErr || new Error('All Gemini models exhausted.');
+  throw new Error(`All Gemini models failed -> ${errors.join(' | ')}`);
 }
 
 /**
