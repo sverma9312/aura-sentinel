@@ -668,7 +668,12 @@
                   </div>
                   <div class="chassis-subtitle">Real-time conversational macro intelligence, stock forecasts, sector allocation, and portfolio queries</div>
                 </div>
-                <div class="ai-badge" style="margin: 0; padding: 3px 8px; font-size: 10px;">✦ GEMINI NEURAL CHASSIS</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" id="btn-portfolio-chat-clear-header" class="btn-chat-restart" title="Clear chat and restart conversation">
+                    <span class="restart-icon">🔄</span> <span>CLEAR & RESTART</span>
+                  </button>
+                  <div class="ai-badge" style="margin: 0; padding: 3px 8px; font-size: 10px;">✦ GEMINI NEURAL CHASSIS</div>
+                </div>
               </div>
 
               <!-- Quick Catalyst Prompt Suggestions -->
@@ -704,9 +709,14 @@
                   <input type="text" id="portfolio-chat-input" class="chat-text-input" placeholder="Ask any question regarding your portfolio, Indian/US stocks, sector outlooks..." autocomplete="off" />
                   <button type="button" id="btn-portfolio-chat-clear" class="btn-chat-action" title="Clear Chat History">🗑️</button>
                 </div>
-                <button type="submit" id="btn-portfolio-chat-send" class="btn-chat-send">
-                  <span>🚀 TRANSMIT QUERY</span>
-                </button>
+                <div class="chat-action-buttons-bay">
+                  <button type="button" id="btn-portfolio-chat-reset-action" class="btn-chat-action-reset" title="Clear Chat History and Restart">
+                    <span>🔄</span> <span>CLEAR</span>
+                  </button>
+                  <button type="submit" id="btn-portfolio-chat-send" class="btn-chat-send">
+                    <span>🚀 TRANSMIT QUERY</span>
+                  </button>
+                </div>
               </form>
             </div>
           </div>

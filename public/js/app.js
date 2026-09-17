@@ -3438,6 +3438,8 @@
     const chatStream = document.getElementById('portfolio-chat-stream');
     const btnSend = document.getElementById('btn-portfolio-chat-send');
     const btnClear = document.getElementById('btn-portfolio-chat-clear');
+    const btnClearHeader = document.getElementById('btn-portfolio-chat-clear-header');
+    const btnResetAction = document.getElementById('btn-portfolio-chat-reset-action');
     const suggestionsBox = document.getElementById('portfolio-chat-suggestions');
 
     if (!chatForm || !chatInput || !chatStream) return;
@@ -3456,27 +3458,32 @@
       });
     }
 
-    // Clear Chat History
-    if (btnClear) {
-      btnClear.addEventListener('click', () => {
-        if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
-        state.portfolioChatHistory = [];
-        chatStream.innerHTML = `
-          <div class="chat-msg chat-msg-bot">
-            <div class="chat-avatar">🤖</div>
-            <div class="chat-bubble">
-              <div class="chat-bubble-header">
-                <span class="author">AI ASSISTANT</span>
-                <span class="badge-pill">ACTIVE INTEL</span>
-              </div>
-              <div class="chat-bubble-body">
-                Conversation reset. How may I assist your portfolio diagnostics or market strategy today?
-              </div>
+    // Comprehensive Reset & Clear Chat Handler
+    function handleResetChat() {
+      if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+      state.portfolioChatHistory = [];
+      chatInput.value = '';
+      if (btnSend) btnSend.disabled = false;
+      chatStream.innerHTML = `
+        <div class="chat-msg chat-msg-bot">
+          <div class="chat-avatar">🤖</div>
+          <div class="chat-bubble">
+            <div class="chat-bubble-header">
+              <span class="author">AI ASSISTANT</span>
+              <span class="badge-pill">ACTIVE INTEL</span>
+            </div>
+            <div class="chat-bubble-body">
+              Greetings, Analyst. I am your real-time <strong>AI Assistant</strong> powered by Google Gemini and live market feeds. You can ask me any question regarding your loaded equities, sector rotation, turnaround catalysts, Indian & US market trajectories, or specific stock forecasts.
             </div>
           </div>
-        `;
-      });
+        </div>
+      `;
+      chatInput.focus();
     }
+
+    if (btnClear) btnClear.addEventListener('click', handleResetChat);
+    if (btnClearHeader) btnClearHeader.addEventListener('click', handleResetChat);
+    if (btnResetAction) btnResetAction.addEventListener('click', handleResetChat);
 
     // Submit Chat Query
     chatForm.addEventListener('submit', async (e) => {
