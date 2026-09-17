@@ -659,20 +659,23 @@
             </div>
 
             <!-- Section 4: AI Assistant & Strategy Advisor -->
-            <div class="portfolio-section-chassis portfolio-ai-chat-chassis" style="margin-top: 20px;">
-              <div class="portfolio-chassis-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                <div>
-                  <div class="chassis-title" style="display: flex; align-items: center; gap: 8px;">
-                    <span>🤖</span> <span>AI ASSISTANT</span>
-                    <span class="tab-premium-pill" style="margin-left: 4px;">PREMIUM</span>
+            <div id="portfolio-chat-backdrop" class="portfolio-chat-backdrop"></div>
+            <div class="portfolio-section-chassis portfolio-ai-chat-chassis" id="portfolio-ai-chat-chassis" style="margin-top: 20px;">
+              <div class="portfolio-chassis-header chat-chassis-header-centered">
+                <div class="chat-header-center-block">
+                  <div class="chat-main-ai-title">
+                    <span class="chat-ai-icon">🤖</span>
+                    <span class="chat-ai-title-text">AI ASSISTANT</span>
                   </div>
-                  <div class="chassis-subtitle">Real-time conversational macro intelligence, stock forecasts, sector allocation, and portfolio queries</div>
+                  <div class="chassis-subtitle chat-chassis-subtitle-centered">Real-time conversational macro intelligence, stock forecasts, sector allocation, and portfolio queries</div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="chat-header-controls">
                   <button type="button" id="btn-portfolio-chat-clear-header" class="btn-chat-restart" title="Clear chat and restart conversation">
                     <span class="restart-icon">🔄</span> <span>CLEAR & RESTART</span>
                   </button>
-                  <div class="ai-badge" style="margin: 0; padding: 3px 8px; font-size: 10px;">✦ GEMINI NEURAL CHASSIS</div>
+                  <button type="button" id="btn-portfolio-chat-maximize" class="btn-chat-maximize" title="Maximize chat window into popup mode">
+                    <span id="chat-maximize-icon">⛶</span> <span id="chat-maximize-label">MAXIMIZE</span>
+                  </button>
                 </div>
               </div>
 

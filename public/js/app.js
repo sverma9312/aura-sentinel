@@ -3481,6 +3481,55 @@
       chatInput.focus();
     }
 
+    const chatChassis = document.getElementById('portfolio-ai-chat-chassis');
+    const chatBackdrop = document.getElementById('portfolio-chat-backdrop');
+    const btnMaximize = document.getElementById('btn-portfolio-chat-maximize');
+    const maxIcon = document.getElementById('chat-maximize-icon');
+    const maxLabel = document.getElementById('chat-maximize-label');
+
+    // Maximize / Popup Window Toggle
+    function toggleMaximize(forceState) {
+      if (!chatChassis) return;
+      const isMax = forceState !== undefined ? forceState : !chatChassis.classList.contains('is-maximized');
+
+      if (isMax) {
+        chatChassis.classList.add('is-maximized');
+        if (chatBackdrop) chatBackdrop.classList.add('is-active');
+        document.body.style.overflow = 'hidden';
+        if (maxIcon) maxIcon.textContent = '🗗';
+        if (maxLabel) maxLabel.textContent = 'MINIMIZE';
+        if (btnMaximize) btnMaximize.title = 'Restore to inline view (Esc)';
+      } else {
+        chatChassis.classList.remove('is-maximized');
+        if (chatBackdrop) chatBackdrop.classList.remove('is-active');
+        document.body.style.overflow = '';
+        if (maxIcon) maxIcon.textContent = '⛶';
+        if (maxLabel) maxLabel.textContent = 'MAXIMIZE';
+        if (btnMaximize) btnMaximize.title = 'Maximize chat window into popup mode';
+      }
+
+      if (window.tactileAudio) window.tactileAudio.playMechanicalClick();
+      setTimeout(() => {
+        chatStream.scrollTop = chatStream.scrollHeight;
+        chatInput.focus();
+      }, 60);
+    }
+
+    if (btnMaximize) {
+      btnMaximize.addEventListener('click', () => toggleMaximize());
+    }
+
+    if (chatBackdrop) {
+      chatBackdrop.addEventListener('click', () => toggleMaximize(false));
+    }
+
+    // Escape key closes maximized mode
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && chatChassis && chatChassis.classList.contains('is-maximized')) {
+        toggleMaximize(false);
+      }
+    });
+
     if (btnClear) btnClear.addEventListener('click', handleResetChat);
     if (btnClearHeader) btnClearHeader.addEventListener('click', handleResetChat);
     if (btnResetAction) btnResetAction.addEventListener('click', handleResetChat);
