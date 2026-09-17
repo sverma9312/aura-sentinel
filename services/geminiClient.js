@@ -8,14 +8,12 @@
 const https = require('https');
 
 const GEMINI_API_URL = 'generativelanguage.googleapis.com';
-const GEMINI_MODEL = 'gemini-1.5-flash'; // Google Gemini 1.5 Flash model
+const GEMINI_MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-pro'];
 
 /**
- * Makes a POST request to Gemini API.
- * @param {string} prompt - The prompt to send
- * @returns {Promise<string>} - The AI-generated text response
+ * Makes a POST request to Gemini API for a single model.
  */
-function callGeminiApi(prompt) {
+function callGeminiSingleModel(prompt, model = 'gemini-1.5-flash') {
   return new Promise((resolve, reject) => {
     const rawKey = process.env.GEMINI_API_KEY;
     const apiKey = (rawKey || '').trim();
@@ -39,7 +37,7 @@ function callGeminiApi(prompt) {
 
     const options = {
       hostname: GEMINI_API_URL,
-      path: `/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+      path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,12 +55,12 @@ function callGeminiApi(prompt) {
 
           // Handle API errors gracefully
           if (parsed.error) {
-            return reject(new Error(`Gemini API error: ${parsed.error.message}`));
+            return reject(new Error(`Gemini API error (${model}): ${parsed.error.message}`));
           }
 
           const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (!text) {
-            return reject(new Error('Gemini returned empty response'));
+            return reject(new Error(`Gemini returned empty response on model ${model}`));
           }
           resolve(text.trim());
         } catch (e) {
@@ -75,14 +73,32 @@ function callGeminiApi(prompt) {
       reject(new Error(`Gemini network error: ${err.message}`));
     });
 
-    req.setTimeout(30000, () => {
+    req.setTimeout(25000, () => {
       req.destroy();
-      reject(new Error('Gemini request timed out (30s)'));
+      reject(new Error(`Gemini request timed out on model ${model}`));
     });
 
     req.write(body);
     req.end();
   });
+}
+
+/**
+ * Makes a POST request to Gemini API with automatic model fallbacks.
+ * @param {string} prompt - The prompt to send
+ * @returns {Promise<string>} - The AI-generated text response
+ */
+async function callGeminiApi(prompt) {
+  let lastErr = null;
+  for (const model of GEMINI_MODELS) {
+    try {
+      return await callGeminiSingleModel(prompt, model);
+    } catch (err) {
+      console.warn(`[GeminiClient] Model ${model} failed (${err.message}). Trying fallback...`);
+      lastErr = err;
+    }
+  }
+  throw lastErr || new Error('All Gemini models exhausted.');
 }
 
 /**
