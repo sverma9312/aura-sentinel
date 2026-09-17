@@ -47,16 +47,11 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
     const body = JSON.stringify(payload);
     const headers = {
       'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey,
       'Content-Length': Buffer.byteLength(body)
     };
 
-    let path = `/v1beta/models/${model}:generateContent`;
-    if (apiKey.startsWith('AQ.') || apiKey.startsWith('ya29.')) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
-    } else {
-      headers['x-goog-api-key'] = apiKey;
-      path += `?key=${apiKey}`;
-    }
+    const path = `/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const options = {
       hostname: GEMINI_API_HOST,
