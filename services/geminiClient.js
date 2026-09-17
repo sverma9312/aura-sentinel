@@ -90,14 +90,72 @@ function callGeminiSingleModel(prompt, model = 'gemini-1.5-flash') {
   });
 }
 
+let discoveredClientModelsCache = null;
+let lastClientDiscoveryTime = 0;
+
+function discoverSupportedModels(apiKey) {
+  return new Promise((resolve) => {
+    const now = Date.now();
+    if (discoveredClientModelsCache && (now - lastClientDiscoveryTime < 1000 * 60 * 30)) {
+      return resolve(discoveredClientModelsCache);
+    }
+    const options = {
+      hostname: GEMINI_API_URL,
+      path: `/v1beta/models?key=${apiKey}`,
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed.models)) {
+            const valid = parsed.models
+              .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+              .map(m => m.name.replace(/^models\//, ''))
+              .filter(name => !name.includes('embedding') && !name.includes('aqa') && !name.includes('imagen'));
+
+            if (valid.length > 0) {
+              valid.sort((a, b) => {
+                const score = n => {
+                  if (n === 'gemini-3.6-flash') return 100;
+                  if (n === 'gemini-3.8-flash') return 90;
+                  if (n.includes('3.6')) return 80;
+                  if (n.includes('3.8')) return 70;
+                  if (n.includes('flash')) return 60;
+                  return 10;
+                };
+                return score(b) - score(a);
+              });
+              discoveredClientModelsCache = valid;
+              lastClientDiscoveryTime = now;
+              return resolve(valid);
+            }
+          }
+        } catch (e) {}
+        resolve(GEMINI_MODELS);
+      });
+    });
+    req.on('error', () => resolve(GEMINI_MODELS));
+    req.setTimeout(6000, () => { req.destroy(); resolve(GEMINI_MODELS); });
+    req.end();
+  });
+}
+
 /**
  * Makes a POST request to Gemini API with automatic model fallbacks.
  * @param {string} prompt - The prompt to send
  * @returns {Promise<string>} - The AI-generated text response
  */
 async function callGeminiApi(prompt) {
+  const rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY;
+  const apiKey = (rawKey || '').trim();
+  const modelsToTry = apiKey ? await discoverSupportedModels(apiKey) : GEMINI_MODELS;
   let lastErr = null;
-  for (const model of GEMINI_MODELS) {
+
+  for (const model of modelsToTry) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         return await callGeminiSingleModel(prompt, model);

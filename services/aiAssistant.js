@@ -85,12 +85,75 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
   });
 }
 
+let discoveredModelsCache = null;
+let lastDiscoveryTime = 0;
+
+/**
+ * Dynamically queries Google AI Studio's /v1beta/models to discover all active models
+ * enabled for this API key that support generateContent (discovers 3rd, 4th, 5th fallbacks).
+ */
+function discoverSupportedModels(apiKey) {
+  return new Promise((resolve) => {
+    const now = Date.now();
+    if (discoveredModelsCache && (now - lastDiscoveryTime < 1000 * 60 * 30)) {
+      return resolve(discoveredModelsCache);
+    }
+    const options = {
+      hostname: GEMINI_API_HOST,
+      path: `/v1beta/models?key=${apiKey}`,
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed.models)) {
+            const valid = parsed.models
+              .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+              .map(m => m.name.replace(/^models\//, ''))
+              .filter(name => !name.includes('embedding') && !name.includes('aqa') && !name.includes('imagen'));
+
+            if (valid.length > 0) {
+              valid.sort((a, b) => {
+                const score = n => {
+                  if (n === 'gemini-3.6-flash') return 100;
+                  if (n === 'gemini-3.8-flash') return 90;
+                  if (n.includes('3.6')) return 80;
+                  if (n.includes('3.8')) return 70;
+                  if (n.includes('flash')) return 60;
+                  return 10;
+                };
+                return score(b) - score(a);
+              });
+              discoveredModelsCache = valid;
+              lastDiscoveryTime = now;
+              console.log('[AIAssistant] Discovered live generateContent models:', valid);
+              return resolve(valid);
+            }
+          }
+        } catch (e) {}
+        resolve(PRIMARY_MODELS);
+      });
+    });
+    req.on('error', () => resolve(PRIMARY_MODELS));
+    req.setTimeout(6000, () => { req.destroy(); resolve(PRIMARY_MODELS); });
+    req.end();
+  });
+}
+
 /**
  * Invoke Gemini with cascading model fallbacks and smart transient retry
  */
 async function invokeGeminiWithFallback(fullPrompt) {
+  const rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY;
+  const apiKey = (rawKey || '').trim();
+  const modelsToTry = apiKey ? await discoverSupportedModels(apiKey) : PRIMARY_MODELS;
   const errors = [];
-  for (const model of PRIMARY_MODELS) {
+
+  for (const model of modelsToTry) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         const reply = await callGeminiRaw(fullPrompt, model);
