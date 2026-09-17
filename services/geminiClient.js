@@ -98,11 +98,25 @@ function callGeminiSingleModel(prompt, model = 'gemini-1.5-flash') {
 async function callGeminiApi(prompt) {
   let lastErr = null;
   for (const model of GEMINI_MODELS) {
-    try {
-      return await callGeminiSingleModel(prompt, model);
-    } catch (err) {
-      console.warn(`[GeminiClient] Model ${model} failed (${err.message}). Trying fallback...`);
-      lastErr = err;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        return await callGeminiSingleModel(prompt, model);
+      } catch (err) {
+        const isRateLimit = err.message.includes('HTTP 429') || err.message.includes('Quota exceeded');
+        const isTransient503 = err.message.includes('HTTP 503');
+
+        if ((isRateLimit || isTransient503) && attempt === 1) {
+          const match = err.message.match(/retry in ([0-9.]+)s/i);
+          const waitSec = match ? Math.min(Math.ceil(parseFloat(match[1])), 4) : 2;
+          console.warn(`[GeminiClient] Model ${model} returned transient error. Auto-waiting ${waitSec}s...`);
+          await new Promise(r => setTimeout(r, waitSec * 1000));
+          continue;
+        }
+
+        console.warn(`[GeminiClient] Model ${model} failed (${err.message}). Trying fallback...`);
+        lastErr = err;
+        break;
+      }
     }
   }
   throw lastErr || new Error('All Gemini models exhausted.');

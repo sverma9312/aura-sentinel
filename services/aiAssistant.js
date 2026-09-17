@@ -86,17 +86,32 @@ function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
 }
 
 /**
- * Invoke Gemini with cascading model fallbacks
+ * Invoke Gemini with cascading model fallbacks and smart transient retry
  */
 async function invokeGeminiWithFallback(fullPrompt) {
   const errors = [];
   for (const model of PRIMARY_MODELS) {
-    try {
-      const reply = await callGeminiRaw(fullPrompt, model);
-      return { reply, modelUsed: model };
-    } catch (err) {
-      console.warn(`[AIAssistant] Model ${model} attempt failed: ${err.message}`);
-      errors.push(err.message);
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const reply = await callGeminiRaw(fullPrompt, model);
+        return { reply, modelUsed: model };
+      } catch (err) {
+        const isRateLimit = err.message.includes('HTTP 429') || err.message.includes('Quota exceeded');
+        const isTransient503 = err.message.includes('HTTP 503');
+
+        // If rate limited with a short cooldown on first attempt, wait briefly and retry
+        if ((isRateLimit || isTransient503) && attempt === 1) {
+          const match = err.message.match(/retry in ([0-9.]+)s/i);
+          const waitSec = match ? Math.min(Math.ceil(parseFloat(match[1])), 4) : 2;
+          console.warn(`[AIAssistant] Model ${model} returned transient ${isRateLimit ? '429' : '503'}. Auto-waiting ${waitSec}s before retry...`);
+          await new Promise(r => setTimeout(r, waitSec * 1000));
+          continue;
+        }
+
+        console.warn(`[AIAssistant] Model ${model} attempt ${attempt} failed: ${err.message}`);
+        errors.push(err.message);
+        break; // Move to next fallback model
+      }
     }
   }
   throw new Error(`All Gemini models failed -> ${errors.join(' | ')}`);
