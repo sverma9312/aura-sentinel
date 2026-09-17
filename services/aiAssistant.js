@@ -1,7 +1,7 @@
 /**
- * AURA SENTINEL — AI Portfolio Copilot & Macro Strategy Advisor
- * Dedicated LLM & RAG Engine for conversational portfolio diagnostics,
- * macro sector evaluations, and live stock intelligence.
+ * AURA SENTINEL — AI Assistant & Macro Strategy Advisor
+ * Unified LLM & RAG Engine for conversational equity research, stock evaluations,
+ * macroeconomic sector outlooks, and active portfolio diagnostics.
  * 
  * Free Tier Guaranteed: Google Gemini 2.5/1.5 Flash via Google AI Studio.
  */
@@ -514,7 +514,7 @@ INSTRUCTIONS & RESPONSE FORMAT:
       groundedTickers: dynamicTickers.map(t => t.symbol)
     };
   } catch (err) {
-    console.warn('[PortfolioChatbot] Gemini API fallback engaged:', err.message);
+    console.warn('[AIAssistant] Gemini API fallback engaged:', err.message);
     const fallbackReply = generateDeterministicFallback(cleanQuery, portfolio, macroOverview, dynamicTickers, liveQuotes);
     return {
       success: true,
@@ -527,6 +527,7 @@ INSTRUCTIONS & RESPONSE FORMAT:
 }
 
 module.exports = {
+  handleAssistantChatMessage: handlePortfolioChatMessage,
   handlePortfolioChatMessage,
   resolveDynamicTickers,
   buildGroundedContext,

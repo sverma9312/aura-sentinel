@@ -14,7 +14,7 @@ const macroEngine = require('./services/macroEngine');
 const { searchTickers } = require('./services/financeApi');
 const dbService = require('./services/db');
 const portfolioService = require('./services/portfolioService');
-const portfolioChatbot = require('./services/portfolioChatbot');
+const aiAssistant = require('./services/aiAssistant');
 const emailService = require('./services/emailService');
 
 const PORT = process.env.PORT || 3000;
@@ -635,8 +635,8 @@ const server = http.createServer(async (req, res) => {
         ? macroEngine.getOverview(region)
         : (macroEngine.caches?.[region]?.macroOverview || null);
 
-      // 3. Dispatch to LLM & RAG Chatbot Service
-      const chatResult = await portfolioChatbot.handlePortfolioChatMessage({
+      // 3. Dispatch to LLM & RAG AI Assistant Service
+      const chatResult = await aiAssistant.handleAssistantChatMessage({
         userMessage: message,
         history: Array.isArray(history) ? history : [],
         portfolio: activePortfolio,
