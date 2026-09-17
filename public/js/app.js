@@ -3466,7 +3466,7 @@
             <div class="chat-avatar">🤖</div>
             <div class="chat-bubble">
               <div class="chat-bubble-header">
-                <span class="author">AURA SENTINEL AI COPILOT</span>
+                <span class="author">AI ASSISTANT</span>
                 <span class="badge-pill">ACTIVE INTEL</span>
               </div>
               <div class="chat-bubble-body">
@@ -3509,7 +3509,7 @@
         <div class="chat-avatar">🤖</div>
         <div class="chat-bubble">
           <div class="chat-bubble-header">
-            <span class="author">AURA SENTINEL AI COPILOT</span>
+            <span class="author">AI ASSISTANT</span>
             <span class="badge-pill">SYNTHESIZING...</span>
           </div>
           <div class="chat-bubble-body">

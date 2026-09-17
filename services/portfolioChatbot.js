@@ -482,7 +482,7 @@ async function handlePortfolioChatMessage({ userMessage, history = [], portfolio
   }
 
   // 4. Build Full Unified Prompt for Google Gemini
-  const fullPrompt = `You are the AURA SENTINEL AI Portfolio Copilot & Chief Financial Strategist.
+  const fullPrompt = `You are the AI ASSISTANT & Institutional Financial Strategist.
 You deliver elite, institutional-grade macroeconomic intelligence, stock evaluations, sector allocation guidance, and portfolio risk management advisory.
 
 REAL-TIME GROUNDED CONTEXT & MARKET DATA:
