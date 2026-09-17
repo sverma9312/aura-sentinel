@@ -569,7 +569,8 @@ INSTRUCTIONS & RESPONSE FORMAT:
       reply: fallbackReply,
       modelUsed: 'deterministic-financial-engine',
       groundedTickers: dynamicTickers.map(t => t.symbol),
-      isFallback: true
+      isFallback: true,
+      debugReason: err.message
     };
   }
 }
