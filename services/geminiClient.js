@@ -9,6 +9,7 @@ const https = require('https');
 
 const GEMINI_API_URL = 'generativelanguage.googleapis.com';
 const GEMINI_MODELS = [
+  'gemini-flash-lite-latest',
   'gemini-3.6-flash',
   'gemini-3.8-flash'
 ];
@@ -16,7 +17,7 @@ const GEMINI_MODELS = [
 /**
  * Makes a POST request to Gemini API for a single model.
  */
-function callGeminiSingleModel(prompt, model = 'gemini-1.5-flash') {
+function callGeminiSingleModel(prompt, model = 'gemini-flash-lite-latest') {
   return new Promise((resolve, reject) => {
     const rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY;
     const apiKey = (rawKey || '').trim();
@@ -69,6 +70,7 @@ function callGeminiSingleModel(prompt, model = 'gemini-1.5-flash') {
           if (!text) {
             return reject(new Error(`Gemini returned empty response on model ${model}`));
           }
+
           resolve(text.trim());
         } catch (e) {
           reject(new Error(`Failed to parse Gemini response: ${e.message}`));
@@ -120,6 +122,7 @@ function discoverSupportedModels(apiKey) {
             if (valid.length > 0) {
               valid.sort((a, b) => {
                 const score = n => {
+                  if (n === 'gemini-flash-lite-latest' || n.includes('flash-lite')) return 110;
                   if (n === 'gemini-3.6-flash') return 100;
                   if (n === 'gemini-3.8-flash') return 90;
                   if (n.includes('3.6')) return 80;

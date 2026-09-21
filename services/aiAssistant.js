@@ -12,6 +12,7 @@ const { KNOWN_TICKERS } = require('./sentimentNlp');
 
 const GEMINI_API_HOST = 'generativelanguage.googleapis.com';
 const PRIMARY_MODELS = [
+  'gemini-flash-lite-latest',
   'gemini-3.6-flash',
   'gemini-3.8-flash'
 ];
@@ -19,7 +20,7 @@ const PRIMARY_MODELS = [
 /**
  * Low-level HTTPS dispatcher for Google Gemini API (Matches production geminiClient.js)
  */
-function callGeminiRaw(promptText, model = 'gemini-1.5-flash') {
+function callGeminiRaw(promptText, model = 'gemini-flash-lite-latest') {
   return new Promise((resolve, reject) => {
     const rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY;
     const apiKey = (rawKey || '').trim();
@@ -119,6 +120,7 @@ function discoverSupportedModels(apiKey) {
             if (valid.length > 0) {
               valid.sort((a, b) => {
                 const score = n => {
+                  if (n === 'gemini-flash-lite-latest' || n.includes('flash-lite')) return 110;
                   if (n === 'gemini-3.6-flash') return 100;
                   if (n === 'gemini-3.8-flash') return 90;
                   if (n.includes('3.6')) return 80;
