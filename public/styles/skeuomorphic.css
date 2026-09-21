@@ -5392,12 +5392,16 @@ body.theme-bright .tour-dot.active {
 .tab-premium-pill {
   font-family: var(--font-mono);
   font-size: 8.5px;
-  font-weight: 800;
+  font-weight: 900;
   color: #030812;
   background: linear-gradient(180deg, #fde047 0%, #d97706 100%);
   padding: 1px 5px;
   border-radius: 3px;
-  margin-left: 6px;
+  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 13px;
   box-shadow: 0 0 8px rgba(253, 224, 71, 0.4);
 }
 
