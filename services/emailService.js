@@ -38,7 +38,7 @@ Current Role: ${user.role || 'ANALYST'}
 Timestamp:    ${timestamp}
 
 ACTION REQUIRED:
-1. Log in to your Aura Sentinel Admin Console (https://aura-sentinel-ald1.onrender.com).
+1. Log in to your Aura Sentinel Admin Console (https://aurasentinel.nextai-apps.com).
 2. Go to the "Master Admin Governance Console" tab.
 3. Locate ${userEmail} and click "Promote to PREMIUM".
 
@@ -67,7 +67,7 @@ Dispatched automatically by Aura Sentinel Governance Security Gateway.
 
       <div style="background: #1e293b; padding: 16px; border-radius: 8px; text-align: center;">
         <p style="margin: 0 0 12px 0; font-size: 13px; color: #94a3b8;">Click below to open your Master Admin Console and elevate clearance:</p>
-        <a href="https://aura-sentinel-ald1.onrender.com" style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 700; text-decoration: none; padding: 10px 24px; border-radius: 6px; font-size: 13px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);">
+        <a href="https://aurasentinel.nextai-apps.com" style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 700; text-decoration: none; padding: 10px 24px; border-radius: 6px; font-size: 13px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);">
           ⚡ OPEN GOVERNANCE CONSOLE
         </a>
       </div>
@@ -137,7 +137,7 @@ Dispatched automatically by Aura Sentinel Governance Security Gateway.
         organization: userOrg,
         requested_tier: 'PREMIUM PORTFOLIO TERMINAL',
         timestamp: timestamp,
-        governance_console: 'https://aura-sentinel-ald1.onrender.com',
+        governance_console: 'https://aurasentinel.nextai-apps.com',
         message: `Analyst ${userName} (${userEmail}) from ${userOrg} has requested immediate upgrade to PREMIUM Security Clearance to analyze stock portfolio.`
       });
       sentVia = 'FormSubmit Gateway';
